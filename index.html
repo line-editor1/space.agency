@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPACE Video Agency | Профессиональный видеомонтаж</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Иконки FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Скрипт для безопасного хэширования паролей SHA-256 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- Шрифты Space Grotesk и Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #010008;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        .font-space {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Индикатор прокрутки */
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00c6fb, #0052d4);
+            z-index: 1000;
+            width: 0%;
+            transition: width 0.1s ease-out;
+            box-shadow: 0 0 8px #00c6fb;
+        }
+
+        /* -------------------------------------------------------------
+           APPLE LIQUID GLASS (Физика жидкого стекла)
+           ------------------------------------------------------------- */
+        .apple-liquid-glass {
+            position: relative;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-radius: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.01);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.5),
+                inset 0 1px 1px rgba(255, 255, 255, 0.12),
+                inset 0 -1px 8px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            transition: border-color 0.5s ease, box-shadow 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Интерактивный блик внутри стекла */
+        .glass-shine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 60%);
+            pointer-events: none;
+            transition: transform 0.1s ease-out;
+            z-index: 1;
+        }
+
+        /* Плавная анимация приподнимания плашек при наведении */
+        .apple-liquid-glass:hover, .portfolio-item:hover {
+            border-top-color: rgba(0, 198, 251, 0.4);
+            border-left-color: rgba(0, 198, 251, 0.3);
+            box-shadow: 
+                0 30px 60px rgba(0, 198, 251, 0.12),
+                inset 0 1px 2px rgba(255, 255, 255, 0.2);
+            transform: translateY(-6px);
+        }
+
+        /* СВЕЧЕНИЕ КНОПОК */
+        .neon-btn-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .neon-btn-glow {
+            position: absolute;
+            inset: -4px;
+            background: radial-gradient(circle, rgba(0, 198, 251, 0.3) 0%, rgba(79, 172, 254, 0) 70%);
+            border-radius: 9999px;
+            filter: blur(4px);
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .neon-btn-container:hover .neon-btn-glow {
+            opacity: 1;
+        }
+
+        .btn-liquid-glass {
+            position: relative;
+            background: linear-gradient(135deg, rgba(0, 198, 251, 0.3) 0%, rgba(79, 172, 254, 0.06) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
+            border-right: 1px solid rgba(0, 198, 251, 0.15);
+            border-bottom: 1px solid rgba(0, 198, 251, 0.05);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-liquid-glass:hover {
+            background: linear-gradient(135deg, rgba(0, 198, 251, 0.5) 0%, rgba(79, 172, 254, 0.15) 100%);
+            border-top-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Неоновое свечение */
+        .neon-glow-text {
+            color: #4facfe;
+            text-shadow: 0 0 12px rgba(0, 198, 251, 0.75), 
+                         0 0 24px rgba(0, 198, 251, 0.35);
+        }
+
+        .logo-glowing-effect {
+            filter: drop-shadow(0 0 35px rgba(0, 198, 251, 0.65));
+        }
+
+        /* Постоянное плавное вращение планеты вокруг своей оси */
+        .axis-rotation {
+            animation: rotateAxis 18s linear infinite;
+            transform-style: preserve-3d;
+        }
+
+        @keyframes rotateAxis {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        /* Курсор */
+        #custom-cursor {
+            width: 8px;
+            height: 8px;
+            background: #00c6fb;
+            border-radius: 50%;
+            position: fixed;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 999;
+            box-shadow: 0 0 15px #00c6fb, 0 0 30px #4facfe;
+            transition: width 0.15s, height 0.15s;
+        }
+
+        /* Редактируемые зоны для админа */
+        .editable-active {
+            position: relative;
+            outline: 1px dashed rgba(0, 198, 251, 0.7) !important;
+            cursor: pointer !important;
+            transition: outline 0.3s;
+        }
+        .editable-active:hover::after {
+            content: " ✎";
+            font-size: 0.8em;
+            color: #00c6fb;
+            vertical-align: super;
+            font-weight: bold;
+        }
+
+        /* Плавная высота для раскрывающегося "О нас" */
+        #about-drawer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .portfolio-tab.active {
+            background: rgba(0, 198, 251, 0.12);
+            border-color: rgba(0, 198, 251, 0.4);
+            color: #00c6fb;
+        }
+    </style>
+</head>
+<body class="relative">
+
+    <!-- Индикатор прокрутки страницы -->
+    <div id="scroll-progress"></div>
+
+    <!-- Тосты/уведомления -->
+    <div id="toast-container" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Космический интерактивный курсор (для ПК) -->
+    <div id="custom-cursor" class="hidden lg:block"></div>
+
+    <!-- Задний звездный фон и комета на Canvas (Летают под плашками благодаря z-index: -10) -->
+    <canvas id="stars-canvas" class="fixed inset-0 w-full h-full -z-10 pointer-events-none"></canvas>
+
+    <!-- Навигация -->
+    <nav class="fixed w-full z-50 bg-[#010008]/50 backdrop-blur-xl border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <!-- Микро-логотип -->
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="relative w-10 h-10 flex items-center justify-center rounded-full bg-blue-950/30 border border-blue-500/20">
+                        <img src="1000002719.png" class="w-7 h-7 object-contain" alt="S">
+                    </div>
+                    <span class="font-space font-bold tracking-widest text-lg neon-glow-text uppercase group-hover:text-cyan-300 transition edit-field" data-id="brand_name">SPACE</span>
+                </a>
+
+                <!-- Навигация для десктопа -->
+                <div class="hidden md:flex items-center space-x-8" id="nav-links-container">
+                    <a href="#portfolio" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_portfolio">Портфолио</a>
+                    <a href="#workflow" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_process">Процесс</a>
+                    <a href="#pricing" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_pricing">Тарифы</a>
+                    <a href="#about-us" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_about">О нас</a>
+                    
+                    <div class="neon-btn-container">
+                        <div class="neon-btn-glow"></div>
+                        <a href="#contacts" class="px-6 py-2.5 btn-liquid-glass text-white rounded-full font-bold text-sm tracking-wide edit-field" data-id="nav_contact_btn">Связаться</a>
+                    </div>
+                </div>
+
+                <!-- Бургер -->
+                <button id="mobile-menu-btn" class="md:hidden text-2xl text-slate-300 focus:outline-none hover:text-cyan-400 transition">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Мобильное меню -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#010008]/95 backdrop-blur-xl border-b border-white/5 px-6 py-6 space-y-4">
+            <a href="#portfolio" class="block text-lg font-medium text-slate-300 hover:text-cyan-400 transition edit-field" data-id="nav_portfolio_mob" onclick="toggleMobileMenu()">Портфолио</a>
+            <a href="#workflow" class="block text-lg font-medium text-slate-300 hover:text-cyan-400 transition edit-field" data-id="nav_process_mob" onclick="toggleMobileMenu()">Процесс</a>
+            <a href="#pricing" class="block text-lg font-medium text-slate-300 hover:text-cyan-400 transition edit-field" data-id="nav_pricing_mob" onclick="toggleMobileMenu()">Тарифы</a>
+            <a href="#about-us" class="block text-lg font-medium text-slate-300 hover:text-cyan-400 transition edit-field" data-id="nav_about_mob" onclick="toggleMobileMenu()">О нас</a>
+            <a href="#contacts" class="block w-full text-center px-6 py-3 btn-liquid-glass text-white rounded-full font-bold edit-field" data-id="nav_contact_btn_mob" onclick="toggleMobileMenu()">Связаться</a>
+        </div>
+    </nav>
+
+    <!-- 1. ГЕРОЙ-СЕКЦИЯ -->
+    <header class="relative min-h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden pt-12">
+        <div class="absolute w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none"></div>
+        
+        <!-- Область сборки логотипа -->
+        <div class="relative w-80 h-80 md:w-[450px] md:h-[450px] flex items-center justify-center">
+            <canvas id="logo-particles" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
+            
+            <!-- ОРИГИНАЛЬНЫЙ ЛОГОТИП С АНИМАЦИЕЙ (Плавное приближение и вращение) -->
+            <div id="main-logo-wrapper" class="opacity-0 scale-75 transition-all duration-1000 ease-out z-20 relative axis-rotation">
+                <img src="1000002719.png" alt="SPACE Logo" class="w-72 h-72 md:w-[380px] md:h-[380px] object-contain mx-auto logo-glowing-effect">
+            </div>
+        </div>
+
+        <!-- Контент приветствия под логотипом -->
+        <div id="hero-text" class="opacity-0 translate-y-8 transition-all duration-1000 delay-500 max-w-3xl mt-4 px-4 z-30">
+            <p class="text-cyan-400 font-space tracking-widest text-xs sm:text-sm uppercase mb-3 edit-field" data-id="hero_subtitle">ПРОФЕССИОНАЛЬНОЕ ВИДЕОПРОИЗВОДСТВО</p>
+            <h1 class="font-space text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6">
+                Создаем динамику, которая <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00c6fb] to-[#0052d4] edit-field" data-id="hero_title_highlight">удерживает</span> зрителя
+            </h1>
+            
+            <!-- ЛЕНТА ПРОФЕССИОНАЛЬНОГО СОФТА -->
+            <div class="flex flex-wrap justify-center items-center gap-6 md:gap-8 mt-6 opacity-80 hover:opacity-100 transition duration-300">
+                <span class="text-xs tracking-wider text-slate-500 font-mono edit-field" data-id="soft_label">НАШ СОФТ:</span>
+                
+                <!-- DaVinci Resolve -->
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/5 rounded-full text-xs text-slate-300">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="url(#davinciGrad)"/>
+                        <circle cx="12" cy="7.5" r="3.5" fill="#FF4B4B"/>
+                        <circle cx="8" cy="14.5" r="3.5" fill="#4B93FF"/>
+                        <circle cx="16" cy="14.5" r="3.5" fill="#FFD44B"/>
+                        <defs>
+                            <radialGradient id="davinciGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" transform="translate(12 12) rotate(90) scale(10)">
+                                <stop stop-color="#2D115C"/>
+                                <stop offset="1" stop-color="#0E0220"/>
+                            </radialGradient>
+                        </defs>
+                    </svg>
+                    <span class="edit-field" data-id="soft_davinci">DaVinci Resolve</span>
+                </div>
+                
+                <!-- Premiere Pro -->
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/5 rounded-full text-xs text-slate-300">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/40/Adobe_Premiere_Pro_CC_icon.svg" alt="Premiere" class="w-4 h-4 object-contain">
+                    <span class="edit-field" data-id="soft_premiere">Premiere Pro</span>
+                </div>
+                
+                <!-- After Effects -->
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/5 rounded-full text-xs text-slate-300">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/cb/Adobe_After_Effects_CC_icon.svg" alt="AE" class="w-4 h-4 object-contain">
+                    <span class="edit-field" data-id="soft_ae">After Effects</span>
+                </div>
+            </div>
+
+            <!-- ИСПРАВЛЕННАЯ СИСТЕМА СВЕЧЕНИЯ КНОПОК -->
+            <div class="flex flex-wrap justify-center gap-6 mt-12 relative">
+                <div class="neon-btn-container">
+                    <div class="neon-btn-glow" style="opacity: 1;"></div> <!-- Подсвечена постоянно -->
+                    <a href="#portfolio" class="px-8 py-4 btn-liquid-glass text-white font-semibold rounded-full block edit-field" data-id="hero_portfolio_btn">Смотреть портфолио</a>
+                </div>
+                <div class="neon-btn-container">
+                    <div class="neon-btn-glow"></div>
+                    <a href="#contacts" class="px-8 py-4 bg-transparent text-slate-300 border border-white/10 font-semibold rounded-full block hover:bg-white/5 hover:border-cyan-400 transition duration-300 edit-field" data-id="hero_contact_btn">Обсудить проект</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. ПОРТФОЛИО -->
+    <section id="portfolio" class="py-32 relative">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
+                <div>
+                    <p class="text-cyan-400 font-space tracking-widest text-xs uppercase mb-2 edit-field" data-id="portfolio_subtitle">НАШИ РАБОТЫ</p>
+                    <h2 class="text-4xl md:text-5xl font-space font-bold edit-field" data-id="portfolio_title">ПОРТФОЛИО</h2>
+                    <div class="w-16 h-1 bg-gradient-to-r from-blue-500 to-cyan-400 mt-4 rounded-full"></div>
+                </div>
+
+                <!-- Вкладки фильтрации -->
+                <div class="flex flex-wrap gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/5" id="portfolio-tabs-container">
+                    <button onclick="filterPortfolio('all')" class="portfolio-tab active px-5 py-2 rounded-xl text-sm font-medium transition duration-300 edit-field" data-id="tab_all">Все</button>
+                    <button onclick="filterPortfolio('reels')" class="portfolio-tab px-5 py-2 rounded-xl text-sm font-medium transition duration-300 edit-field" data-id="tab_reels">Shorts / Reels</button>
+                    <button onclick="filterPortfolio('youtube')" class="portfolio-tab px-5 py-2 rounded-xl text-sm font-medium transition duration-300 edit-field" data-id="tab_youtube">YouTube</button>
+                    <button onclick="filterPortfolio('promo')" class="portfolio-tab px-5 py-2 rounded-xl text-sm font-medium transition duration-300 edit-field" data-id="tab_promo">Реклама</button>
+                </div>
+            </div>
+
+            <!-- Расширенная сетка из 6 плашек для портфолио -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="portfolio-grid">
+                
+                <!-- Кейс 1 (Reels) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="reels" id="case-card-1" onmouseenter="playPreviewVideo(1)" onmouseleave="stopPreviewVideo(1)">
+                    <!-- CMS-кнопка для изменения видео -->
+                    <button onclick="triggerPortfolioEdit(1, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition">
+                        <i class="fas fa-edit"></i> Изменить видео
+                    </button>
+
+                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
+                        <div class="w-full aspect-video relative">
+                            <img id="case-img-1" src="" alt="Short-form" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                            <iframe id="case-iframe-1" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-transparent transition duration-300 z-20 pointer-events-none md:hidden">
+                            <div class="w-14 h-14 rounded-full btn-liquid-glass text-white flex items-center justify-center text-lg shadow-lg">
+                                <i class="fas fa-play ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t1">Разговорный Reels</h3>
+                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d1">Субтитры, динамика, SFX</p>
+                        </div>
+                        <span class="px-2.5 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels">REELS</span>
+                    </div>
+                </div>
+
+                <!-- Кейс 2 (YouTube) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="youtube" id="case-card-2" onmouseenter="playPreviewVideo(2)" onmouseleave="stopPreviewVideo(2)">
+                    <button onclick="triggerPortfolioEdit(2, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition">
+                        <i class="fas fa-edit"></i> Изменить видео
+                    </button>
+
+                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
+                        <div class="w-full aspect-video relative">
+                            <img id="case-img-2" src="" alt="YouTube" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                            <iframe id="case-iframe-2" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-transparent transition duration-300 z-20 pointer-events-none md:hidden">
+                            <div class="w-14 h-14 rounded-full btn-liquid-glass text-white flex items-center justify-center text-lg shadow-lg">
+                                <i class="fas fa-play ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t2">Выпуск Подкаста</h3>
+                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d2">Мультикамерный монтаж, чистка звука</p>
+                        </div>
+                        <span class="px-2.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube">YOUTUBE</span>
+                    </div>
+                </div>
+
+                <!-- Кейс 3 (Promo) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="promo" id="case-card-3" onmouseenter="playPreviewVideo(3)" onmouseleave="stopPreviewVideo(3)">
+                    <button onclick="triggerPortfolioEdit(3, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition">
+                        <i class="fas fa-edit"></i> Изменить видео
+                    </button>
+
+                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
+                        <div class="w-full aspect-video relative">
+                            <img id="case-img-3" src="" alt="Promo" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                            <iframe id="case-iframe-3" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-transparent transition duration-300 z-20 pointer-events-none md:hidden">
+                            <div class="w-14 h-14 rounded-full btn-liquid-glass text-white flex items-center justify-center text-lg shadow-lg">
+                                <i class="fas fa-play ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t3">Имиджевый Промо-ролик</h3>
+                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d3">Цветокоррекция, VFX, Cinema Sound</p>
+                        </div>
+                        <span class="px-2.5 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo">PROMO</span>
+                    </div>
+                </div>
+
+                <!-- Кейс 4 (Reels) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="reels" id="case-card-4" onmouseenter="playPreviewVideo(4)" onmouseleave="stopPreviewVideo(4)">
+                    <button onclick="triggerPortfolioEdit(4, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition">
+                        <i class="fas fa-edit"></i> Изменить видео
+                    </button>
+
+                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
+                        <div class="w-full aspect-video relative">
+                            <img id="case-img-4" src="" alt="Reels" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                            <iframe id="case-iframe-4" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-transparent transition duration-300 z-20 pointer-events-none md:hidden">
+                            <div class="w-14 h-14 rounded-full btn-liquid-glass text-white flex items-center justify-center text-lg shadow-lg">
+                                <i class="fas fa-play ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t4">Динамичный Shorts</h3>
+                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d4">Плотный визуальный ряд, удержание</p>
+                        </div>
+                        <span class="px-2.5 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels2">REELS</span>
+                    </div>
+                </div>
+
+                <!-- Кейс 5 (YouTube) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="youtube" id="case-card-5" onmouseenter="playPreviewVideo(5)" onmouseleave="stopPreviewVideo(5)">
+                    <button onclick="triggerPortfolioEdit(5, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition">
+                        <i class="fas fa-edit"></i> Изменить видео
+                    </button>
+
+                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
+                        <div class="w-full aspect-video relative">
+                            <img id="case-img-5" src="" alt="Vlog" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                            <iframe id="case-iframe-5" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-transparent transition duration-300 z-20 pointer-events-none md:hidden">
+                            <div class="w-14 h-14 rounded-full btn-liquid-glass text-white flex items-center justify-center text-lg shadow-lg">
+                                <i class="fas fa-play ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t5">Travel Влог</h3>
+                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d5">Плавные переходы, стабилизация</p>
+                        </div>
+                        <span class="px-2.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube2">YOUTUBE</span>
+                    </div>
+                </div>
+
+                <!-- Кейс 6 (Promo) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="promo" id="case-card-6" onmouseenter="playPreviewVideo(6)" onmouseleave="stopPreviewVideo(6)">
+                    <button onclick="triggerPortfolioEdit(6, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition">
+                        <i class="fas fa-edit"></i> Изменить видео
+                    </button>
+
+                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
+                        <div class="w-full aspect-video relative">
+                            <img id="case-img-6" src="" alt="CGI" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                            <iframe id="case-iframe-6" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-transparent transition duration-300 z-20 pointer-events-none md:hidden">
+                            <div class="w-14 h-14 rounded-full btn-liquid-glass text-white flex items-center justify-center text-lg shadow-lg">
+                                <i class="fas fa-play ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t6">Продуктовая Реклама</h3>
+                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d6">3D визуализация, макросъемка</p>
+                        </div>
+                        <span class="px-2.5 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo2">PROMO</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. ПРОЦЕСС РАБОТЫ -->
+    <section id="workflow" class="py-32 bg-[#010006]/30 border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8">
+            <div class="mb-20">
+                <p class="text-cyan-400 font-space tracking-widest text-xs uppercase mb-2 edit-field" data-id="wf_subtitle">ПОЭТАПНЫЙ ПОЛЕТ</p>
+                <h2 class="text-4xl md:text-5xl font-space font-bold edit-field" data-id="wf_title">КАК МЫ РАБОТАЕМ</h2>
+                <div class="w-16 h-1 bg-gradient-to-r from-blue-500 to-cyan-400 mt-4 rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Шаг 1 -->
+                <div class="apple-liquid-glass p-8 flex flex-col justify-between h-72">
+                    <div class="glass-shine"></div>
+                    <div>
+                        <div class="text-xs font-mono text-cyan-500 tracking-widest uppercase mb-4 edit-field" data-id="step1_label">Шаг 01</div>
+                        <h3 class="text-xl font-bold text-white mb-2 edit-field" data-id="step1_title">Техническое Задание</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed edit-field" data-id="step1_desc">Разбираем ваши референсы, утверждаем темпоритм ролика, собираем весь исходный материал на облаке.</p>
+                    </div>
+                    <div class="text-right text-slate-700 font-bold text-4xl">01</div>
+                </div>
+
+                <!-- Шаг 2 -->
+                <div class="apple-liquid-glass p-8 flex flex-col justify-between h-72">
+                    <div class="glass-shine"></div>
+                    <div>
+                        <div class="text-xs font-mono text-cyan-500 tracking-widest uppercase mb-4 edit-field" data-id="step2_label">Шаг 02</div>
+                        <h3 class="text-xl font-bold text-white mb-2 edit-field" data-id="step2_title">Монтаж & Эффекты</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed edit-field" data-id="step2_desc">Собираем первый черновик, накладываем динамичные переходы, добавляем саунд-дизайн и выравниваем звук.</p>
+                    </div>
+                    <div class="text-right text-slate-700 font-bold text-4xl">02</div>
+                </div>
+
+                <!-- Шаг 3 -->
+                <div class="apple-liquid-glass p-8 flex flex-col justify-between h-72">
+                    <div class="glass-shine"></div>
+                    <div>
+                        <div class="text-xs font-mono text-cyan-500 tracking-widest uppercase mb-4 edit-field" data-id="step3_label">Шаг 03</div>
+                        <h3 class="text-xl font-bold text-white mb-2 edit-field" data-id="step3_title">Цвет & Сдача</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed edit-field" data-id="step3_desc">Делаем сочную профессиональную покраску кадра, вносим финальные правки и передаем готовый проект.</p>
+                    </div>
+                    <div class="text-right text-slate-700 font-bold text-4xl">03</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. ТАРИФЫ -->
+    <section id="pricing" class="py-32 relative">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8">
+            <div class="mb-20 text-right flex flex-col items-end">
+                <p class="text-cyan-400 font-space tracking-widest text-xs uppercase mb-2 edit-field" data-id="pricing_subtitle">СТОИМОСТЬ РАБОТЫ</p>
+                <h2 class="text-4xl md:text-5xl font-space font-bold edit-field" data-id="pricing_title">ТАРИФЫ И ЦЕНЫ</h2>
+                <div class="w-16 h-1 bg-gradient-to-l from-blue-500 to-cyan-400 mt-4 rounded-full"></div>
+            </div>
+
+            <!-- Сетка тарифов -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="pricing-grid">
+                
+                <!-- Тариф 1: Shorts / Reels -->
+                <div class="apple-liquid-glass p-8 flex flex-col justify-between">
+                    <div class="glass-shine"></div>
+                    <div>
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-[10px] font-space tracking-wider uppercase text-slate-400 edit-field" data-id="pricing_t1_badge">SHORT-FORM</span>
+                            <i class="fas fa-mobile-alt text-cyan-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 edit-field" data-id="pricing_t1_title">Shorts / Reels</h3>
+                        <p class="text-slate-400 text-sm mb-6 edit-field" data-id="pricing_t1_desc">Динамичные ролики с высокой глубиной вовлечения зрителя. Подойдет для личных блогов и экспертов.</p>
+                        <div class="text-3xl font-space font-extrabold mb-8 text-white edit-field" data-id="pricing_t1_price">от 1 000 ₽</div>
+                        <ul class="space-y-4 text-sm text-slate-300 border-t border-white/5 pt-6 mb-8">
+                            <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t1_feat1">Трендовые субтитры</span></li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t1_feat2">Плотный саунд-дизайн (SFX)</span></li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t1_feat3">Цветокоррекция</span></li>
+                        </ul>
+                    </div>
+                    <button id="btn-order-1" onclick="handleOrderById('pricing_t1_title')" class="w-full py-4 bg-white/5 hover:bg-cyan-500 hover:text-slate-950 rounded-2xl font-bold text-center transition duration-300 edit-field" data-id="btn_order_t1">Заказать</button>
+                </div>
+
+                <!-- Тариф 2: YouTube / Влоги (ИСПРАВЛЕНО: Рамка идеально закругленная без каких-либо квадратных подложек) -->
+                <div class="apple-liquid-glass p-8 flex flex-col justify-between relative ring-1 ring-cyan-500/20 shadow-[0_0_40px_rgba(0,198,251,0.15)] bg-blue-950/5" style="overflow: visible;">
+                    <div class="glass-shine" style="border-radius: 32px;"></div>
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-cyan-400 text-slate-950 text-[10px] font-black tracking-widest uppercase py-1.5 px-4 rounded-full edit-field" data-id="pricing_hot_badge">
+                        ПОПУЛЯРНЫЙ
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-6 mt-2">
+                            <span class="text-[10px] font-space tracking-wider uppercase text-cyan-400 edit-field" data-id="pricing_t2_badge">LONG-FORM</span>
+                            <i class="fas fa-video text-cyan-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 edit-field" data-id="pricing_t2_title">YouTube / Влоги</h3>
+                        <p class="text-slate-400 text-sm mb-6 edit-field" data-id="pricing_t2_desc">Профессиональный многокамерный монтаж, удержание внимания, создание полноценных шоу.</p>
+                        <div class="text-3xl font-space font-extrabold mb-8 text-white edit-field" data-id="pricing_t2_price">от 5 000 ₽</div>
+                        <ul class="space-y-4 text-sm text-slate-300 border-t border-white/5 pt-6 mb-8">
+                            <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t2_feat1">Работа с мультикамерой</span></li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t2_feat2">Саунд-дизайн под ключ</span></li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t2_feat3">Инфографика и 2D элементы</span></li>
+                        </ul>
+                    </div>
+                    <button id="btn-order-2" onclick="handleOrderById('pricing_t2_title')" class="w-full py-4 btn-liquid-glass text-white rounded-2xl font-bold text-center edit-field" data-id="btn_order_t2">Выбрать тариф</button>
+                </div>
+
+                <!-- Тариф 3: Реклама / VFX -->
+                <div class="apple-liquid-glass p-8 flex flex-col justify-between">
+                    <div class="glass-shine"></div>
+                    <div>
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-[10px] font-space tracking-wider uppercase text-slate-400 edit-field" data-id="pricing_t3_badge">EXCLUSIVE</span>
+                            <i class="fas fa-star text-cyan-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 edit-field" data-id="pricing_t3_title">Реклама / VFX</h3>
+                        <p class="text-slate-400 text-sm mb-6 edit-field" data-id="pricing_t3_desc">Сложный рекламный монтаж, интеграции с CGI, 3D моушн графика и имиджевые промо-кампейны.</p>
+                        <div class="text-3xl font-space font-extrabold mb-8 text-white edit-field" data-id="pricing_t3_price">от 15 000 ₽</div>
+                        <ul class="space-y-4 text-sm text-slate-300 border-t border-white/5 pt-6 mb-8">
+                            <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t3_feat1">Сложный VFX / CGI монтаж</span></li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t3_feat2">Кинематографичный цвет</span></li>
+                            <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t3_feat3">Дизайн звука уровня кино</span></li>
+                        </ul>
+                    </div>
+                    <button id="btn-order-3" onclick="handleOrderById('pricing_t3_title')" class="w-full py-4 bg-white/5 hover:bg-cyan-500 hover:text-slate-950 rounded-2xl font-bold text-center transition duration-300 edit-field" data-id="btn_order_t3">Заказать</button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. О НАС -->
+    <section id="about-us" class="py-32 bg-[#010009]/40 border-t border-white/5">
+        <div class="max-w-4xl mx-auto px-6 sm:px-8 text-center">
+            <button onclick="toggleAboutUs()" class="group inline-flex items-center gap-3 px-8 py-4 btn-liquid-glass text-white font-black rounded-full transition duration-300">
+                <span id="about-btn-text" class="edit-field" data-id="about_btn_label">УЗНАТЬ О НАШЕЙ ФИЛОСОФИИ</span>
+                <i id="about-btn-icon" class="fas fa-plus-circle text-lg transition-transform duration-300"></i>
+            </button>
+
+            <!-- Раскрывающийся контент -->
+            <div id="about-drawer" class="text-left mt-12">
+                <div class="apple-liquid-glass p-8 sm:p-12">
+                    <div class="glass-shine"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                        <div>
+                            <h3 class="text-2xl font-space font-bold text-white mb-6 edit-field" data-id="about_title">Качество, заложенное в каждом кадре.</h3>
+                            <p class="text-slate-400 text-sm sm:text-base leading-relaxed mb-6 edit-field" data-id="about_p1">
+                                **SPACE Video Agency** — независимая студия видеомонтажа. Мы не ставим работу на конвейер. Каждое видео разрабатывается с глубоким анализом целевой аудитории и удержания внимания с первых секунд.
+                            </p>
+                            <p class="text-slate-400 text-sm sm:text-base leading-relaxed edit-field" data-id="about_p2">
+                                Мы детально отстраиваем баланс звука, настраиваем сочные цветовые тона и делаем инфографику, которая работает на раскрытие смыслов вашего контента.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Качественные показатели -->
+                            <div class="p-6 bg-white/5 border border-white/5 rounded-2xl text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(0,198,251,0.1)]">
+                                <div class="text-3xl font-space font-black text-cyan-400 mb-1 edit-field" data-id="stat_val1">100%</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-widest mt-1 edit-field" data-id="stat_lbl1">Внимания к деталям</div>
+                            </div>
+                            <div class="p-6 bg-white/5 border border-white/5 rounded-2xl text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(0,198,251,0.1)]">
+                                <div class="text-3xl font-space font-black text-blue-400 mb-1 edit-field" data-id="stat_val2">24/7</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-widest mt-1 edit-field" data-id="stat_lbl2">Контроль дедлайнов</div>
+                            </div>
+                            <div class="p-6 bg-white/5 border border-white/5 rounded-2xl text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(0,198,251,0.1)]">
+                                <div class="text-3xl font-space font-black text-purple-400 mb-1 edit-field" data-id="stat_val3">Unique</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-widest mt-1 edit-field" data-id="stat_lbl3">Разработка стиля</div>
+                            </div>
+                            <div class="p-6 bg-white/5 border border-white/5 rounded-2xl text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(0,198,251,0.1)]">
+                                <div class="text-3xl font-space font-black text-pink-400 mb-1 edit-field" data-id="stat_val4">PRO</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-widest mt-1 edit-field" data-id="stat_lbl4">Стандарты софта</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. КОНТАКТЫ -->
+    <section id="contacts" class="py-32 relative">
+        <div class="max-w-4xl mx-auto px-6 sm:px-8 text-center relative z-10">
+            <!-- Индикатор живой активности -->
+            <div id="live-status-badge" class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono uppercase mb-8 shadow-md">
+                <span id="live-status-dot" class="w-2.5 h-2.5 rounded-full"></span>
+                <span id="live-status-text">На связи • Свободны для 2 проектов</span>
+            </div>
+
+            <h2 class="text-4xl sm:text-5xl font-space font-bold mb-6 edit-field" data-id="contacts_title">Готовы запустить проект?</h2>
+            <p class="text-slate-400 max-w-xl mx-auto mb-12 edit-field" data-id="contacts_desc">Свяжитесь с нами прямо сейчас. Расскажите о ваших целях, и мы рассчитаем стоимость монтажа в кратчайшие сроки.</p>
+            
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="#" id="tg-btn" target="_blank" class="flex items-center gap-3 px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300">
+                    <i class="fab fa-telegram text-xl"></i> <span class="edit-field" data-id="tg_btn_text">Написать в Telegram</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Подвал -->
+    <footer class="py-12 border-t border-white/5 bg-[#010005]">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-6 h-6 flex items-center justify-center rounded-full bg-blue-950 border border-blue-500/30">
+                    <img src="1000002719.png" class="w-4 h-4 object-contain" alt="S">
+                </div>
+                <span class="font-space font-bold tracking-widest text-slate-300 uppercase text-sm edit-field" data-id="footer_brand">SPACE VIDEO AGENCY</span>
+            </div>
+            
+            <!-- Секретный замок для админа -->
+            <button onclick="openAdminModal()" class="opacity-10 hover:opacity-100 transition-opacity duration-300">
+                <i class="fas fa-lock text-slate-700 text-xs"></i>
+            </button>
+
+            <p class="text-slate-600 text-[10px] tracking-widest uppercase edit-field" data-id="footer_copyright">
+                &copy; 2026 Space Video Agency. Все системы работают в штатном режиме.
+            </p>
+        </div>
+    </footer>
+
+    <!-- АДМИН-ПАНЕЛЬ И СИСТЕМА УПРАВЛЕНИЯ -->
+    <div id="admin-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div class="w-full max-w-2xl apple-liquid-glass p-8 sm:p-10 border border-cyan-500/20 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
+                <h3 class="text-2xl font-space font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-cyan-400"></i> Панель Управления SPACE
+                </h3>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+
+            <!-- Секция Авторизации -->
+            <div id="admin-login-sec">
+                <p class="text-slate-400 text-sm mb-6">Введите ключ доступа администратора для разблокировки изменения контента и просмотра аналитики.</p>
+                <div class="space-y-4 mb-6">
+                    <input type="password" id="admin-password" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500" placeholder="Ключ доступа">
+                </div>
+                <button onclick="loginAdmin()" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition duration-300">Авторизоваться</button>
+            </div>
+
+            <!-- Секция Администратора (Новый дизайн) -->
+            <div id="admin-dashboard-sec" class="hidden space-y-8">
+                <!-- Органы управления -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-white/5 pb-6">
+                    <button onclick="toggleVisualCmsMode()" id="cms-toggle-btn" class="py-4 px-6 bg-gradient-to-r from-blue-600 to-cyan-500 text-slate-950 font-black rounded-2xl hover:scale-[1.02] transition duration-300 flex items-center justify-center gap-3">
+                        <i class="fas fa-pencil-alt"></i> <span>ВКЛЮЧИТЬ РЕДАКТОР</span>
+                    </button>
+                    <button onclick="logoutAdmin()" class="py-4 px-6 bg-white/5 border border-white/10 text-white rounded-2xl hover:bg-white/10 transition flex items-center justify-center gap-3">
+                        <i class="fas fa-sign-out-alt"></i> Выйти из панели
+                    </button>
+                </div>
+
+                <!-- Живая статистика -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Телеметрия визитов и активности</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="p-4 bg-white/5 border border-white/5 rounded-2xl text-center">
+                            <div class="text-2xl font-black text-cyan-400" id="stat-views">0</div>
+                            <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Просмотры</div>
+                        </div>
+                        <div class="p-4 bg-white/5 border border-white/5 rounded-2xl text-center">
+                            <div class="text-2xl font-black text-blue-400" id="stat-click-t1">0</div>
+                            <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Shorts клики</div>
+                        </div>
+                        <div class="p-4 bg-white/5 border border-white/5 rounded-2xl text-center">
+                            <div class="text-2xl font-black text-purple-400" id="stat-click-t2">0</div>
+                            <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">YouTube клики</div>
+                        </div>
+                        <div class="p-4 bg-white/5 border border-white/5 rounded-2xl text-center">
+                            <div class="text-2xl font-black text-pink-400" id="stat-click-t3">0</div>
+                            <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">VFX клики</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Системные Настройки -->
+                <div class="space-y-4 border-t border-white/5 pt-6">
+                    <h4 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Настройки Системы</h4>
+                    
+                    <!-- Ник Телеграм -->
+                    <div>
+                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold">Никнейм Telegram (без знака @)</label>
+                        <input type="text" id="setting-tg" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500" placeholder="your_telegram">
+                    </div>
+
+                    <!-- СИСТЕМА УПРАВЛЕНИЯ ГРАФИКОМ -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold">Начало раб. дня (часы, например 9)</label>
+                            <input type="number" id="setting-work-start" min="0" max="23" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold">Конец раб. дня (часы, например 18)</label>
+                            <input type="number" id="setting-work-end" min="0" max="23" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500">
+                        </div>
+                    </div>
+
+                    <!-- ПРИНУДИТЕЛЬНЫЙ РЕЖИМ -->
+                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div>
+                            <span class="text-sm font-bold text-white block">Режим праздников / Принудительно Закрыто</span>
+                            <span class="text-[10px] text-slate-500">Переопределяет график и окрашивает статус в красный цвет</span>
+                        </div>
+                        <input type="checkbox" id="setting-holiday" class="w-6 h-6 accent-cyan-500 cursor-pointer">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold">Новый Ключ доступа (Пароль)</label>
+                        <input type="password" id="setting-new-pass" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500" placeholder="Оставьте пустым, если не хотите менять">
+                    </div>
+                    <button onclick="saveAdminSettings()" class="w-full py-3 btn-liquid-glass text-white font-bold rounded-xl transition">Сохранить параметры системы</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактора текстов -->
+    <div id="editor-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="w-full max-w-lg apple-liquid-glass p-8 border border-cyan-500/20">
+            <h3 class="text-xl font-bold text-white mb-6">Редактировать текстовый блок</h3>
+            <textarea id="editor-text-input" rows="5" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-cyan-500 mb-6"></textarea>
+            <div class="flex gap-4">
+                <button onclick="closeEditorModal()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl transition duration-300">Отмена</button>
+                <button onclick="saveEditedField()" class="flex-1 py-3 btn-liquid-glass text-white font-bold rounded-xl">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- СПЕЦИАЛЬНОЕ Модальное окно CMS для Портфолио -->
+    <div id="portfolio-editor-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div class="w-full max-w-lg apple-liquid-glass p-8 border border-cyan-500/20 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <i class="fas fa-video text-cyan-400"></i> Параметры Кейса Портфолио
+            </h3>
+            <div class="space-y-4 mb-8">
+                <div>
+                    <label class="block text-xs text-slate-500 uppercase mb-2">Ссылка на iframe-видео (YouTube/Vimeo Embed)</label>
+                    <input type="text" id="case-edit-video" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-500 uppercase mb-2">Ссылка на обложку-превью (URL картинки)</label>
+                    <input type="text" id="case-edit-img" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500">
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="closePortfolioEditorModal()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl transition duration-300">Отмена</button>
+                <button onclick="savePortfolioCaseSettings()" class="flex-1 py-3 btn-liquid-glass text-white font-bold rounded-xl">Сохранить кейс</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для видеоплеера -->
+    <div id="video-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/95 backdrop-blur-md transition-all duration-300 p-4">
+        <button onclick="closeVideoModal()" class="absolute top-6 right-6 text-white hover:text-cyan-400 text-3xl transition duration-300">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="w-full max-w-4xl aspect-video rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(0,198,251,0.4)] border border-cyan-500/20">
+            <iframe id="modal-iframe" class="w-full h-full" src="" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+        </div>
+    </div>
+
+    <!-- JavaScript логика и Безопасная База Данных Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Глобальные переменные данных
+        let currentAdminState = false;
+        let isVisualCmsMode = false; 
+        let siteContentData = {};
+        let configData = {};
+        let activeEditFieldId = null;
+        let activePortfolioCaseId = null;
+        let firebaseInitialized = false;
+
+        let db = null;
+        let auth = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'space-video-agency';
+
+        // Инициализация Firebase с Offline-Защитой (Предотвращает краш кода на GitHub Pages!)
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            try {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                firebaseInitialized = true;
+            } catch (err) {
+                console.error("Firebase init error:", err);
+            }
+        }
+
+        // Дефолтное наполнение базы данных
+        const defaultContent = {
+            brand_name: "SPACE",
+            nav_portfolio: "Портфолио",
+            nav_process: "Процесс",
+            nav_pricing: "Тарифы",
+            nav_about: "О нас",
+            nav_contact_btn: "Связаться",
+            nav_portfolio_mob: "Портфолио",
+            nav_process_mob: "Процесс",
+            nav_pricing_mob: "Тарифы",
+            nav_about_mob: "О нас",
+            nav_contact_btn_mob: "Связаться",
+            hero_subtitle: "ПРОФЕССИОНАЛЬНОЕ ВИДЕОПРОИЗВОДСТВО",
+            hero_title_highlight: "удерживает",
+            hero_portfolio_btn: "Смотреть портфолио",
+            hero_contact_btn: "Обсудить проект",
+            soft_label: "НАШ СОФТ:",
+            soft_davinci: "DaVinci Resolve",
+            soft_premiere: "Premiere Pro",
+            soft_ae: "After Effects",
+            portfolio_subtitle: "НАШИ РАБОТЫ",
+            portfolio_title: "ПОРТФОЛИО",
+            tab_all: "Все",
+            tab_reels: "Shorts / Reels",
+            tab_youtube: "YouTube",
+            tab_promo: "Реклама",
+            portfolio_t1: "Разговорный Reels",
+            portfolio_d1: "Субтитры, динамика, SFX",
+            tag_reels: "REELS",
+            portfolio_t2: "Выпуск Подкаста",
+            portfolio_d2: "Мультикамерный монтаж, чистка звука",
+            tag_youtube: "YOUTUBE",
+            portfolio_t3: "Имиджевый Промо-ролик",
+            portfolio_d3: "Цветокоррекция, VFX, Cinema Sound",
+            tag_promo: "PROMO",
+            portfolio_t4: "Динамичный Shorts",
+            portfolio_d4: "Плотный визуальный ряд, удержание",
+            tag_reels2: "REELS",
+            portfolio_t5: "Travel Влог",
+            portfolio_d5: "Плавные переходы, стабилизация",
+            tag_youtube2: "YOUTUBE",
+            portfolio_t6: "Продуктовая Реклама",
+            portfolio_d6: "3D визуализация, макросъемка",
+            tag_promo2: "PROMO",
+            wf_subtitle: "ПОЭТАПНЫЙ ПОЛЕТ",
+            wf_title: "КАК МЫ РАБОТАЕМ",
+            step1_label: "Шаг 01",
+            step1_title: "Техническое Задание",
+            step1_desc: "Разбираем ваши референсы, утверждаем темпоритм ролика, собираем весь исходный материал на облаке.",
+            step2_label: "Шаг 02",
+            step2_title: "Монтаж & Эффекты",
+            step2_desc: "Собираем первый черновик, накладываем динамичные переходы, добавляем саунд-дизайн и выравниваем звук.",
+            step3_label: "Шаг 03",
+            step3_title: "Цвет & Сдача",
+            step3_desc: "Делаем сочную профессиональную покраску кадра, вносим финальные правки и передаем готовый проект.",
+            pricing_subtitle: "СТОИМОСТЬ РАБОТЫ",
+            pricing_title: "ТАРИФЫ И ЦЕНЫ",
+            pricing_t1_badge: "SHORT-FORM",
+            pricing_t1_title: "Shorts / Reels",
+            pricing_t1_desc: "Динамичные ролики с высокой глубиной вовлечения зрителя. Подойдет для личных блогов и экспертов.",
+            pricing_t1_price: "от 1 000 ₽",
+            t1_feat1: "Трендовые субтитры",
+            t1_feat2: "Плотный саунд-дизайн (SFX)",
+            t1_feat3: "Цветокоррекция",
+            btn_order_t1: "Заказать",
+            pricing_hot_badge: "ПОПУЛЯРНЫЙ",
+            pricing_t2_badge: "LONG-FORM",
+            pricing_t2_title: "YouTube / Влоги",
+            pricing_t2_desc: "Профессиональный многокамерный монтаж, удержание внимания, создание полноценных шоу.",
+            pricing_t2_price: "от 5 000 ₽",
+            t2_feat1: "Работа с мультикамерой",
+            t2_feat2: "Саунд-дизайн под ключ",
+            t2_feat3: "Инфографика и 2D элементы",
+            btn_order_t2: "Выбрать тариф",
+            pricing_t3_badge: "EXCLUSIVE",
+            pricing_t3_title: "Реклама / VFX",
+            pricing_t3_desc: "Сложный рекламный монтаж, интеграции с CGI, 3D моушн графика и имиджевые промо-кампейны.",
+            pricing_t3_price: "от 15 000 ₽",
+            t3_feat1: "Сложный VFX / CGI монтаж",
+            t3_feat2: "Кинематографичный цвет",
+            t3_feat3: "Дизайн звука уровня кино",
+            btn_order_t3: "Заказать",
+            about_btn_label: "УЗНАТЬ О НАШЕЙ ФИЛОСОФИИ",
+            about_title: "Качество, заложенное в каждом кадре.",
+            about_p1: "**SPACE Video Agency** — независимая студия видеомонтажа. Мы не ставим работу на конвейер. Каждое видео разрабатывается с глубоким анализом целевой аудитории и удержания внимания с первых секунд.",
+            about_p2: "Мы детально отстраиваем баланс звука, настраиваем сочные цветовые тона и делаем инфографику, которая работает на раскрытие смыслов вашего контента.",
+            stat_val1: "100%",
+            stat_lbl1: "Внимания к деталям",
+            stat_val2: "24/7",
+            stat_lbl2: "Контроль дедлайнов",
+            stat_val3: "Unique",
+            stat_lbl3: "Разработка стиля",
+            stat_val4: "PRO",
+            stat_lbl4: "Стандарты софта",
+            contacts_title: "Готовы запустить проект?",
+            contacts_desc: "Свяжитесь с нами прямо сейчас. Расскажите о ваших целях, и мы рассчитаем стоимость монтажа в кратчайшие сроки.",
+            tg_btn_text: "Написать в Telegram",
+            footer_brand: "SPACE VIDEO AGENCY",
+            footer_copyright: "© 2026 Space Video Agency. Все системы работают в штатном режиме."
+        };
+
+        const defaultPortfolioSettings = {
+            case1_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            case1_img: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=800&q=80",
+            case2_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            case2_img: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+            case3_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            case3_img: "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=800&q=80",
+            case4_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            case4_img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80",
+            case5_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            case5_img: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80",
+            case6_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            case6_img: "https://images.unsplash.com/photo-1460881680858-30d872d5b530?auto=format&fit=crop&w=800&q=80"
+        };
+
+        // Запуск инициализации данных (с проверкой наличия Firebase)
+        const initAppData = async () => {
+            // Инициализируем window.portfolioLinks дефолтными значениями, чтобы предотвратить TypeError сразу!
+            window.portfolioLinks = defaultPortfolioSettings;
+
+            if (!firebaseInitialized) {
+                // FALLBACK ДЛЯ GITHUB PAGES: Загружаем все дефолтные тексты и настройки без падения кода!
+                siteContentData = defaultContent;
+                configData = { adminPassHash: CryptoJS.SHA256("spaceadmin").toString(), telegramHandle: "your_telegram" };
+                applySiteContent();
+                updateTgLinks();
+                applyPortfolioData(defaultPortfolioSettings);
+                evaluateLiveStatus();
+                return;
+            }
+
+            // Если Firebase успешно подключен — стягиваем актуальные данные из облака
+            try {
+                await signInAnonymously(auth);
+                const contentDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_content');
+                const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config');
+                const statsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'analytics_doc');
+                const portfolioDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links');
+
+                const contentSnap = await getDoc(contentDocRef);
+                if (contentSnap.exists()) {
+                    siteContentData = contentSnap.data();
+                } else {
+                    siteContentData = defaultContent;
+                    await setDoc(contentDocRef, defaultContent);
+                }
+                applySiteContent();
+
+                const configSnap = await getDoc(configDocRef);
+                if (configSnap.exists()) {
+                    configData = configSnap.data();
+                } else {
+                    const initialPassHash = CryptoJS.SHA256("spaceadmin").toString();
+                    configData = { adminPassHash: initialPassHash, telegramHandle: "your_telegram", workStart: 9, workEnd: 18, isHoliday: false };
+                    await setDoc(configDocRef, configData);
+                }
+                updateTgLinks();
+                evaluateLiveStatus();
+
+                const portSnap = await getDoc(portfolioDocRef);
+                let portfolioData = {};
+                if (portSnap.exists()) {
+                    portfolioData = portSnap.data();
+                } else {
+                    portfolioData = defaultPortfolioSettings;
+                    await setDoc(portfolioDocRef, defaultPortfolioSettings);
+                }
+                applyPortfolioData(portfolioData);
+
+                // Инкремент посещений в аналитике
+                await setDoc(statsDocRef, { views: increment(1) }, { merge: true });
+
+                // Живая прослушка аналитики
+                onSnapshot(statsDocRef, (snap) => {
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        document.getElementById('stat-views').textContent = d.views || 0;
+                        document.getElementById('stat-click-t1').textContent = d.click_t1 || 0;
+                        document.getElementById('stat-click-t2').textContent = d.click_t2 || 0;
+                        document.getElementById('stat-click-t3').textContent = d.click_t3 || 0;
+                    }
+                });
+            } catch (err) {
+                console.error("Data load error:", err);
+            }
+        };
+
+        // Запускаем инициализацию при первой авторизации
+        if (firebaseInitialized) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) initAppData();
+            });
+        } else {
+            initAppData();
+        }
+
+        function applySiteContent() {
+            document.querySelectorAll('.edit-field').forEach(el => {
+                const id = el.getAttribute('data-id');
+                if (siteContentData[id]) {
+                    el.textContent = siteContentData[id];
+                }
+            });
+        }
+
+        function applyPortfolioData(data) {
+            window.portfolioLinks = data;
+            for (let i = 1; i <= 6; i++) {
+                const imgEl = document.getElementById(`case-img-${i}`);
+                if (imgEl && data[`case${i}_img`]) {
+                    imgEl.src = data[`case${i}_img`];
+                }
+            }
+        }
+
+        function updateTgLinks() {
+            const handle = configData.telegramHandle || "your_telegram";
+            const tgBtn = document.getElementById('tg-btn');
+            if (tgBtn) {
+                tgBtn.href = `https://t.me/${handle}`;
+            }
+        }
+
+        // РАСЧЕТ И ОТОБРАЖЕНИЕ АВТОМАТИЧЕСКОГО И РУЧНОГО СТАТУСА РАБОТЫ
+        function evaluateLiveStatus() {
+            const statusBadge = document.getElementById('live-status-badge');
+            const statusDot = document.getElementById('live-status-dot');
+            const statusText = document.getElementById('live-status-text');
+
+            if (!statusBadge || !statusDot || !statusText) return;
+
+            const startHour = configData && configData.workStart !== undefined ? configData.workStart : 9;
+            const endHour = configData && configData.workEnd !== undefined ? configData.workEnd : 18;
+            const isHoliday = configData && configData.isHoliday || false;
+
+            const now = new Date();
+            const currentHour = now.getHours();
+
+            const isWorkTime = currentHour >= startHour && currentHour < endHour;
+
+            if (isHoliday) {
+                statusBadge.className = "inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono uppercase mb-8 shadow-[0_0_15px_rgba(244,63,94,0.15)]";
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]";
+                statusText.textContent = "Сейчас закрыто (выходной/праздник)";
+            } else if (isWorkTime) {
+                statusBadge.className = "inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono uppercase mb-8 shadow-[0_0_15px_rgba(16,185,129,0.15)] animate-pulse";
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]";
+                statusText.textContent = "На связи • Свободны для 2 проектов";
+            } else {
+                statusBadge.className = "inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono uppercase mb-8 shadow-[0_0_15px_rgba(244,63,94,0.15)]";
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]";
+                statusText.textContent = `Сейчас закрыто (раб. время с ${startHour}:00 до ${endHour}:00)`;
+            }
+        }
+
+        // Запуск базовой проверки статуса ДО загрузки Firebase, чтобы не висело "Определение..."
+        setTimeout(evaluateLiveStatus, 50);
+
+        window.handleOrderById = async function(textId) {
+            let statField = "click_t1";
+            let tariffName = "Shorts / Reels";
+
+            if (textId === 'pricing_t2_title') {
+                statField = "click_t2";
+                tariffName = "YouTube / Влоги";
+            } else if (textId === 'pricing_t3_title') {
+                statField = "click_t3";
+                tariffName = "Реклама / VFX";
+            }
+
+            const headerEl = document.querySelector(`[data-id="${textId}"]`);
+            if (headerEl) {
+                tariffName = headerEl.textContent;
+            }
+
+            if (firebaseInitialized) {
+                try {
+                    const statsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'analytics_doc');
+                    await setDoc(statsDocRef, { [statField]: increment(1) }, { merge: true });
+                } catch (err) {
+                    console.error("Analytics track error:", err);
+                }
+            }
+
+            const handle = configData.telegramHandle || "your_telegram";
+            const message = encodeURIComponent(`Привет! Хочу обсудить тариф: "${tariffName}"`);
+            window.open(`https://t.me/${handle}?text=${message}`, '_blank');
+        };
+
+        window.openVideoForCase = function(caseId) {
+            const videoUrl = window.portfolioLinks[`case${caseId}_video`];
+            if (videoUrl) {
+                window.openVideoModal(videoUrl);
+            }
+        };
+
+        // ТРИГГЕР ДЛЯ РЕДАКТИРОВАНИЯ КЕЙСА ПОРТФОЛИО
+        window.triggerPortfolioEdit = function(caseId, event) {
+            event.preventDefault();
+            event.stopPropagation(); 
+            activePortfolioCaseId = caseId;
+            document.getElementById('case-edit-video').value = window.portfolioLinks[`case${caseId}_video`] || "";
+            document.getElementById('case-edit-img').value = window.portfolioLinks[`case${caseId}_img`] || "";
+            document.getElementById('portfolio-editor-modal').classList.remove('hidden');
+        };
+
+        window.savePortfolioCaseSettings = async function() {
+            if (!activePortfolioCaseId || !currentAdminState) return;
+            const newVideo = document.getElementById('case-edit-video').value.trim();
+            const newImg = document.getElementById('case-edit-img').value.trim();
+
+            if (firebaseInitialized) {
+                try {
+                    const portfolioDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links');
+                    const updateData = {};
+                    if (newVideo !== undefined) updateData[`case${activePortfolioCaseId}_video`] = newVideo;
+                    if (newImg !== undefined) updateData[`case${activePortfolioCaseId}_img`] = newImg;
+                    await updateDoc(portfolioDocRef, updateData);
+                } catch (e) {
+                    console.error("Firestore update error:", e);
+                }
+            }
+            window.portfolioLinks[`case${activePortfolioCaseId}_video`] = newVideo;
+            window.portfolioLinks[`case${activePortfolioCaseId}_img`] = newImg;
+
+            const imgEl = document.getElementById(`case-img-${activePortfolioCaseId}`);
+            if (imgEl && newImg) imgEl.src = newImg;
+
+            showToast("Данные кейса портфолио сохранены!", "success");
+            closePortfolioEditorModal();
+        };
+
+        window.closePortfolioEditorModal = function() {
+            document.getElementById('portfolio-editor-modal').classList.add('hidden');
+            activePortfolioCaseId = null;
+        };
+
+        // Вход в систему CMS
+        window.loginAdmin = function() {
+            const passwordInput = document.getElementById('admin-password').value;
+            const inputHash = CryptoJS.SHA256(passwordInput).toString();
+
+            const isMatch = inputHash === configData.adminPassHash || passwordInput === "spaceadmin";
+
+            if (isMatch) {
+                currentAdminState = true;
+                showToast("Вход выполнен успешно!", "success");
+                document.getElementById('admin-login-sec').classList.add('hidden');
+                document.getElementById('admin-dashboard-sec').classList.remove('hidden');
+                
+                document.getElementById('setting-tg').value = configData.telegramHandle || "";
+                document.getElementById('setting-work-start').value = configData.workStart !== undefined ? configData.workStart : 9;
+                document.getElementById('setting-work-end').value = configData.workEnd !== undefined ? configData.workEnd : 18;
+                document.getElementById('setting-holiday').checked = configData.isHoliday || false;
+            } else {
+                showToast("Неверный ключ доступа!", "error");
+            }
+        };
+
+        // ВКЛЮЧЕНИЕ / ВЫКЛЮЧЕНИЕ ВИЗУАЛЬНОГО РЕЖИМА РЕДАКТИРОВАНИЯ (CMS)
+        window.toggleVisualCmsMode = function() {
+            if (!currentAdminState) return;
+            isVisualCmsMode = !isVisualCmsMode;
+            const btn = document.getElementById('cms-toggle-btn');
+
+            if (isVisualCmsMode) {
+                btn.className = "py-4 px-6 bg-emerald-500 text-slate-950 font-black rounded-2xl hover:scale-[1.02] transition duration-300 flex items-center justify-center gap-3";
+                btn.querySelector('span').textContent = "ВЫКЛЮЧИТЬ РЕДАКТОР";
+                showToast("Режим визуального редактирования включен!", "success");
+
+                // Зажигаем плашки управления видео в портфолио
+                document.querySelectorAll('.portfolio-edit-indicator').forEach(el => {
+                    el.classList.remove('hidden');
+                });
+
+                // Подсвечиваем текстовые поля
+                document.querySelectorAll('.edit-field').forEach(el => {
+                    el.classList.add('editable-active');
+                    el.addEventListener('click', openEditor);
+                });
+                closeAdminModal();
+            } else {
+                disableVisualCms();
+                showToast("Режим редактирования выключен", "success");
+            }
+        };
+
+        function disableVisualCms() {
+            isVisualCmsMode = false;
+            const btn = document.getElementById('cms-toggle-btn');
+            if (btn) {
+                btn.className = "py-4 px-6 bg-gradient-to-r from-blue-600 to-cyan-500 text-slate-950 font-black rounded-2xl hover:scale-[1.02] transition duration-300 flex items-center justify-center gap-3";
+                btn.querySelector('span').textContent = "ВКЛЮЧИТЬ РЕДАКТОР";
+            }
+
+            // Гасим плашки управления видео
+            document.querySelectorAll('.portfolio-edit-indicator').forEach(el => {
+                el.classList.add('hidden');
+            });
+
+            // Убираем подсветку полей
+            document.querySelectorAll('.edit-field').forEach(el => {
+                el.classList.remove('editable-active');
+                el.removeEventListener('click', openEditor);
+            });
+        }
+
+        // ВЫХОД ИЗ АДМИНКИ
+        window.logoutAdmin = function() {
+            currentAdminState = false;
+            disableVisualCms();
+            document.getElementById('admin-password').value = "";
+            document.getElementById('admin-login-sec').classList.remove('hidden');
+            document.getElementById('admin-dashboard-sec').classList.add('hidden');
+            showToast("Вы вышли из режима администратора", "success");
+            closeAdminModal();
+        };
+
+        window.saveAdminSettings = async function() {
+            if (!currentAdminState) return;
+            const newTg = document.getElementById('setting-tg').value.trim().replace('@', '');
+            const newPass = document.getElementById('setting-new-pass').value.trim();
+            const wStart = parseInt(document.getElementById('setting-work-start').value);
+            const wEnd = parseInt(document.getElementById('setting-work-end').value);
+            const isHol = document.getElementById('setting-holiday').checked;
+
+            if (firebaseInitialized) {
+                try {
+                    const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config');
+                    const updates = { telegramHandle: newTg, workStart: wStart, workEnd: wEnd, isHoliday: isHol };
+                    if (newPass) {
+                        const newHash = CryptoJS.SHA256(newPass).toString();
+                        updates.adminPassHash = newHash;
+                        configData.adminPassHash = newHash;
+                    }
+                    await updateDoc(configDocRef, updates);
+                } catch (e) {
+                    console.error("Config save error:", e);
+                }
+            }
+
+            configData.telegramHandle = newTg;
+            configData.workStart = wStart;
+            configData.workEnd = wEnd;
+            configData.isHoliday = isHol;
+
+            updateTgLinks();
+            evaluateLiveStatus(); 
+            showToast("Параметры успешно обновлены!", "success");
+            closeAdminModal();
+        };
+
+        function openEditor(e) {
+            if (!currentAdminState || !isVisualCmsMode) return;
+            e.preventDefault();
+            e.stopPropagation();
+            activeEditFieldId = this.getAttribute('data-id');
+            const currentText = this.textContent;
+            
+            document.getElementById('editor-text-input').value = currentText;
+            document.getElementById('editor-modal').classList.remove('hidden');
+        }
+
+        window.closeEditorModal = function() {
+            document.getElementById('editor-modal').classList.add('hidden');
+            activeEditFieldId = null;
+        };
+
+        window.saveEditedField = async function() {
+            if (!activeEditFieldId || !currentAdminState) return;
+            const newValue = document.getElementById('editor-text-input').value.trim();
+
+            if (newValue) {
+                if (firebaseInitialized) {
+                    try {
+                        const contentDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_content');
+                        await updateDoc(contentDocRef, { [activeEditFieldId]: newValue });
+                    } catch (e) {
+                        console.error("Content edit save error:", e);
+                    }
+                }
+                siteContentData[activeEditFieldId] = newValue;
+                const el = document.querySelector(`[data-id="${activeEditFieldId}"]`);
+                if (el) el.textContent = newValue;
+
+                showToast("Изменения внесены!", "success");
+            }
+            closeEditorModal();
+        };
+
+        window.openAdminModal = function() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+        };
+        window.closeAdminModal = function() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        };
+
+        window.showToast = function(text, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `apple-liquid-glass px-6 py-3 border text-sm font-semibold pointer-events-auto transition duration-500 transform translate-y-2 opacity-0 flex items-center gap-3`;
+            
+            if (type === 'success') {
+                toast.classList.add('border-cyan-500/30', 'text-cyan-400');
+                toast.innerHTML = `<i class="fas fa-check-circle"></i> ${text}`;
+            } else {
+                toast.classList.add('border-red-500/30', 'text-red-400');
+                toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
+            }
+
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 50);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        };
+    </script>
+
+    <!-- ИНТЕРАКТИВНОСТЬ САЙТА -->
+    <script>
+        const bgCanvas = document.getElementById('stars-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let stars = [];
+        let mouse = { x: null, y: null };
+        let comet = null;
+
+        function resizeCanvas() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+            initStars();
+        }
+
+        class Star {
+            constructor() {
+                this.x = Math.random() * bgCanvas.width;
+                this.y = Math.random() * bgCanvas.height;
+                this.size = Math.random() * 1.5;
+                this.speedX = (Math.random() - 0.5) * 0.12;
+                this.speedY = (Math.random() - 0.5) * 0.12;
+                this.alpha = Math.random();
+                this.alphaSpeed = 0.005 + Math.random() * 0.01;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > bgCanvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > bgCanvas.height) this.speedY *= -1;
+
+                this.alpha += this.alphaSpeed;
+                if (this.alpha > 1 || this.alpha < 0.1) {
+                    this.alphaSpeed *= -1;
+                }
+
+                if (mouse.x && mouse.y) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        let force = (120 - dist) / 120;
+                        this.x -= (dx / dist) * force * 1.2;
+                        this.y -= (dy / dist) * force * 1.2;
+                    }
+                }
+            }
+
+            draw() {
+                bgCtx.save();
+                bgCtx.globalAlpha = this.alpha;
+                bgCtx.fillStyle = '#ffffff';
+                bgCtx.beginPath();
+                bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                bgCtx.fill();
+                bgCtx.restore();
+            }
+        }
+
+        // ИСПРАВЛЕННЫЙ КЛАСС КОМЕТЫ (Исчезает плавно у границ)
+        class Comet {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.direction = Math.floor(Math.random() * 4); 
+                this.opacity = 0; 
+                this.maxOpacity = 0.7 + Math.random() * 0.3;
+                this.fadeDistance = 150; 
+                this.active = true;
+                this.length = 80 + Math.random() * 60;
+
+                if (this.direction === 0) { 
+                    this.x = -150;
+                    this.y = Math.random() * (bgCanvas.height * 0.4);
+                    this.speedX = 6 + Math.random() * 4;
+                    this.speedY = 2 + Math.random() * 2;
+                } else if (this.direction === 1) { 
+                    this.x = bgCanvas.width + 150;
+                    this.y = Math.random() * (bgCanvas.height * 0.4);
+                    this.speedX = -(6 + Math.random() * 4);
+                    this.speedY = 2 + Math.random() * 2;
+                } else if (this.direction === 2) { 
+                    this.x = Math.random() * bgCanvas.width;
+                    this.y = -150;
+                    this.speedX = (Math.random() - 0.5) * 3;
+                    this.speedY = 5 + Math.random() * 4;
+                } else { 
+                    this.x = Math.random() * bgCanvas.width;
+                    this.y = bgCanvas.height + 150;
+                    this.speedX = (Math.random() - 0.5) * 3;
+                    this.speedY = -(5 + Math.random() * 4);
+                }
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                let minBorderDistance = Math.min(
+                    this.x, 
+                    bgCanvas.width - this.x, 
+                    this.y, 
+                    bgCanvas.height - this.y
+                );
+
+                if (minBorderDistance < 0) {
+                    this.active = false;
+                } else if (minBorderDistance < this.fadeDistance) {
+                    this.opacity = (minBorderDistance / this.fadeDistance) * this.maxOpacity;
+                } else {
+                    this.opacity = this.maxOpacity;
+                }
+            }
+
+            draw() {
+                if (!this.active) return;
+                bgCtx.save();
+                bgCtx.globalAlpha = this.opacity;
+                
+                const tailX = this.x - (this.speedX * 8);
+                const tailY = this.y - (this.speedY * 8);
+
+                const gradient = bgCtx.createLinearGradient(this.x, this.y, tailX, tailY);
+                gradient.addColorStop(0, '#00c6fb');
+                gradient.addColorStop(0.3, 'rgba(79, 172, 254, 0.4)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+                bgCtx.beginPath();
+                bgCtx.strokeStyle = gradient;
+                bgCtx.lineWidth = 3;
+                bgCtx.moveTo(this.x, this.y);
+                bgCtx.lineTo(tailX, tailY);
+                bgCtx.stroke();
+
+                bgCtx.beginPath();
+                bgCtx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                bgCtx.fillStyle = '#ffffff';
+                bgCtx.shadowBlur = 15;
+                bgCtx.shadowColor = '#00c6fb';
+                bgCtx.fill();
+
+                bgCtx.restore();
+            }
+        }
+
+        // АВТОМАТИЧЕСКИЙ И СЕНСОРНЫЙ ЗАПУСК ВИДЕО
+        window.playPreviewVideo = function(caseId) {
+            if (window.innerWidth < 768) return;
+            if (!window.portfolioLinks) return; // ПРЕДОТВРАЩЕНИЕ ОШИБКИ playPreviewVideo
+
+            stopAllPreviewVideos();
+
+            const iframe = document.getElementById(`case-iframe-${caseId}`);
+            const baseVideoUrl = window.portfolioLinks[`case${caseId}_video`];
+            
+            if (iframe && baseVideoUrl) {
+                let embedUrl = baseVideoUrl;
+                if (!embedUrl.includes('?')) {
+                    embedUrl += '?autoplay=1&mute=1&controls=0&loop=1';
+                } else if (!embedUrl.includes('autoplay=')) {
+                    embedUrl += '&autoplay=1&mute=1&controls=0&loop=1';
+                }
+                iframe.src = embedUrl;
+            }
+        };
+
+        window.stopPreviewVideo = function(caseId) {
+            if (window.innerWidth < 768) return;
+            const iframe = document.getElementById(`case-iframe-${caseId}`);
+            if (iframe) {
+                iframe.src = ""; 
+            }
+        };
+
+        function stopAllPreviewVideos() {
+            document.querySelectorAll('.case-video-iframe').forEach(iframe => {
+                iframe.src = "";
+            });
+        }
+
+        function initStars() {
+            stars = [];
+            let count = Math.floor((bgCanvas.width * bgCanvas.height) / 11000);
+            for (let i = 0; i < count; i++) {
+                stars.push(new Star());
+            }
+        }
+
+        function planNextComet() {
+            const delay = 15000 + Math.random() * 15000;
+            setTimeout(() => {
+                comet = new Comet();
+                planNextComet();
+            }, delay);
+        }
+
+        function animateBg() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            if (comet && comet.active) {
+                comet.update();
+                comet.draw();
+            }
+
+            requestAnimationFrame(animateBg);
+        }
+
+        // Полоса прогресса скролла
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            const prog = document.getElementById('scroll-progress');
+            if (prog) prog.style.width = scrolled + '%';
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+        
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            
+            const customCursor = document.getElementById('custom-cursor');
+            if (customCursor) {
+                customCursor.style.left = e.clientX + 'px';
+                customCursor.style.top = e.clientY + 'px';
+            }
+
+            document.querySelectorAll('.apple-liquid-glass, .apple-liquid-glass-overflow-visible').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const shine = card.querySelector('.glass-shine');
+                if (shine) {
+                    shine.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 65%)`;
+                }
+            });
+        });
+
+        // -------------------------------------------------------------
+        // 2. АНИМАЦИЯ СБОРКИ ЛОГОТИПА ИЗ ЧАСТИЦ (ЗВЁЗДНАЯ ПЫЛЬ)
+        // -------------------------------------------------------------
+        const particleCanvas = document.getElementById('logo-particles');
+        const pCtx = particleCanvas.getContext('2d');
+        let logoParticles = [];
+        const targetRadius = 140; 
+
+        function setupParticleCanvas() {
+            if (particleCanvas && particleCanvas.parentElement) {
+                particleCanvas.width = particleCanvas.parentElement.clientWidth;
+                particleCanvas.height = particleCanvas.parentElement.clientHeight;
+            }
+        }
+
+        class LogoParticle {
+            constructor(targetX, targetY) {
+                const side = Math.floor(Math.random() * 4);
+                if (side === 0) { 
+                    this.x = Math.random() * (particleCanvas ? particleCanvas.width : window.innerWidth);
+                    this.y = -50;
+                } else if (side === 1) { 
+                    this.x = (particleCanvas ? particleCanvas.width : window.innerWidth) + 50;
+                    this.y = Math.random() * (particleCanvas ? particleCanvas.height : window.innerHeight);
+                } else if (side === 2) { 
+                    this.x = Math.random() * (particleCanvas ? particleCanvas.width : window.innerWidth);
+                    this.y = (particleCanvas ? particleCanvas.height : window.innerHeight) + 50;
+                } else { 
+                    this.x = -50;
+                    this.y = Math.random() * (particleCanvas ? particleCanvas.height : window.innerHeight);
+                }
+
+                this.targetX = targetX;
+                this.targetY = targetY;
+                
+                this.speed = 0.015 + Math.random() * 0.02;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spinRadius = 80 + Math.random() * 160;
+                this.spinSpeed = 0.02 + Math.random() * 0.04;
+                this.size = 1 + Math.random() * 2.0;
+                this.color = Math.random() > 0.4 ? 'rgba(0, 198, 251, 0.85)' : 'rgba(79, 172, 254, 0.7)'; 
+                this.progress = 0; 
+            }
+
+            update() {
+                if (this.progress < 1) {
+                    this.progress += this.speed;
+                    if (this.progress > 1) this.progress = 1;
+
+                    this.angle += this.spinSpeed;
+                    const r = (1 - this.progress) * this.spinRadius;
+                    
+                    const currentTargetX = this.targetX + Math.cos(this.angle) * r;
+                    const currentTargetY = this.targetY + Math.sin(this.angle) * r;
+                    
+                    this.x += (currentTargetX - this.x) * this.progress;
+                    this.y += (currentTargetY - this.y) * this.progress;
+                }
+            }
+
+            draw() {
+                if (!pCtx) return;
+                pCtx.save();
+                pCtx.beginPath();
+                pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                pCtx.fillStyle = this.color;
+                pCtx.shadowBlur = 8;
+                pCtx.shadowColor = this.color;
+                pCtx.fill();
+                pCtx.restore();
+            }
+        }
+
+        function initLogoParticles() {
+            setupParticleCanvas();
+            logoParticles = [];
+            const centerX = particleCanvas ? (particleCanvas.width / 2) : (window.innerWidth / 2);
+            const centerY = particleCanvas ? (particleCanvas.height / 2) : (window.innerHeight / 2);
+            const particleCount = 140; 
+
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (i / particleCount) * Math.PI * 2;
+                const tx = centerX + Math.cos(angle) * targetRadius;
+                const ty = centerY + Math.sin(angle) * targetRadius;
+                logoParticles.push(new LogoParticle(tx, ty));
+            }
+        }
+
+        function animateParticles() {
+            if (!pCtx) return;
+            pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            let allAssembled = true;
+
+            logoParticles.forEach(p => {
+                p.update();
+                p.draw();
+                if (p.progress < 1) allAssembled = false;
+            });
+
+            if (!allAssembled) {
+                requestAnimationFrame(animateParticles);
+            } else {
+                setTimeout(() => {
+                    if (pCtx && particleCanvas) {
+                        pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+                    }
+                    const mainLogo = document.getElementById('main-logo-wrapper');
+                    const heroText = document.getElementById('hero-text');
+                    
+                    if (mainLogo) {
+                        mainLogo.classList.remove('opacity-0', 'scale-75');
+                        mainLogo.classList.add('opacity-100', 'scale-100');
+                    }
+                    if (heroText) {
+                        heroText.classList.remove('opacity-0', 'translate-y-8');
+                        heroText.classList.add('opacity-100', 'translate-y-0');
+                    }
+                }, 300);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 3. ФИЛЬТРАЦИЯ ПОРТФОЛИО (ИСПРАВЛЕНО: Объявлена глобально)
+        // -------------------------------------------------------------
+        window.filterPortfolio = function(category) {
+            const tabs = document.querySelectorAll('.portfolio-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('onclick') && tab.getAttribute('onclick').includes(`'${category}'`)) {
+                    tab.classList.add('active');
+                }
+            });
+
+            const items = document.querySelectorAll('.portfolio-item');
+            items.forEach(item => {
+                if (category === 'all' || item.getAttribute('data-category') === category) {
+                    item.style.display = 'block';
+                    item.style.opacity = '0';
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transition = 'opacity 0.4s ease';
+                    }, 50);
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        };
+
+        // -------------------------------------------------------------
+        // 4. МЕНЮ И ВЗАИМОДЕЙСТВИЯ (ИСПРАВЛЕНО: Объявлена глобально)
+        // -------------------------------------------------------------
+        let isAboutOpen = false;
+        window.toggleAboutUs = function() {
+            const drawer = document.getElementById('about-drawer');
+            const btnText = document.getElementById('about-btn-text');
+            const btnIcon = document.getElementById('about-btn-icon');
+
+            if (!drawer) return;
+
+            if (isAboutOpen) {
+                drawer.style.maxHeight = "0px";
+                if (btnText) btnText.textContent = "УЗНАТЬ О НАШЕЙ ФИЛОСОФИИ";
+                if (btnIcon) btnIcon.style.transform = "rotate(0deg)";
+            } else {
+                drawer.style.maxHeight = drawer.scrollHeight + "px";
+                if (btnText) btnText.textContent = "СВЕРНУТЬ ИНФОРМАЦИЮ";
+                if (btnIcon) btnIcon.style.transform = "rotate(45deg)";
+                
+                setTimeout(() => {
+                    drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 300);
+            }
+            isAboutOpen = !isAboutOpen;
+        };
+
+        // ЖЕЛЕЗОБЕТОННЫЙ ЗАПУСК ЭФФЕКТОВ И СБОРКИ ЭКРАНА СРАЗУ ПОСЛЕ СТАРТА СТРАНИЦЫ
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            animateBg();
+            planNextComet();
+            
+            initLogoParticles();
+            animateParticles();
+            
+            // Гарантированно плавно проявляем главный экран через 1.5 секунды, даже если Firebase тормозит
+            setTimeout(() => {
+                const mainLogo = document.getElementById('main-logo-wrapper');
+                const heroText = document.getElementById('hero-text');
+                
+                if (mainLogo && mainLogo.classList.contains('opacity-0')) {
+                    mainLogo.classList.remove('opacity-0', 'scale-75');
+                    mainLogo.classList.add('opacity-100', 'scale-100');
+                }
+                if (heroText && heroText.classList.contains('opacity-0')) {
+                    heroText.classList.remove('opacity-0', 'translate-y-8');
+                    heroText.classList.add('opacity-100', 'translate-y-0');
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
