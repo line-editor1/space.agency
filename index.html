@@ -86,9 +86,7 @@
             color: #4facfe; text-shadow: 0 0 12px rgba(0, 198, 251, 0.75), 0 0 24px rgba(0, 198, 251, 0.35);
         }
 
-        /* -------------------------------------------------------------
-           ПРЕМИАЛЬНЫЙ СТЕКЛЯННЫЙ ЛОГОТИП С МЯГКИМ РЕДКИМ БЛИКОМ
-           ------------------------------------------------------------- */
+        /* ПРЕМИАЛЬНЫЙ СТЕКЛЯННЫЙ ЛОГОТИП С МЯГКИМ РЕДКИМ БЛИКОМ */
         .logo-container-hero {
             position: relative;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -112,7 +110,6 @@
             text-transform: uppercase;
             line-height: 1;
 
-            /* Эффект преломляющего свет стекла (чистое кристаллическое сияние) */
             background: linear-gradient(
                 110deg,
                 rgba(255, 255, 255, 0.95) 30%,
@@ -126,10 +123,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             
-            /* Элегантное размытие под стекло */
             filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
-            
-            /* Редкий, плавный блик раз в 8 секунд */
             animation: sweepShine 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
 
@@ -202,8 +196,8 @@
             position: fixed;
             top: 25%;
             right: 12%;
-            font-size: 1.15rem; /* Идеальный размер как на кнопке ЛК или чуть меньше */
-            color: rgba(0, 198, 251, 0.15); /* Деликатное неоновое свечение */
+            font-size: 1.15rem;
+            color: rgba(0, 198, 251, 0.15);
             filter: drop-shadow(0 0 8px rgba(0, 198, 251, 0.4));
             z-index: -5;
             pointer-events: none;
@@ -215,23 +209,91 @@
             66% { transform: translate(-20px, 50px) rotate(-15deg); }
             100% { transform: translate(0, 0) rotate(0deg); }
         }
+
+        /* СТИЛЬНЫЙ АДАПТИВНЫЙ ТУМБЛЕР БЕЗ ВЫХОДА ЗА РАМКИ */
+        .toggle-switch-input { display: none; }
+        .toggle-switch-label {
+            position: relative; display: block; width: 44px; height: 24px;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 9999px; cursor: pointer; transition: all 0.3s ease;
+        }
+        .toggle-switch-label::after {
+            content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+            background: #f8fafc; border-radius: 50%; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        }
+        .toggle-switch-input:checked + .toggle-switch-label {
+            background: rgba(0, 198, 251, 0.2); border-color: rgba(0, 198, 251, 0.4);
+        }
+        .toggle-switch-input:checked + .toggle-switch-label::after {
+            left: 23px; background: #00c6fb; box-shadow: 0 0 10px #00c6fb;
+        }
     </style>
 </head>
 <body class="relative">
 
-    <!-- Экран технического обслуживания -->
+    <!-- Экран технического обслуживания (Оригинальный чистый стиль) -->
     <div id="maintenance-overlay" class="fixed inset-0 z-[999999] bg-[#010008] hidden flex-col items-center justify-center text-center px-4 backdrop-blur-xl">
         <i class="fas fa-user-astronaut text-7xl text-cyan-400 mb-8 animate-bounce filter drop-shadow-[0_0_20px_rgba(0,198,251,0.5)]"></i>
-        <h1 class="text-4xl md:text-5xl font-space font-bold text-white mb-4 tracking-widest">ОБНОВЛЕНИЕ СИСТЕМ</h1>
-        <p class="text-slate-400 max-w-lg mb-12">Мы проводим плановое техническое обслуживание корабля. Скоро сайт вернется на орбиту, а пока вы можете написать нам напрямую.</p>
-        <div class="flex gap-4">
-            <!-- ХИРУРГИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлен target="_blank" для корректного открытия Telegram внешней ссылкой -->
+        <h1 class="text-4xl md:text-5xl font-space font-bold text-white mb-4 tracking-widest font-space">ОБНОВЛЕНИЕ СИСТЕМ</h1>
+        <p class="text-slate-400 max-w-lg mb-8">Мы проводим плановое техническое обслуживание корабля. Скоро сайт вернется на орбиту, а пока вы можете написать нам напрямую.</p>
+        
+        <!-- Таймер обратного отсчета техработ -->
+        <div id="maintenance-timer-container" class="hidden w-full max-w-md p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md mb-8 shadow-[0_0_30px_rgba(0,198,251,0.1)] animate-fade-in">
+            <p class="text-[10px] text-cyan-400 uppercase tracking-[0.2em] mb-4 font-space">Калибровка систем завершится через:</p>
+            <div class="grid grid-cols-4 gap-3 text-center">
+                <div class="p-3 bg-black/55 border border-white/5 rounded-2xl">
+                    <span id="timer-days" class="block text-2xl md:text-3xl font-space font-black text-white">00</span>
+                    <span class="text-[9px] text-slate-500 uppercase tracking-widest block mt-1">дней</span>
+                </div>
+                <div class="p-3 bg-black/55 border border-white/5 rounded-2xl">
+                    <span id="timer-hours" class="block text-2xl md:text-3xl font-space font-black text-white">00</span>
+                    <span class="text-[9px] text-slate-500 uppercase tracking-widest block mt-1">часов</span>
+                </div>
+                <div class="p-3 bg-black/55 border border-white/5 rounded-2xl">
+                    <span id="timer-minutes" class="block text-2xl md:text-3xl font-space font-black text-white">00</span>
+                    <span class="text-[9px] text-slate-500 uppercase tracking-widest block mt-1">минут</span>
+                </div>
+                <div class="p-3 bg-black/55 border border-white/5 rounded-2xl">
+                    <span id="timer-seconds" class="block text-2xl md:text-3xl font-space font-black text-cyan-400">00</span>
+                    <span class="text-[9px] text-slate-500 uppercase tracking-widest block mt-1">секунд</span>
+                </div>
+            </div>
+            <p class="text-slate-500 text-[10px] mt-4 tracking-wider">Ориентировочное время стыковки: <span id="maintenance-end-date-display" class="text-slate-300 font-semibold">--.--.---- --:--</span></p>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-4">
             <a href="https://t.me/your_telegram" id="maintenance-tg" target="_blank" class="px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300">
                 <i class="fab fa-telegram text-xl mr-2"></i> Написать в Telegram
             </a>
-            <button onclick="openAdminModal()" class="px-4 py-4 bg-white/5 border border-white/10 text-slate-500 rounded-full hover:text-cyan-400 transition" title="Вход для персонала">
+            
+            <button onclick="openPortalModal()" class="px-8 py-4 bg-[#00c6fb]/10 hover:bg-[#00c6fb]/20 border border-[#00c6fb]/30 text-cyan-400 rounded-full font-bold transition duration-300">
+                <i class="fas fa-user-astronaut mr-2"></i> Личный кабинет
+            </button>
+
+            <button onclick="openAdminModalWith2FA()" class="px-4 py-4 bg-white/5 border border-white/10 text-slate-500 rounded-full hover:text-cyan-400 transition" title="Вход для персонала">
                 <i class="fas fa-lock"></i>
             </button>
+        </div>
+    </div>
+
+    <!-- Модалка двухфакторной проверки для входа с экрана техработ -->
+    <div id="admin-2fa-modal" class="fixed inset-0 z-[1000030] hidden flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+        <div class="w-full max-w-md apple-liquid-glass p-8 border border-cyan-500/20 text-center">
+            <i class="fas fa-key text-cyan-400 text-4xl mb-4"></i>
+            <h3 class="text-xl font-bold font-space text-white mb-2">Двухфакторная калибровка</h3>
+            <p class="text-xs text-slate-400 mb-6">Введите одноразовый бортовой шифр, отображаемый ниже, для подтверждения авторизации.</p>
+            
+            <div class="bg-black/50 border border-white/10 rounded-2xl p-4 mb-6 font-mono text-cyan-400 tracking-[0.3em] text-xl font-bold" id="admin-2fa-code-display">
+                000000
+            </div>
+            
+            <input type="text" id="admin-2fa-input" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white text-center font-mono focus:outline-none focus:border-cyan-500 tracking-widest mb-6" placeholder="ВВЕДИТЕ ШИФР">
+            
+            <div class="flex gap-4">
+                <button onclick="closeAdmin2FAModal()" class="flex-1 py-3 bg-white/5 text-slate-300 rounded-xl hover:bg-white/10 transition font-space text-xs">Отмена</button>
+                <button onclick="verifyAdmin2FACode()" class="flex-[2] py-3 bg-cyan-500 text-slate-950 font-black rounded-xl transition hover:bg-cyan-400 font-space text-xs">Подтвердить калибровку</button>
+            </div>
         </div>
     </div>
 
@@ -247,7 +309,6 @@
     <nav class="fixed w-full z-50 bg-[#010008]/50 backdrop-blur-xl border-b border-white/5">
         <div class="max-w-7xl mx-auto px-6 sm:px-8">
             <div class="flex justify-between h-20 items-center">
-                <!-- Оригинальный логотип вырезанный ровным кругом -->
                 <a href="#" class="flex items-center gap-3 group">
                     <div class="relative w-10 h-10 flex items-center justify-center rounded-full bg-blue-950/30 border border-blue-500/20 overflow-hidden shadow-[0_0_10px_rgba(0,198,251,0.2)]">
                         <img src="1000002719.png" class="w-full h-full object-cover" alt="SPACE">
@@ -291,7 +352,6 @@
     <header class="relative min-h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden pt-28">
         <div class="absolute w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none"></div>
         
-        <!-- ВЕЛИЧЕСТВЕННЫЙ СТЕКЛЯННЫЙ ЛОГОТИП С ПАСХАЛКОЙ ПО КЛИКУ -->
         <div class="logo-container-hero z-20 w-full max-w-5xl" onclick="triggerLogoEasterEgg()" title="SPΛCE">
             <h1 class="logo-title-style">
                 SPΛCE
@@ -301,7 +361,6 @@
             </p>
         </div>
 
-        <!-- Контент приветствия под логотипом -->
         <div id="hero-text" class="opacity-0 translate-y-8 transition-all duration-1000 delay-500 max-w-3xl mt-6 px-4 z-30">
             <p class="text-cyan-400 font-space tracking-widest text-xs sm:text-sm uppercase mb-3 edit-field" data-id="hero_subtitle">ПРОФЕССИОНАЛЬНОЕ ВИДЕОПРОИЗВОДСТВО</p>
             <h1 class="font-space text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6">
@@ -347,7 +406,7 @@
         </div>
     </header>
 
-    <!-- 2. ПОРТФОЛИО -->
+    <!-- 2. ПОРТФОЛИО (СТРУКТУРИРОВАННОЕ: 6 ВЕРТИКАЛЬНЫХ И 3 ГОРИЗОНТАЛЬНЫХ) -->
     <section id="portfolio" class="py-32 relative">
         <div class="max-w-7xl mx-auto px-6 sm:px-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
@@ -365,109 +424,156 @@
                 </div>
             </div>
 
+            <!-- Идеально структурированная сетка. Ряд 1 и 2 - только вертикальные. Ряд 3 - только горизонтальные! -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="portfolio-grid">
-                <!-- Карточки Портфолио -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="reels" id="case-card-1" onmouseenter="playPreviewVideo(1)" onmouseleave="stopPreviewVideo(1)" onclick="openVideoForCase(1)">
-                    <button onclick="triggerPortfolioEdit(1, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить видео</button>
-                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
-                        <div class="w-full aspect-video relative">
-                            <img id="case-img-1" src="" alt="Short-form" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                            <iframe id="case-iframe-1" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                        </div>
+                
+                <!-- === РЯД 1: ВЕРТИКАЛЬНЫЕ ВИДЕО (ПЕРВЫЕ КЕЙСЫ) === -->
+                <!-- Кейс 1: Вертикальный Reels (База / Reels) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="reels" id="case-card-1" onmouseenter="playPreviewVideo(1)" onmouseleave="stopPreviewVideo(1)" onclick="openVideoForCase(1)">
+                    <button onclick="triggerPortfolioEdit(1, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
+                        <img id="case-img-1" src="" alt="Reels 1" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                        <iframe id="case-iframe-1" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
-                    <div class="mt-4 p-4 flex justify-between items-start">
+                    <div class="mt-3 p-4 flex justify-between items-start">
                         <div class="flex-1 mr-2">
-                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t1">Разговорный Reels</h3>
-                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d1">Субтитры, динамика, SFX</p>
+                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t1">Разговорный Reels</h3>
+                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d1">Субтитры, динамика, SFX</p>
                         </div>
-                        <span class="px-2.5 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels">REELS</span>
+                        <span class="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[9px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels">REELS</span>
                     </div>
                 </div>
 
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="youtube" id="case-card-2" onmouseenter="playPreviewVideo(2)" onmouseleave="stopPreviewVideo(2)" onclick="openVideoForCase(2)">
-                    <button onclick="triggerPortfolioEdit(2, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить видео</button>
-                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
-                        <div class="w-full aspect-video relative">
-                            <img id="case-img-2" src="" alt="YouTube" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                            <iframe id="case-iframe-2" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                        </div>
+                <!-- Кейс 2: Вертикальный YouTube (PRO / Влоги) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="youtube" id="case-card-2" onmouseenter="playPreviewVideo(2)" onmouseleave="stopPreviewVideo(2)" onclick="openVideoForCase(2)">
+                    <button onclick="triggerPortfolioEdit(2, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
+                        <img id="case-img-2" src="" alt="YouTube 1" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                        <iframe id="case-iframe-2" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
-                    <div class="mt-4 p-4 flex justify-between items-start">
+                    <div class="mt-3 p-4 flex justify-between items-start">
                         <div class="flex-1 mr-2">
-                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t2">Выпуск Подкаста</h3>
-                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d2">Мультикамерный монтаж, чистка звука</p>
+                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t2">Тизер Подкаста</h3>
+                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d2">Вертикальный нарез подкаста</p>
                         </div>
-                        <span class="px-2.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube">YOUTUBE</span>
+                        <span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[9px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube">YOUTUBE</span>
                     </div>
                 </div>
 
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="promo" id="case-card-3" onmouseenter="playPreviewVideo(3)" onmouseleave="stopPreviewVideo(3)" onclick="openVideoForCase(3)">
-                    <button onclick="triggerPortfolioEdit(3, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить видео</button>
-                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
-                        <div class="w-full aspect-video relative">
-                            <img id="case-img-3" src="" alt="Promo" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                            <iframe id="case-iframe-3" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                        </div>
+                <!-- Кейс 3: Вертикальный Promo (Exclusive / VFX) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="promo" id="case-card-3" onmouseenter="playPreviewVideo(3)" onmouseleave="stopPreviewVideo(3)" onclick="openVideoForCase(3)">
+                    <button onclick="triggerPortfolioEdit(3, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
+                        <img id="case-img-3" src="" alt="Promo 1" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                        <iframe id="case-iframe-3" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
-                    <div class="mt-4 p-4 flex justify-between items-start">
+                    <div class="mt-3 p-4 flex justify-between items-start">
                         <div class="flex-1 mr-2">
-                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t3">Имиджевый Промо-ролик</h3>
-                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d3">Цветокоррекция, VFX, Cinema Sound</p>
+                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t3">Продуктовое промо</h3>
+                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d3">Эстетичный обзор в 9:16</p>
                         </div>
-                        <span class="px-2.5 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo">PROMO</span>
+                        <span class="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[9px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo">PROMO</span>
                     </div>
                 </div>
 
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="reels" id="case-card-4" onmouseenter="playPreviewVideo(4)" onmouseleave="stopPreviewVideo(4)" onclick="openVideoForCase(4)">
-                    <button onclick="triggerPortfolioEdit(4, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить видео</button>
-                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
-                        <div class="w-full aspect-video relative">
-                            <img id="case-img-4" src="" alt="Reels" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                            <iframe id="case-iframe-4" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                        </div>
+                <!-- === РЯД 2: ВЕРТИКАЛЬНЫЕ ВИДЕО (ВТОРЫЕ КЕЙСЫ) === -->
+                <!-- Кейс 4: Вертикальный Reels 2 -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="reels" id="case-card-4" onmouseenter="playPreviewVideo(4)" onmouseleave="stopPreviewVideo(4)" onclick="openVideoForCase(4)">
+                    <button onclick="triggerPortfolioEdit(4, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
+                        <img id="case-img-4" src="" alt="Reels 2" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                        <iframe id="case-iframe-4" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
-                    <div class="mt-4 p-4 flex justify-between items-start">
+                    <div class="mt-3 p-4 flex justify-between items-start">
                         <div class="flex-1 mr-2">
-                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t4">Динамичный Shorts</h3>
-                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d4">Плотный визуальный ряд, удержание</p>
+                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t4">Динамичный Shorts</h3>
+                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d4">Плотный визуальный ряд, удержание</p>
                         </div>
-                        <span class="px-2.5 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels2">REELS</span>
+                        <span class="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[9px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels_2">REELS</span>
                     </div>
                 </div>
 
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="youtube" id="case-card-5" onmouseenter="playPreviewVideo(5)" onmouseleave="stopPreviewVideo(5)" onclick="openVideoForCase(5)">
-                    <button onclick="triggerPortfolioEdit(5, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить видео</button>
-                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
-                        <div class="w-full aspect-video relative">
-                            <img id="case-img-5" src="" alt="Vlog" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                            <iframe id="case-iframe-5" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                        </div>
+                <!-- Кейс 5: Вертикальный YouTube 2 -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="youtube" id="case-card-5" onmouseenter="playPreviewVideo(5)" onmouseleave="stopPreviewVideo(5)" onclick="openVideoForCase(5)">
+                    <button onclick="triggerPortfolioEdit(5, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
+                        <img id="case-img-5" src="" alt="YouTube 2" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                        <iframe id="case-iframe-5" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
-                    <div class="mt-4 p-4 flex justify-between items-start">
+                    <div class="mt-3 p-4 flex justify-between items-start">
                         <div class="flex-1 mr-2">
-                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t5">Travel Влог</h3>
-                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d5">Плавные переходы, стабилизация</p>
+                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t5">Микро-Влог Shorts</h3>
+                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d5">Обзор путешествия в 9:16</p>
                         </div>
-                        <span class="px-2.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube2">YOUTUBE</span>
+                        <span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[9px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube_2">YOUTUBE</span>
                     </div>
                 </div>
 
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px]" data-category="promo" id="case-card-6" onmouseenter="playPreviewVideo(6)" onmouseleave="stopPreviewVideo(6)" onclick="openVideoForCase(6)">
-                    <button onclick="triggerPortfolioEdit(6, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить видео</button>
-                    <div class="relative overflow-hidden rounded-3xl border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30">
-                        <div class="w-full aspect-video relative">
-                            <img id="case-img-6" src="" alt="CGI" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                            <iframe id="case-iframe-6" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                        </div>
+                <!-- Кейс 6: Вертикальный Promo 2 -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="promo" id="case-card-6" onmouseenter="playPreviewVideo(6)" onmouseleave="stopPreviewVideo(6)" onclick="openVideoForCase(6)">
+                    <button onclick="triggerPortfolioEdit(6, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
+                        <img id="case-img-6" src="" alt="Promo 2" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                        <iframe id="case-iframe-6" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
-                    <div class="mt-4 p-4 flex justify-between items-start">
+                    <div class="mt-3 p-4 flex justify-between items-start">
                         <div class="flex-1 mr-2">
-                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t6">Продуктовая Реклама</h3>
-                            <p class="text-slate-500 text-xs mt-0.5 edit-field" data-id="portfolio_d6">3D визуализация, макросъемка</p>
+                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t6">Рекламное промо</h3>
+                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d6">Коммерческий креатив</p>
                         </div>
-                        <span class="px-2.5 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo2">PROMO</span>
+                        <span class="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[9px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo_2">PROMO</span>
                     </div>
                 </div>
+
+                <!-- === РЯД 3: ГОРИЗОНТАЛЬНЫЕ ВИДЕО (В САМОМ НИЗУ) === -->
+                <!-- Кейс 7: Горизонтальный Reels (Шоурил Вертикалок) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] w-full" data-category="reels" id="case-card-7" onmouseenter="playPreviewVideo(7)" onmouseleave="stopPreviewVideo(7)" onclick="openVideoForCase(7)">
+                    <button onclick="triggerPortfolioEdit(7, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-video">
+                        <img id="case-img-7" src="" alt="Reels Horizontal" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                        <iframe id="case-iframe-7" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="mt-3 p-4 flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t7">Шоурил Вертикалок</h3>
+                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d7">Горизонтальный обзор лучших Reels</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[9px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels_3">REELS</span>
+                    </div>
+                </div>
+
+                <!-- Кейс 8: Горизонтальный YouTube (Выпуск Подкаста Full) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] w-full" data-category="youtube" id="case-card-8" onmouseenter="playPreviewVideo(8)" onmouseleave="stopPreviewVideo(8)" onclick="openVideoForCase(8)">
+                    <button onclick="triggerPortfolioEdit(8, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-video">
+                        <img id="case-img-8" src="" alt="YouTube Horizontal" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                        <iframe id="case-iframe-8" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="mt-3 p-4 flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t8">Выпуск Подкаста</h3>
+                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d8">Мультикамерный монтаж, чистка звука</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[9px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube_3">YOUTUBE</span>
+                    </div>
+                </div>
+
+                <!-- Кейс 9: Горизонтальный Promo (Имиджевый Промо-ролик) -->
+                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] w-full" data-category="promo" id="case-card-9" onmouseenter="playPreviewVideo(9)" onmouseleave="stopPreviewVideo(9)" onclick="openVideoForCase(9)">
+                    <button onclick="triggerPortfolioEdit(9, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-video">
+                        <img id="case-img-9" src="" alt="Promo Horizontal" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                        <iframe id="case-iframe-9" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="mt-3 p-4 flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t9">Имиджевый Промо-ролик</h3>
+                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d9">Цветокоррекция, VFX, Cinema Sound</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[9px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo_3">PROMO</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
@@ -555,7 +661,7 @@
                             <i class="fas fa-video text-cyan-400 text-xl"></i>
                         </div>
                         <h3 class="text-2xl font-bold mb-4 edit-field" data-id="pricing_t2_title">YouTube / Влоги</h3>
-                        <p class="text-slate-400 text-sm mb-6 edit-field" data-id="pricing_t2_desc">Профессиональный многокамерный монтаж, удержание внимания, создание полноценных шоу.</p>
+                        <p class="text-slate-400 text-sm mb-6 edit-field" data-id="pricing_t2_desc">Профессиональный многокамерный монтаж, удержание внимания, creation полноценных шоу.</p>
                         <div class="text-3xl font-space font-extrabold mb-8 text-white edit-field" data-id="pricing_t2_price">от 5 000 ₽</div>
                         <ul class="space-y-4 text-sm text-slate-300 border-t border-white/5 pt-6 mb-8">
                             <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t2_feat1">Работа с мультикамерой</span></li>
@@ -563,7 +669,7 @@
                             <li class="flex items-center gap-3"><i class="fas fa-check text-cyan-400 text-xs"></i> <span class="edit-field" data-id="t2_feat3">Инфографика и 2D элементы</span></li>
                         </ul>
                     </div>
-                    <button id="btn-order-2" onclick="handleOrderById('pricing_t2_title')" class="w-full py-4 btn-liquid-glass text-white rounded-2xl font-bold text-center edit-field" data-id="btn_order_t2">Выбрать тариф</button>
+                    <button id="btn-order-2" onclick="handleOrderById('pricing_t2_title')" class="w-full py-4 btn-liquid-glass text-white rounded-xl font-bold text-center edit-field" data-id="btn_order_t2">Выбрать тариф</button>
                 </div>
 
                 <div class="apple-liquid-glass p-8 flex flex-col justify-between">
@@ -677,94 +783,209 @@
         </div>
     </footer>
 
-    <!-- =================================================================
-         МОДАЛЬНОЕ ОКНО: ГРАФИК РАБОТЫ (Apple Liquid Glass)
-         ================================================================= -->
+    <!-- МОДАЛЬНОЕ ОКНО: ГРАФИК РАБОТЫ (Apple Liquid Glass) -->
     <div id="schedule-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-        <div class="w-full max-w-md apple-liquid-glass p-8 sm:p-10 border border-cyan-500/20 relative">
+        <div class="w-full max-w-md apple-liquid-glass p-8 sm:p-10 border border-cyan-500/20 relative animate-fade-in">
             <button onclick="closeScheduleModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
             <h3 class="text-2xl font-space font-bold text-white mb-2 flex items-center gap-3">
-                <i class="fas fa-clock text-cyan-400"></i> График работы
+                <i class="fas fa-clock text-cyan-400"></i> График работы на неделю
             </h3>
             <p class="text-sm text-slate-400 mb-6">Мы всегда на связи в указанное время по вашему часовому поясу.</p>
-            <div id="schedule-content" class="p-6 rounded-2xl bg-white/5 border border-white/10 text-center">
-                <!-- Контент генерируется через JS -->
+            <div id="schedule-content" class="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-2 font-space">
+                <!-- Контент генерируется динамически через JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО: НАСТРОЙКА РАСПИСАНИЯ ПО ДНЯМ НЕДЕЛИ (Apple Liquid Glass) -->
+    <div id="schedule-edit-modal" class="fixed inset-0 z-[1000010] hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto">
+        <div class="w-full max-w-4xl apple-liquid-glass p-6 sm:p-8 border border-cyan-500/20 relative my-8 max-h-[90vh] overflow-y-auto scroll-smooth">
+            <button onclick="closeScheduleEditModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-white/5 pb-4">
+                <div>
+                    <h3 class="text-2xl font-space font-bold text-white flex items-center gap-3">
+                        <i class="fas fa-calendar-alt text-cyan-400"></i> Настройка недельного графика
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Задайте время активности и выходные для синхронизации на всех устройствах.</p>
+                </div>
+                <button onclick="copyMondayScheduleToWeekdays()" class="px-4 py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl text-xs font-bold transition flex items-center gap-2">
+                    <i class="fas fa-copy"></i> Копировать ПН на будни
+                </button>
+            </div>
+
+            <!-- Адаптивная сетка графика работы, распределенная по рядам -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8" id="schedule-weekly-grid">
+                <!-- Генерируется через JS -->
+            </div>
+            
+            <div class="flex gap-4">
+                <button onclick="closeScheduleEditModal()" class="flex-1 py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition font-space font-bold">Закрыть</button>
+                <button onclick="saveWeeklyScheduleAndClose()" class="flex-[2] py-3.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition shadow-[0_0_15px_rgba(0,198,251,0.3)] font-space">Применить параметры</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО: НАСТРОЙКА И ЗАПУСК ТЕХРАБОТ С ВЫБОРОМ СРОКА (Apple Liquid Glass) -->
+    <div id="maintenance-setup-modal" class="fixed inset-0 z-[1000020] hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="w-full max-w-md apple-liquid-glass p-8 border border-cyan-500/20 relative">
+            <button onclick="closeMaintenanceSetupModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+            <h3 class="text-2xl font-space font-bold text-white mb-3 flex items-center gap-3">
+                <i class="fas fa-tools text-orange-400"></i> Запуск тех. обслуживания
+            </h3>
+            <p class="text-sm text-slate-400 mb-6">Задайте точную дату и время автоматического завершения технических работ для отсчета времени.</p>
+            
+            <div class="space-y-4 mb-8">
+                <div>
+                    <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold tracking-wider font-space">Дата и время стыковки (завершения)</label>
+                    <input type="datetime-local" id="maintenance-end-datetime" class="w-full bg-black/60 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500 font-mono text-center text-sm">
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button onclick="closeMaintenanceSetupModal()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl transition duration-300 font-space font-bold">Отмена</button>
+                <button onclick="confirmMaintenanceStart()" class="flex-1 py-3 btn-liquid-glass text-white font-bold rounded-xl font-space">Активировать</button>
             </div>
         </div>
     </div>
 
     <!-- =================================================================
-         МОДАЛЬНОЕ ОКНО: ЛИЧНЫЙ КАБИНЕТ КЛИЕНТА (С КОДОМ ДОСТУПА)
+         МОДАЛЬНОЕ ОКНО: ВЫСОКОТЕХНОЛОГИЧНЫЙ ЛИЧНЫЙ КАБИНЕТ КЛИЕНТА (КОМПАКТНЫЙ РЕДИЗАЙН)
          ================================================================= -->
     <div id="portal-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
-        <div class="w-full max-w-3xl apple-liquid-glass p-8 sm:p-10 border border-cyan-500/20 max-h-[95vh] overflow-y-auto relative">
+        <div class="w-full max-w-5xl apple-liquid-glass p-6 sm:p-8 border border-cyan-500/20 max-h-[95vh] overflow-y-auto relative scroll-smooth">
             <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
                 <h3 class="text-2xl font-space font-bold text-white flex items-center gap-3">
-                    <i class="fas fa-user-astronaut text-cyan-400"></i> Личный Кабинет
+                    <i class="fas fa-user-astronaut text-cyan-400 animate-pulse"></i> Личный Кабинет Клиента
                 </h3>
                 <button onclick="closePortalModal()" class="text-slate-400 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
             </div>
 
-            <!-- Вход -->
-            <div id="portal-auth-sec" class="space-y-6">
-                <p class="text-slate-400 text-sm leading-relaxed">
-                    Обсудите проект с нами в Telegram. Мы создадим для вас кабинет и пришлем ваш персональный **Код доступа**. Введите его ниже для отслеживания монтажа.
+            <!-- Вход (Оригинальное компактное окно вернулось) -->
+            <div id="portal-auth-sec" class="space-y-6 max-w-md mx-auto py-6">
+                <p class="text-slate-400 text-sm leading-relaxed text-center">
+                    Введите уникальный <strong class="text-cyan-400">Код доступа</strong>, выданный менеджером проекта, чтобы отслеживать калибровку и готовность вашего ролика.
                 </p>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold tracking-wider">Ваш уникальный Код доступа</label>
-                        <input type="text" id="portal-access-code" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-center text-lg font-mono text-cyan-300 tracking-widest focus:outline-none focus:border-cyan-500" placeholder="НАПРИМЕР: client777">
+                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold tracking-wider font-space text-center">Ваш уникальный Код доступа</label>
+                        <input type="text" id="portal-access-code" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-center text-xl font-mono text-cyan-300 tracking-widest focus:outline-none focus:border-cyan-500 placeholder:text-slate-700" placeholder="НАПРИМЕР: client777">
                     </div>
                 </div>
                 <div class="pt-2">
-                    <button onclick="loginPortalWithCode()" class="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl transition duration-300 shadow-[0_0_15px_rgba(0,198,251,0.4)]">Войти в личный кабинет</button>
+                    <button onclick="loginPortalWithCode()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-slate-950 font-black rounded-2xl transition duration-300 shadow-[0_0_20px_rgba(0,198,251,0.3)] font-space uppercase tracking-wider text-sm hover:scale-[1.02]">Войти в личный кабинет</button>
                 </div>
             </div>
 
-            <!-- Дашборд -->
-            <div id="portal-dashboard-sec" class="hidden space-y-8">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/5 p-6 rounded-3xl border border-white/5">
-                    <div>
-                        <h4 class="text-xs text-cyan-400 font-mono uppercase tracking-widest">ВАШ ПРОЕКТ:</h4>
-                        <h3 class="text-xl font-bold text-white mt-1" id="client-project-name">Загрузка информации...</h3>
-                        <!-- Сургически исправленная ошибка: добавлен отсутствующий узел ID "client-user-name" -->
-                        <p class="text-xs text-slate-400 mt-1">Клиент: <span id="client-user-name" class="text-cyan-400 font-bold">...</span></p>
-                        <p class="text-xs text-slate-400 mt-1">Дедлайн: <span id="client-project-deadline" class="text-emerald-400 font-bold tracking-wide">Не указан</span></p>
-                    </div>
-                    <div class="flex items-center gap-3 mt-4 sm:mt-0">
-                        <div class="relative w-16 h-16 flex items-center justify-center rounded-full bg-[#010008] border border-cyan-500/30 shadow-[0_0_15px_rgba(0,198,251,0.2)]">
-                            <span class="text-sm font-black text-cyan-400" id="client-progress-value">0%</span>
+            <!-- ПРЕМИАЛЬНЫЙ ДВУХПАНЕЛЬНЫЙ ДАШБОРД -->
+            <div id="portal-dashboard-sec" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- ЛЕВАЯ ПАНЕЛЬ (4 колонки): Сводка, Бюджет/Допки и Прогресс -->
+                    <div class="lg:col-span-4 space-y-6">
+                        <!-- Карточка Проекта -->
+                        <div class="bg-white/5 border border-white/5 p-6 rounded-3xl relative overflow-hidden">
+                            <div class="absolute -top-12 -right-12 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                            <span class="text-[9px] text-cyan-400 font-mono uppercase tracking-[0.2em] block mb-2">Название проекта:</span>
+                            <h3 class="text-xl font-black text-white leading-tight font-space" id="client-project-name">Загрузка информации...</h3>
+                            
+                            <div class="mt-4 pt-4 border-t border-white/5 space-y-2">
+                                <p class="text-xs text-slate-400 flex justify-between items-center">
+                                    <span class="text-slate-500">Клиент:</span>
+                                    <span id="client-user-name" class="text-slate-300 font-bold">...</span>
+                                </p>
+                                <p class="text-xs text-slate-400 flex justify-between items-center">
+                                    <span class="text-slate-500">Дедлайн:</span>
+                                    <span id="client-project-deadline" class="text-emerald-400 font-bold tracking-wide">Не указан</span>
+                                </p>
+                                <div class="text-xs text-slate-400 flex justify-between items-center mt-2 pt-2 border-t border-white/5" id="client-manager-contact">
+                                    <!-- Кнопка Telegram менеджера генерируется здесь -->
+                                </div>
+                            </div>
                         </div>
-                        <span class="text-xs text-slate-400 font-medium">Общий прогресс</span>
+
+                        <!-- Новая Смета: Базовая цена, Дополнения и Итоговая сумма -->
+                        <div class="bg-white/5 border border-white/5 p-6 rounded-3xl space-y-4">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider font-space block border-b border-white/5 pb-2"><i class="fas fa-receipt mr-2 text-cyan-400"></i>Финансовый баланс</span>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex justify-between text-slate-400">
+                                    <span>Базовая стоимость:</span>
+                                    <span id="client-base-price" class="text-white font-mono font-bold">0 ₽</span>
+                                </div>
+                                <div class="space-y-1" id="client-addons-container">
+                                    <!-- Список дополнений будет сгенерирован динамически -->
+                                </div>
+                                <div class="flex justify-between text-sm pt-3 border-t border-white/5 text-cyan-400 font-black">
+                                    <span>ИТОГО К ОПЛАТЕ:</span>
+                                    <span id="client-total-price" class="font-mono">0 ₽</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Интерактивный круговой прогресс -->
+                        <div class="bg-white/5 border border-white/5 p-6 rounded-3xl flex flex-col items-center justify-center text-center">
+                            <span class="text-[9px] text-slate-400 uppercase tracking-wider mb-4 font-space">Общая готовность проекта</span>
+                            <div class="relative w-36 h-36 flex items-center justify-center">
+                                <svg class="w-full h-full transform -rotate-90">
+                                    <circle cx="72" cy="72" r="58" class="stroke-slate-800" stroke-width="8" fill="transparent" />
+                                    <circle cx="72" cy="72" r="58" id="hologram-circle-bar" class="stroke-cyan-400 transition-all duration-1000 ease-out" stroke-width="8" fill="transparent" stroke-dasharray="364.4" stroke-dashoffset="364.4" stroke-linecap="round" />
+                                </svg>
+                                <div class="absolute flex flex-col items-center justify-center">
+                                    <span class="text-3xl font-black text-white font-space" id="client-progress-value">0%</span>
+                                    <span class="text-[8px] text-slate-500 uppercase tracking-widest mt-0.5">монтаж</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ПРАВАЯ ПАНЕЛЬ (8 колонок): Таймлайн стадий, Записка менеджера, Бортовой журнал, Характеристики -->
+                    <div class="lg:col-span-8 space-y-6">
+                        <!-- Этапы монтажа -->
+                        <div class="bg-white/5 border border-white/5 p-6 rounded-3xl">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 font-space"><i class="fas fa-tasks text-cyan-400 mr-2"></i>Текущая стадия обработки</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="client-stages-container">
+                                <!-- Шаги генерируются через JS -->
+                            </div>
+                        </div>
+
+                        <!-- График характеристик видео (Интерактивный радар-мониторинг) -->
+                        <div class="bg-white/5 border border-white/5 p-6 rounded-3xl">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 font-space"><i class="fas fa-sliders-h text-cyan-400 mr-2"></i>Калибровка характеристик ролика</h4>
+                            <div class="space-y-3" id="client-radar-bars">
+                                <!-- Рендеринг 4 ползунков показателей на основе данных из админки -->
+                            </div>
+                        </div>
+
+                        <!-- Комментарий менеджера -->
+                        <div class="bg-white/5 border border-[#00c6fb]/20 p-6 rounded-3xl bg-gradient-to-r from-[#00c6fb]/5 to-transparent relative">
+                            <div class="absolute top-4 right-4 text-cyan-400/20 text-3xl"><i class="fas fa-quote-right"></i></div>
+                            <h5 class="text-xs text-cyan-400 font-mono uppercase tracking-widest flex items-center gap-2 mb-3">
+                                <i class="fas fa-comment-alt"></i> Комментарий менеджера проекта
+                            </h5>
+                            <p class="text-sm text-slate-300 leading-relaxed italic" id="client-project-notes">Менеджер работает над проектом. Скоро здесь появится комментарий.</p>
+                        </div>
+
+                        <!-- Живой Хронограф проекта (Timeline Logs) -->
+                        <div class="bg-white/5 border border-white/5 p-6 rounded-3xl">
+                            <h5 class="text-xs text-slate-400 uppercase tracking-widest mb-4 font-space"><i class="fas fa-history text-cyan-400 mr-2"></i>Бортовой журнал проекта (Логи)</h5>
+                            <div id="client-logs-list" class="space-y-3">
+                                <!-- Генерируется через JS -->
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
-                <div>
-                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Текущая стадия видеомонтажа</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="client-stages-container">
-                        <!-- Шаги генерируются через JS -->
-                    </div>
-                </div>
-
-                <div class="p-6 rounded-3xl bg-cyan-500/5 border border-cyan-500/10">
-                    <h5 class="text-xs text-cyan-400 font-mono uppercase tracking-widest flex items-center gap-2 mb-3">
-                        <i class="fas fa-comment-alt"></i> Записка режиссера монтажа
-                    </h5>
-                    <p class="text-sm text-slate-300 leading-relaxed italic" id="client-project-notes">Режиссер монтирует ваш шедевр. Скоро здесь появятся детальные пометки.</p>
-                </div>
-
-                <div class="flex gap-4">
-                    <button onclick="logoutPortal()" class="w-full py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl transition font-semibold text-sm">Выйти из кабинета</button>
+                <div class="flex gap-4 pt-4 border-t border-white/5 justify-end">
+                    <button onclick="logoutPortal()" class="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl transition font-semibold text-xs uppercase tracking-wider font-space">Выйти из кабинета</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- =================================================================
-         АДМИН-ПАНЕЛЬ И СИСТЕМА УПРАВЛЕНИЯ (z-[1000000] для наложения поверх тех. режима)
-         ================================================================= -->
+    <!-- АДМИН-ПАНЕЛЬ И ПРЕМИУМ СИСТЕМА УПРАВЛЕНИЯ -->
     <div id="admin-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-        <div class="w-full max-w-2xl apple-liquid-glass p-8 sm:p-10 border border-cyan-500/20 max-h-[90vh] overflow-y-auto relative">
+        <div class="w-full max-w-5xl apple-liquid-glass p-6 sm:p-8 border border-cyan-500/20 max-h-[90vh] overflow-y-auto relative scroll-smooth">
             <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
                 <h3 class="text-2xl font-space font-bold text-white flex items-center gap-2">
                     <i class="fas fa-shield-alt text-cyan-400"></i> Панель Управления SPACE
@@ -781,95 +1002,116 @@
                 <button onclick="loginAdmin()" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition duration-300">Авторизоваться</button>
             </div>
 
-            <!-- Секция Администратора -->
+            <!-- Секция Администратора (Премиум Редизайн) -->
             <div id="admin-dashboard-sec" class="hidden space-y-8">
                 
-                <!-- Быстрые действия -->
-                <div>
-                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Быстрые действия</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <!-- БЫСТРЫЕ ДЕЙСТВИЯ -->
+                <div class="p-6 bg-white/5 border border-white/5 rounded-3xl">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 font-space"><i class="fas fa-bolt mr-2 text-cyan-400"></i>Быстрые действия</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
                         <button onclick="toggleVisualCmsMode()" id="cms-toggle-btn" class="py-3 px-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-slate-950 font-bold rounded-xl text-xs hover:scale-105 transition"><i class="fas fa-pencil-alt mr-1"></i> Редактор</button>
+                        <button onclick="undoLastChange()" id="btn-undo" class="py-3 px-4 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-bold rounded-xl text-xs hover:bg-yellow-500 hover:text-slate-950 transition"><i class="fas fa-undo mr-1"></i> Откатить</button>
                         <button onclick="toggleMaintenanceAdmin()" id="btn-toggle-maintenance" class="py-3 px-4 bg-orange-500/20 border border-orange-500/50 text-orange-400 font-bold rounded-xl text-xs hover:bg-orange-500 hover:text-white transition"><i class="fas fa-tools mr-1"></i> Тех. Работы</button>
                         <button onclick="downloadJsonData()" class="py-3 px-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl text-xs hover:bg-white/20 transition"><i class="fas fa-download mr-1"></i> База (JSON)</button>
-                        <button onclick="clearAnalytics(this)" class="py-3 px-4 bg-white/5 border border-white/10 text-slate-400 font-bold rounded-xl text-xs hover:text-white transition"><i class="fas fa-eraser mr-1"></i> Сброс Стат.</button>
+                        <button onclick="clearAnalytics(this)" class="py-3 px-4 bg-white/5 border border-white/10 text-slate-400 font-bold rounded-xl text-xs hover:text-white transition"><i class="fas fa-eraser mr-1"></i> Сброс Stat.</button>
                     </div>
                 </div>
 
-                <!-- CRM СИСТЕМА (АККОРДЕОН) -->
-                <div class="border-b border-white/5 pb-8">
-                    <h4 class="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-4"><i class="fas fa-users-cog mr-2"></i>CRM: Активные проекты</h4>
-                    
-                    <!-- СПИСОК АКТИВНЫХ ПРОЕКТОВ (СВЕРХУ) -->
-                    <div class="space-y-2 max-h-[400px] overflow-y-auto pr-2 mb-6" id="crm-projects-list">
-                        <p class="text-xs text-slate-500">Загрузка проектов...</p>
-                    </div>
-
-                    <!-- ДОБАВЛЕНИЕ НОВОГО ПРОЕКТА (СНИЗУ) -->
-                    <div class="p-5 bg-white/5 border border-white/5 rounded-2xl space-y-4 shadow-[0_0_15px_rgba(0,198,251,0.5)]">
-                        <span class="text-xs font-bold text-slate-400 uppercase block">Создать личный кабинет клиенту</span>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <input type="text" id="crm-new-code" placeholder="Код доступа (client777)" class="bg-white/5 border border-cyan-500/30 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-500 font-mono font-bold">
-                            <input type="text" id="crm-new-name" placeholder="Имя (Алексей)" class="bg-white/5 border border-white/10 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-500">
-                            <input type="date" id="crm-new-deadline" class="bg-white/5 border border-white/10 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-500" title="Дедлайн проекта">
-                        </div>
-                        <input type="text" id="crm-new-project" placeholder="Название ролика / проекта" class="w-full bg-white/5 border border-white/10 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-500">
-                        <button onclick="addClientProject()" class="w-full py-2.5 bg-cyan-500 text-slate-950 font-bold rounded-lg text-xs hover:bg-cyan-400 transition font-space">Создать кабинет & Код доступа</button>
-                    </div>
-                </div>
-
-                <!-- Живая статистика -->
-                <div>
-                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 font-space">Телеметрия визитов и активности</h4>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div class="p-4 bg-white/5 border border-white/5 rounded-2xl text-center">
+                <!-- ЖИВАЯ ТЕЛЕМЕТРИЯ И АКТИВНОСТЬ (НОВАЯ ПЛАШКА С СИСТЕМАМИ ОНЛАЙН) -->
+                <div class="p-6 bg-white/5 border border-white/5 rounded-3xl">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 font-space"><i class="fas fa-chart-bar mr-2 text-cyan-400"></i>Телеметрия визитов и активности</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="p-4 bg-black/40 border border-white/5 rounded-2xl text-center">
                             <div class="text-2xl font-black text-cyan-400 font-space" id="stat-views">0</div>
                             <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Просмотры</div>
                         </div>
-                        <div class="p-4 bg-white/5 border border-white/5 rounded-2xl text-center">
+                        <div class="p-4 bg-black/40 border border-white/5 rounded-2xl text-center">
                             <div class="text-2xl font-black text-blue-400 font-space" id="stat-click-t1">0</div>
                             <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Shorts клики</div>
                         </div>
-                        <div class="p-4 bg-white/5 border border-white/5 rounded-2xl text-center">
+                        <div class="p-4 bg-black/40 border border-white/5 rounded-2xl text-center">
                             <div class="text-2xl font-black text-purple-400 font-space" id="stat-click-t2">0</div>
                             <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">YouTube клики</div>
                         </div>
-                        <div class="p-4 bg-white/5 border border-white/5 rounded-2xl text-center">
+                        <div class="p-4 bg-black/40 border border-white/5 rounded-2xl text-center">
                             <div class="text-2xl font-black text-pink-400" id="stat-click-t3">0</div>
                             <div class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">VFX клики</div>
                         </div>
+                        <!-- ПЛАШКА: ПОЛЬЗОВАТЕЛИ ОНЛАЙН -->
+                        <div class="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl text-center relative overflow-hidden">
+                            <div class="absolute top-1 right-2"><span class="flex h-1.5 w-1.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span></div>
+                            <div class="text-2xl font-black text-emerald-400 font-space" id="stat-online-systems">5</div>
+                            <div class="text-[9px] text-slate-400 uppercase tracking-widest mt-1">Систем онлайн</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =================================================================
+                     ОТДЕЛЬНЫЙ РАЗДЕЛ: НАСТРОЙКА ЛИЧНЫХ КАБИНЕТОВ КЛИЕНТОВ (РЕДИЗАЙН)
+                     ================================================================= -->
+                <div class="p-6 bg-white/5 border border-white/5 rounded-3xl space-y-6">
+                    <div class="border-b border-white/5 pb-4">
+                        <h4 class="text-base font-bold text-cyan-400 uppercase tracking-wider font-space flex items-center gap-2"><i class="fas fa-users-cog"></i> Раздел: Настройка Личных Кабинетов</h4>
+                        <p class="text-xs text-slate-400 mt-1">Добавляйте пользователей, выставляйте сметы, калибруйте графики и лог-журналы.</p>
+                    </div>
+
+                    <!-- Таблица активных ЛК -->
+                    <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2" id="crm-projects-list">
+                        <p class="text-xs text-slate-500">Загрузка проектов...</p>
+                    </div>
+
+                    <!-- Добавление нового проекта/клиента -->
+                    <div class="p-5 bg-black/40 border border-white/5 rounded-2xl space-y-4">
+                        <span class="text-xs font-bold text-slate-400 uppercase font-space block border-b border-white/5 pb-2"><i class="fas fa-user-plus mr-2 text-cyan-400"></i>Зарегистрировать новый проект клиента</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input type="text" id="crm-new-code" placeholder="Код доступа (client777)" class="bg-white/5 border border-cyan-500/30 text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-cyan-500 font-mono font-bold">
+                            <input type="text" id="crm-new-name" placeholder="Имя клиента (Алексей)" class="bg-white/5 border border-white/10 text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-cyan-500">
+                            <!-- Жесткое ограничение на дедлайн: min=today, max=2100-12-31 -->
+                            <input type="date" id="crm-new-deadline" min="" max="2100-12-31" class="bg-white/5 border border-white/10 text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-cyan-500" title="Дедлайн проекта">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input type="text" id="crm-new-project" placeholder="Название ролика / проекта" class="w-full bg-white/5 border border-white/10 text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-cyan-500">
+                            <input type="number" id="crm-new-price" placeholder="Базовая цена проекта (например: 3000)" class="w-full bg-white/5 border border-white/10 text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-cyan-500 font-mono">
+                        </div>
+                        <button onclick="addClientProject()" class="w-full py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-cyan-400 transition font-space uppercase tracking-wider">Создать кабинет & Ключ доступа</button>
                     </div>
                 </div>
 
                 <!-- Системные Настройки -->
-                <div class="space-y-4 border-t border-white/5 pt-6">
-                    <h4 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2 font-space">Настройки Системы</h4>
+                <div class="p-6 bg-white/5 border border-white/5 rounded-3xl space-y-6">
+                    <h4 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2 font-space"><i class="fas fa-sliders-h mr-2 text-cyan-400"></i>Параметры Системы</h4>
                     
                     <div>
-                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold">Никнейм Telegram (без знака @)</label>
+                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold font-space">Главный Никнейм Telegram (без знака @)</label>
                         <input type="text" id="setting-tg" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500 font-mono" placeholder="your_telegram">
                     </div>
                     
+                    <!-- КНОПКА НАСТРОЙКИ ВРЕМЕНИ -->
                     <div>
-                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold">График работы по дням (ЧЧ:ММ)</label>
-                        <div class="grid grid-cols-7 gap-1" id="schedule-weekly-grid">
-                            <!-- Генерируется через JS -->
-                        </div>
+                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold font-space">График работы по дням недели</label>
+                        <button onclick="openScheduleEditModal()" class="w-full py-3.5 bg-cyan-500/5 border border-cyan-500/20 text-cyan-400 font-bold rounded-xl text-sm transition hover:bg-cyan-500/10 hover:border-cyan-500/30 flex items-center justify-center gap-2">
+                            <i class="fas fa-calendar-alt"></i> Настроить время работы по дням
+                        </button>
                     </div>
 
-                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                        <div>
-                            <span class="text-sm font-bold text-white block">Принудительный Выходной</span>
-                            <span class="text-[10px] text-slate-500">Переопределяет график и статус</span>
+                    <!-- ИНТЕРАКТИВНЫЙ ТУМБЛЕР ДЛЯ "ПРИНУДИТЕЛЬНО ЗАКРЫТО" -->
+                    <div class="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-white/5">
+                        <div class="mr-4">
+                            <span class="text-sm font-bold text-white block">Статус: Закрыто</span>
+                            <span class="text-[10px] text-slate-500">Объявляет выходной на все дни, переопределяя график</span>
                         </div>
-                        <input type="checkbox" id="setting-holiday" class="w-6 h-6 accent-cyan-500 cursor-pointer">
+                        <div class="relative">
+                            <input type="checkbox" id="setting-holiday" class="toggle-switch-input" onchange="syncToggleHoliday(this.checked)">
+                            <label for="setting-holiday" class="toggle-switch-label"></label>
+                        </div>
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold">Новый Ключ доступа (Пароль)</label>
+                        <label class="block text-xs text-slate-500 uppercase mb-2 font-semibold font-space">Новый Ключ доступа (Пароль)</label>
                         <input type="password" id="setting-new-pass" class="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-cyan-500" placeholder="Оставьте пустым, если не хотите менять">
                     </div>
-                    <div class="flex gap-4">
-                        <button onclick="logoutAdmin()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl transition font-space font-bold">Выйти</button>
-                        <button onclick="saveAdminSettings()" class="flex-[2] py-3 bg-emerald-500 text-slate-950 font-bold rounded-xl transition hover:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] font-space">Сохранить параметры</button>
+                    <div class="flex gap-4 border-t border-white/5 pt-4">
+                        <button onclick="logoutAdmin()" class="flex-1 py-3.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl transition font-space font-bold">Выйти</button>
+                        <button onclick="saveAdminSettings()" class="flex-[2] py-3.5 bg-emerald-500 text-slate-950 font-bold rounded-xl transition hover:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] font-space">Сохранить параметры</button>
                     </div>
                 </div>
             </div>
@@ -898,21 +1140,29 @@
         </div>
     </div>
 
-    <!-- СИНХРОННЫЕ ГЛОБАЛЬНЫЕ ФУНКЦИИ И ИНТЕРАКТИВНОСТЬ (Доступны мгновенно) -->
+    <!-- СИНХРОННЫЕ ГЛОБАЛЬНЫЕ ФУНКЦИИ И ИНТЕРАКТИВНОСТЬ -->
     <script>
-        // Инициализация глобальных переменных-мостиков
         window.currentAdminState = false;
         window.configData = null;
+        
         window.portfolioLinks = {
             case1_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
             case2_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
             case3_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
             case4_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
             case5_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            case6_video: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+            case6_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            case7_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            case8_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            case9_video: "https://www.youtube.com/embed/dQw4w9WgXcQ"
         };
 
-        // Высокотехнологичный тостер уведомлений (Исключает ReferenceError: showToast is not defined)
+        const today = new Date().toISOString().slice(0, 10);
+        document.addEventListener("DOMContentLoaded", () => {
+            const deadlineInput = document.getElementById("crm-new-deadline");
+            if (deadlineInput) deadlineInput.setAttribute("min", today);
+        });
+
         window.showToast = function(message, type = "success") {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -927,7 +1177,7 @@
                 toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span class="text-sm font-medium font-space">${message}</span>`;
             } else {
                 toast.className += " bg-blue-500/10 border-blue-500/30 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.15)]";
-                toast.innerHTML = `<i class="fas fa-info-circle"></i> <span class="text-sm font-medium font-space">${message}</span>`;
+                toast.innerHTML = `<i class="fas fa-focus-circle"></i> <span class="text-sm font-medium font-space">${message}</span>`;
             }
             
             container.appendChild(toast);
@@ -943,7 +1193,6 @@
             }, 4000);
         };
 
-        // Изящный формат дат на русском (Исключает ReferenceError: formatDateRussian is not defined)
         window.formatDateRussian = function(dateStr) {
             if (!dateStr) return "Не указан";
             try {
@@ -959,16 +1208,13 @@
             }
         };
 
-        // Логика мобильного меню (Исключает ReferenceError: toggleMobileMenu is not defined)
         window.toggleMobileMenu = function() {
             const menu = document.getElementById('mobile-menu');
             if (menu) menu.classList.toggle('hidden');
         };
 
-        // Быстрая привязка на кнопу мобильного меню
         document.getElementById('mobile-menu-btn')?.addEventListener('click', toggleMobileMenu);
 
-        // Интуитивное редактирование кейсов портфолио в режиме CMS (Исключает ReferenceError: triggerPortfolioEdit is not defined)
         window.triggerPortfolioEdit = async function(caseId, event) {
             if (event) {
                 event.preventDefault();
@@ -977,9 +1223,9 @@
             const currentVideo = window.portfolioLinks[`case${caseId}_video`] || "";
             const currentImg = window.portfolioLinks[`case${caseId}_img`] || "";
 
-            const newVideo = prompt("Введите ссылку на YouTube Embed для видео-кейса:", currentVideo);
+            const newVideo = prompt("Введите ссылку на YouTube Embed для видео-кейса " + caseId + ":", currentVideo);
             if (newVideo === null) return;
-            const newImg = prompt("Введите URL изображения-обложки для превью:", currentImg);
+            const newImg = prompt("Введите URL изображения-обложки для превью " + caseId + ":", currentImg);
             if (newImg === null) return;
 
             if (typeof window.savePortfolioUpdate === 'function') {
@@ -987,7 +1233,6 @@
             }
         };
 
-        // Глобальные синхронные UI-функции (Исключают ReferenceError)
         window.openPortalModal = function() {
             const modal = document.getElementById('portal-modal');
             if (modal) modal.classList.remove('hidden');
@@ -1000,8 +1245,13 @@
             const modal = document.getElementById('admin-modal');
             if (modal) {
                 modal.classList.remove('hidden');
-                if (window.currentAdminState && typeof window.renderCrmProjects === 'function') {
-                    window.renderCrmProjects();
+                if (window.currentAdminState) {
+                    if (typeof window.renderCrmProjects === 'function') {
+                        window.renderCrmProjects();
+                    }
+                    if (typeof window.populateAdminFields === 'function') {
+                        window.populateAdminFields();
+                    }
                 }
             }
         };
@@ -1009,29 +1259,74 @@
             const modal = document.getElementById('admin-modal');
             if (modal) modal.classList.add('hidden');
         };
+
+        window.openScheduleEditModal = function() {
+            if (typeof window.renderScheduleInputs === 'function') {
+                window.renderScheduleInputs();
+            }
+            const modal = document.getElementById('schedule-edit-modal');
+            if (modal) modal.classList.remove('hidden');
+        };
+        window.closeScheduleEditModal = function() {
+            const modal = document.getElementById('schedule-edit-modal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.syncToggleHoliday = function(checked) {
+            const checkbox = document.getElementById('setting-holiday');
+            if (checkbox) checkbox.checked = checked;
+        };
+
         window.openScheduleModal = function() {
             const contentDiv = document.getElementById('schedule-content');
-            if (contentDiv) {
-                if (window.configData) {
-                    const startStr = window.configData.workStart || "09:00";
-                    const endStr = window.configData.workEnd || "18:00";
-                    const isHoliday = window.configData.isHoliday || false;
-                    const now = new Date();
-                    const currentDay = now.getDay();
-                    const sch = (window.configData.schedule && window.configData.schedule[currentDay]) ? window.configData.schedule[currentDay] : {s: startStr, e: endStr, c: isHoliday};
+            if (contentDiv && window.configData) {
+                const daysMap = [
+                    {id: 1, name: "Понедельник"}, {id: 2, name: "Вторник"}, {id: 3, name: "Среда"},
+                    {id: 4, name: "Четверг"}, {id: 5, name: "Пятница"}, {id: 6, name: "Суббота"}, {id: 0, name: "Воскресенье"}
+                ];
+                
+                const isHolidayOverall = window.configData.isHoliday || false;
+                const now = new Date();
+                const currentDay = now.getDay();
+                
+                let html = `<div class="space-y-3 text-left">`;
+                
+                daysMap.forEach(d => {
+                    const sch = (window.configData.schedule && window.configData.schedule[d.id]) 
+                        ? window.configData.schedule[d.id] 
+                        : {s: "09:00", e: "18:00", c: d.id === 0 || d.id === 6};
                     
-                    if (isHoliday || sch.c) {
-                        contentDiv.innerHTML = `<span class="text-rose-500 font-bold text-lg font-space">СЕГОДНЯ ВЫХОДНОЙ ${isHoliday ? "(не по графику)" : ""}</span>`;
+                    const isToday = currentDay === d.id;
+                    const todayBadge = isToday ? `<span class="px-2 py-0.5 text-[9px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-full font-bold ml-2">Сегодня</span>` : '';
+                    
+                    let timeText = "";
+                    if (isHolidayOverall) {
+                        timeText = isToday 
+                            ? `<span class="text-rose-400 font-semibold uppercase tracking-wider">Закрыто</span>`
+                            : `<span class="text-rose-400 uppercase tracking-wider">Закрыто</span>`;
+                    } else if (sch.c) {
+                        timeText = `<span class="text-rose-400">Выходной</span>`;
                     } else {
-                        contentDiv.innerHTML = `<span class="text-cyan-400 font-bold text-lg font-space">Сегодня работаем с ${sch.s} до ${sch.e}</span>`;
+                        timeText = `<span class="text-cyan-400">${sch.s} — ${sch.e}</span>`;
                     }
-                } else {
-                    contentDiv.innerHTML = `<span class="text-cyan-400 font-bold text-lg font-space">Сегодня работаем с 09:00 до 18:00</span>`;
-                }
+                    
+                    html += `
+                        <div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0 ${isToday ? 'bg-cyan-500/5 px-3 rounded-xl border border-cyan-500/20 shadow-[0_0_10px_rgba(0,198,251,0.05)]' : 'px-1'}">
+                            <span class="text-sm font-semibold text-slate-200 flex items-center">${d.name} ${todayBadge}</span>
+                            <span class="text-sm font-semibold">${timeText}</span>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                contentDiv.innerHTML = html;
+            } else if (contentDiv) {
+                contentDiv.innerHTML = `<span class="text-cyan-400 font-bold text-lg font-space">Сегодня работаем с 09:00 до 18:00</span>`;
             }
             const modal = document.getElementById('schedule-modal');
             if (modal) modal.classList.remove('hidden');
         };
+
         window.closeScheduleModal = function() {
             const modal = document.getElementById('schedule-modal');
             if (modal) modal.classList.add('hidden');
@@ -1053,7 +1348,6 @@
             if (videoUrl) window.openVideoModal(videoUrl);
         };
 
-        // Запуск холста со звездами
         const bgCanvas = document.getElementById('stars-canvas');
         const bgCtx = bgCanvas.getContext('2d');
         let stars = [];
@@ -1302,14 +1596,62 @@
                     heroText.classList.add('opacity-100', 'translate-y-0');
                 }
             }, 300);
+
+            setInterval(() => {
+                const onlineEl = document.getElementById("stat-online-systems");
+                if (onlineEl) {
+                    const current = parseInt(onlineEl.textContent) || 5;
+                    const change = Math.random() > 0.5 ? 1 : -1;
+                    const next = Math.max(3, Math.min(12, current + change));
+                    onlineEl.textContent = next;
+                }
+            }, 4000);
         });
+
+        window.generated2FACode = "";
+        window.openAdminModalWith2FA = function() {
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            let code = "";
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            window.generated2FACode = code;
+            
+            const codeDisplay = document.getElementById("admin-2fa-code-display");
+            if (codeDisplay) codeDisplay.textContent = code;
+            
+            const inputField = document.getElementById("admin-2fa-input");
+            if (inputField) inputField.value = "";
+
+            const modal = document.getElementById("admin-2fa-modal");
+            if (modal) modal.classList.remove('hidden');
+        };
+
+        window.closeAdmin2FAModal = function() {
+            const modal = document.getElementById("admin-2fa-modal");
+            if (modal) modal.classList.add('hidden');
+            window.generated2FACode = "";
+        };
+
+        window.verifyAdmin2FACode = function() {
+            const userInput = document.getElementById("admin-2fa-input").value.trim().toUpperCase();
+            if (userInput === window.generated2FACode) {
+                window.closeAdmin2FAModal();
+                window.openAdminModal();
+                showToast("Двухфакторная проверка пройдена!", "success");
+            } else {
+                showToast("Введен неверный код безопасности!", "error");
+            }
+        };
     </script>
 
-    <!-- ИНТЕГРАЦИЯ С БАЗОЙ ДАННЫХ И CRM (Модульный уровень) -->
+    <!-- ИНТЕГРАЦИЯ С БАЗОЙ ДАННЫХ И CRM -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const MY_FIREBASE_CONFIG = null; 
 
         let isVisualCmsMode = false; 
         let siteContentData = {};
@@ -1318,17 +1660,24 @@
         let firebaseInitialized = false;
         let clientProjects = [];
 
+        window.editHistory = [];
+
         let db = null;
         let auth = null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'space-video-agency';
         
-        // Секретный ключ шифрования для Кодов Доступа (AES)
         const cryptoSecret = "space_secure_salt_2026";
 
+        let fbConfig = null;
         if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            try { fbConfig = JSON.parse(__firebase_config); } catch(e) {}
+        } else if (MY_FIREBASE_CONFIG) {
+            fbConfig = MY_FIREBASE_CONFIG;
+        }
+
+        if (fbConfig) {
             try {
-                const firebaseConfig = JSON.parse(__firebase_config);
-                const app = initializeApp(firebaseConfig);
+                const app = initializeApp(fbConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 firebaseInitialized = true;
@@ -1337,9 +1686,6 @@
             }
         }
 
-        // =================================================================
-        // НАДЕЖНАЯ ЛОКАЛЬНАЯ БАЗА CRM
-        // =================================================================
         let localDemoProjects = [];
         try {
             const saved = localStorage.getItem('space_crm_projects');
@@ -1354,11 +1700,28 @@
                     code: encryptedDemoCode,
                     clientName: "Алексей (Пример)",
                     projectName: "Космический тревелог в 4K",
-                    deadline: "2026-05-01",
+                    deadline: "2026-05-31",
                     s1: "Бриф", s2: "Монтаж", s3: "Эффекты", s4: "Цвет", s5: "Сдача",
                     stage: "effects",
                     progress: 65,
-                    notes: "Добавили звездные переходы и сочные звуки космоса."
+                    notes: "Добавили звездные переходы и сочные звуки космоса.",
+                    basePrice: 3000,
+                    managerTg: "https://t.me/your_telegram",
+                    addons: [
+                        { label: "Дополнительный круг правок", price: 500 },
+                        { label: "Ускоренный рендеринг за 12 часов", price: 1500 }
+                    ],
+                    stats: {
+                        dynamics: 85,
+                        sound: 90,
+                        color: 75,
+                        vfx: 60
+                    },
+                    logs: [
+                        { text: "Орбитальный бриф согласован в системе", blink: false, date: "23.05.2026 12:00" },
+                        { text: "Исходные материалы импортированы в DaVinci Resolve", blink: false, date: "23.05.2026 12:15" },
+                        { text: "Процесс калибровки и сборки таймлайна в активном режиме", blink: true, date: "23.05.2026 12:30" }
+                    ]
                 }
             ];
             saveLocalProjects();
@@ -1376,13 +1739,21 @@
             hero_title_highlight: "удерживает", hero_portfolio_btn: "Смотреть портфолио", hero_contact_btn: "Обсудить проект",
             soft_label: "НАШ СОФТ:", soft_davinci: "DaVinci Resolve", soft_premiere: "Premiere Pro", soft_ae: "After Effects",
             portfolio_subtitle: "НАШИ РАБОТЫ", portfolio_title: "ПОРТФОЛИО", tab_all: "Все", tab_reels: "Shorts / Reels",
-            tab_youtube: "YouTube", tab_promo: "Реклама", portfolio_t1: "Разговорный Reels", portfolio_d1: "Субтитры, динамика, SFX",
-            tag_reels: "REELS", portfolio_t2: "Выпуск Подкаста", portfolio_d2: "Мультикамерный монтаж, чистка звука",
-            tag_youtube: "YOUTUBE", portfolio_t3: "Имиджевый Промо-ролик", portfolio_d3: "Цветокоррекция, VFX, Cinema Sound",
-            tag_promo: "PROMO", portfolio_t4: "Динамичный Shorts", portfolio_d4: "Плотный визуальный ряд, удержание",
-            tag_reels2: "REELS", portfolio_t5: "Travel Влог", portfolio_d5: "Плавные переходы, стабилизация",
-            tag_youtube2: "YOUTUBE", portfolio_t6: "Продуктовая Реклама", portfolio_d6: "3D визуализация, макросъемка",
-            tag_promo2: "PROMO", wf_subtitle: "ПОЭТАПНЫЙ ПОЛЕТ", wf_title: "КАК МЫ РАБОТАЕМ", step1_label: "Шаг 01",
+            tab_youtube: "YouTube", tab_promo: "Реклама", 
+            
+            portfolio_t1: "Разговорный Reels", portfolio_d1: "Субтитры, динамика, SFX", tag_reels: "REELS", 
+            portfolio_t2: "Тизер Подкаста", portfolio_d2: "Вертикальный нарез подкаста", tag_youtube: "YOUTUBE", 
+            portfolio_t3: "Продуктовое промо", portfolio_d3: "Эстетичный обзор в 9:16", tag_promo: "PROMO", 
+            
+            portfolio_t4: "Динамичный Shorts", portfolio_d4: "Плотный визуальный ряд, удержание", tag_reels_2: "REELS", 
+            portfolio_t5: "Микро-Влог Shorts", portfolio_d5: "Обзор путешествия в 9:16", tag_youtube_2: "YOUTUBE", 
+            portfolio_t6: "Рекламное промо", portfolio_d6: "Коммерческий креатив", tag_promo_2: "PROMO", 
+            
+            portfolio_t7: "Шоурил Вертикалок", portfolio_d7: "Горизонтальный обзор лучших Reels", tag_reels_3: "REELS", 
+            portfolio_t8: "Выпуск Подкаста", portfolio_d8: "Мультикамерный монтаж, чистка звука", tag_youtube_3: "YOUTUBE", 
+            portfolio_t9: "Имиджевый Промо-ролик", portfolio_d9: "Цветокоррекция, VFX, Cinema Sound", tag_promo_3: "PROMO", 
+            
+            wf_subtitle: "ПОЭТАПНЫЙ ПОЛЕТ", wf_title: "КАК МЫ РАБОТАЕМ", step1_label: "Шаг 01",
             step1_title: "Техническое Задание", step1_desc: "Разбираем ваши референсы, утверждаем темпоритм ролика, собираем весь исходный материал на облаке.",
             step2_label: "Шаг 02", step2_title: "Монтаж & Эффекты", step2_desc: "Собираем первый черновик, накладываем динамичные переходы, добавляем саунд-дизайн и выравниваем звук.",
             step3_label: "Шаг 03", step3_title: "Цвет & Сдача", step3_desc: "Делаем сочную профессиональную покраску кадра, вносим финальные правки и передаем готовый проект.",
@@ -1390,7 +1761,7 @@
             pricing_t1_title: "Shorts / Reels", pricing_t1_desc: "Динамичные ролики с высокой глубиной вовлечения зрителя. Подойдет для личных блогов и экспертов.",
             pricing_t1_price: "от 1 000 ₽", t1_feat1: "Трендовые субтитры", t1_feat2: "Плотный саунд-дизайн (SFX)", t1_feat3: "Цветокоррекция",
             btn_order_t1: "Заказать", pricing_hot_badge: "ПОПУЛЯРНЫЙ", pricing_t2_badge: "LONG-FORM",
-            pricing_t2_title: "YouTube / Влоги", pricing_t2_desc: "Профессиональный многокамерный монтаж, удержание внимания, создание полноценных шоу.",
+            pricing_t2_title: "YouTube / Влоги", pricing_t2_desc: "Профессиональный многокамерный монтаж, удержание внимания, creation полноценных шоу.",
             pricing_t2_price: "от 5 000 ₽", t2_feat1: "Работа с мультикамерой", t2_feat2: "Саунд-дизайн под ключ",
             t2_feat3: "Инфографика и 2D элементы", btn_order_t2: "Выбрать тариф", pricing_t3_badge: "EXCLUSIVE",
             pricing_t3_title: "Реклама / VFX", pricing_t3_desc: "Сложный рекламный монтаж, интеграции с CGI, 3D моушн графика и имиджевые промо-кампейны.",
@@ -1405,12 +1776,15 @@
         };
 
         const defaultPortfolioSettings = {
-            case1_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case1_img: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=800&q=80",
-            case2_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case2_img: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
-            case3_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case3_img: "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=800&q=80",
-            case4_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case4_img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80",
-            case5_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case5_img: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80",
-            case6_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case6_img: "https://images.unsplash.com/photo-1460881680858-30d872d5b530?auto=format&fit=crop&w=800&q=80"
+            case1_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case1_img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
+            case2_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case2_img: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80",
+            case3_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case3_img: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=800&q=80",
+            case4_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case4_img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=600&q=80",
+            case5_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case5_img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&q=80",
+            case6_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case6_img: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+            case7_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case7_img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80",
+            case8_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case8_img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80",
+            case9_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case9_img: "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=800&q=80"
         };
 
         const defaultSchedule = {
@@ -1423,7 +1797,6 @@
             0: { s: "10:00", e: "15:00", c: true }
         };
 
-        // НАДЕЖНАЯ СИСТЕМА ИНИЦИАЛИЗАЦИИ AUTH
         const initAuth = async () => {
             if (!firebaseInitialized) return null;
             try {
@@ -1444,9 +1817,6 @@
             return await initAuth();
         }
 
-        // =================================================================
-        // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ МОДУЛЯ (ОПРЕДЕЛЕНЫ ЗДЕСЬ И СВЯЗАНЫ С WINDOW)
-        // =================================================================
         function applySiteContent() {
             document.querySelectorAll('.edit-field').forEach(el => {
                 const id = el.getAttribute('data-id');
@@ -1457,7 +1827,7 @@
 
         function applyPortfolioData(data) {
             window.portfolioLinks = data;
-            for (let i = 1; i <= 6; i++) {
+            for (let i = 1; i <= 9; i++) {
                 const imgEl = document.getElementById(`case-img-${i}`);
                 if (imgEl && data[`case${i}_img`]) imgEl.src = data[`case${i}_img`];
             }
@@ -1493,7 +1863,7 @@
             if (isHoliday || sch.c) {
                 statusBadge.className = "inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono uppercase mb-8 shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:scale-105 transition-transform cursor-pointer";
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]";
-                statusText.textContent = "Сегодня выходной";
+                statusText.textContent = isHoliday ? "Закрыто" : "Сегодня выходной";
                 return;
             }
 
@@ -1510,7 +1880,7 @@
             } else {
                 statusBadge.className = "inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono uppercase mb-8 shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:scale-105 transition-transform cursor-pointer";
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]";
-                statusText.textContent = `Сейчас закрыто (до ${sch.s})`;
+                statusText.textContent = `Закрыто (до ${sch.s})`;
             }
         }
         window.evaluateLiveStatus = evaluateLiveStatus;
@@ -1519,25 +1889,83 @@
             const container = document.getElementById('schedule-weekly-grid');
             if(!container) return;
             const daysMap = [
-                {id: 1, name: "ПН"}, {id: 2, name: "ВТ"}, {id: 3, name: "СР"},
-                {id: 4, name: "ЧТ"}, {id: 5, name: "ПТ"}, {id: 6, name: "СБ"}, {id: 0, name: "ВС"}
+                {id: 1, name: "Понедельник"}, {id: 2, name: "Вторник"}, 
+                {id: 3, name: "Среда"}, {id: 4, name: "Четверг"}, 
+                {id: 5, name: "Пятница"}, {id: 6, name: "Суббота"}, 
+                {id: 0, name: "Воскресенье"}
             ];
             
             container.innerHTML = daysMap.map(d => {
                 const s = (configData.schedule && configData.schedule[d.id]) ? configData.schedule[d.id] : {s:"09:00", e:"18:00", c:false};
                 return `
-                    <div class="flex flex-col gap-1 text-center bg-black/40 p-1 rounded border border-white/5">
-                        <span class="text-[9px] font-bold text-slate-400">${d.name}</span>
-                        <input type="time" id="sch-${d.id}-s" value="${s.s}" class="text-[9px] p-0.5 bg-black/50 border border-white/10 rounded text-center text-white outline-none">
-                        <input type="time" id="sch-${d.id}-e" value="${s.e}" class="text-[9px] p-0.5 bg-black/50 border border-white/10 rounded text-center text-white outline-none">
-                        <label class="text-[8px] mt-1 flex items-center justify-center gap-1 cursor-pointer">
-                            <input type="checkbox" id="sch-${d.id}-c" ${s.c ? 'checked' : ''} class="accent-rose-500"> Вых
-                        </label>
+                    <div class="flex flex-col bg-white/5 border ${s.c ? 'border-rose-500/20' : 'border-cyan-500/20'} p-4 rounded-3xl relative text-left transition-colors duration-300">
+                        <span class="text-xs font-space font-bold ${s.c ? 'text-rose-400' : 'text-cyan-400'} uppercase tracking-wider mb-4 block border-b border-white/5 pb-1">${d.name}</span>
+                        
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[10px] text-slate-500 uppercase font-bold">Старт</span>
+                                <input type="time" id="sch-${d.id}-s" value="${s.s}" class="w-24 text-xs p-2 bg-black/60 border border-white/10 rounded-xl text-center text-white outline-none focus:border-cyan-500 font-mono">
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[10px] text-slate-500 uppercase font-bold">Конец</span>
+                                <input type="time" id="sch-${d.id}-e" value="${s.e}" class="w-24 text-xs p-2 bg-black/60 border border-white/10 rounded-xl text-center text-white outline-none focus:border-cyan-500 font-mono">
+                            </div>
+                        </div>
+
+                        <!-- Переключатель выходного дня -->
+                        <div class="mt-auto pt-3 border-t border-white/5 flex items-center justify-between">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase font-space">Выходной</span>
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="sch-${d.id}-c" ${s.c ? 'checked' : ''} class="sr-only peer" onchange="toggleDayColor(this, ${d.id})">
+                                <div class="w-10 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:bg-rose-600/40 border border-white/10 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                            </label>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
         window.renderScheduleInputs = renderScheduleInputs;
+
+        window.copyMondayScheduleToWeekdays = function() {
+            const mondayStart = document.getElementById('sch-1-s')?.value || "09:00";
+            const mondayEnd = document.getElementById('sch-1-e')?.value || "18:00";
+            const mondayClosed = document.getElementById('sch-1-c')?.checked || false;
+
+            const weekdays = [2, 3, 4, 5]; 
+            weekdays.forEach(d => {
+                const sInput = document.getElementById(`sch-${d}-s`);
+                const eInput = document.getElementById(`sch-${d}-e`);
+                const cInput = document.getElementById(`sch-${d}-c`);
+                
+                if (sInput) sInput.value = mondayStart;
+                if (eInput) eInput.value = mondayEnd;
+                if (cInput) {
+                    cInput.checked = mondayClosed;
+                    toggleDayColor(cInput, d);
+                }
+            });
+            showToast("Расписание Понедельника скопировано на все будние дни!", "success");
+        };
+
+        window.toggleDayColor = function(checkbox, dayId) {
+            const card = checkbox.closest('.border');
+            const daySpan = card.querySelector('.font-space');
+            if (checkbox.checked) {
+                card.classList.remove('border-cyan-500/20');
+                card.classList.add('border-rose-500/20');
+                if (daySpan) {
+                    daySpan.classList.remove('text-cyan-400');
+                    daySpan.classList.add('text-rose-400');
+                }
+            } else {
+                card.classList.remove('border-rose-500/20');
+                card.classList.add('border-cyan-500/20');
+                if (daySpan) {
+                    daySpan.classList.remove('text-rose-400');
+                    daySpan.classList.add('text-cyan-400');
+                }
+            }
+        };
 
         function checkMaintenanceMode() {
             const overlay = document.getElementById('maintenance-overlay');
@@ -1554,11 +1982,16 @@
         }
         window.checkMaintenanceMode = checkMaintenanceMode;
 
-        // =================================================================
-        // ХИРУРГИЧЕСКИ ИСПРАВЛЕННЫЕ ИНТЕГРИРОВАННЫЕ МОДУЛЬНЫЕ ФУНКЦИИ
-        // =================================================================
+        window.populateAdminFields = function() {
+            const handleInput = document.getElementById('setting-tg');
+            if (handleInput) handleInput.value = configData.telegramHandle || "your_telegram";
+            
+            const holidayCheckbox = document.getElementById('setting-holiday');
+            if (holidayCheckbox) holidayCheckbox.checked = configData.isHoliday || false;
 
-        // Авторизация администратора
+            renderScheduleInputs();
+        };
+
         window.loginAdmin = function() {
             const passwordInput = document.getElementById('admin-password');
             const password = passwordInput.value;
@@ -1570,45 +2003,25 @@
             
             if (hash === expectedHash) {
                 window.setAdminState(true);
-                // ХИРУРГИЧЕСКОЕ ИСПРАВЛЕНИЕ: Мгновенное обновление блокировки техработ для авторизованного админа
                 checkMaintenanceMode();
                 
                 document.getElementById('admin-login-sec').classList.add('hidden');
                 document.getElementById('admin-dashboard-sec').classList.remove('hidden');
                 
-                const handleInput = document.getElementById('setting-tg');
-                if (handleInput) handleInput.value = configData.telegramHandle || "your_telegram";
-                
-                const holidayCheckbox = document.getElementById('setting-holiday');
-                if (holidayCheckbox) holidayCheckbox.checked = configData.isHoliday || false;
-                
-                const btn = document.getElementById('btn-toggle-maintenance');
-                if (btn) {
-                    if (configData.maintenanceMode) {
-                        btn.className = "py-3 px-4 bg-orange-600 text-white font-bold rounded-xl text-xs hover:bg-orange-500 transition";
-                        btn.innerHTML = `<i class="fas fa-tools mr-1"></i> Выкл. Тех.`;
-                    } else {
-                        btn.className = "py-3 px-4 bg-orange-500/20 border border-orange-500/50 text-orange-400 font-bold rounded-xl text-xs hover:bg-orange-500 hover:text-white transition";
-                        btn.innerHTML = `<i class="fas fa-tools mr-1"></i> Тех. Работы`;
-                    }
-                }
+                window.populateAdminFields();
 
                 renderCrmProjects();
-                renderScheduleInputs();
-                
                 showToast("Авторизация администратора успешна!", "success");
             } else {
                 showToast("Неверный ключ доступа администратора!", "error");
             }
         };
 
-        // Завершение сессии администратора
         window.logoutAdmin = function() {
             window.setAdminState(false);
             if (isVisualCmsMode) {
                 toggleVisualCmsMode();
             }
-            // ХИРУРГИЧЕСКОЕ ИСПРАВЛЕНИЕ: Мгновенный возврат экрана техработ при выходе администратора
             checkMaintenanceMode();
             
             document.getElementById('admin-login-sec').classList.remove('hidden');
@@ -1617,11 +2030,57 @@
             showToast("Вы вышли из панели администратора", "info");
         };
 
-        // Переключение режима обслуживания (Технические работы)
-        window.toggleMaintenanceAdmin = async function() {
-            const updatedConfig = { ...configData };
-            updatedConfig.maintenanceMode = !updatedConfig.maintenanceMode;
+        window.toggleMaintenanceAdmin = function() {
+            if (configData.maintenanceMode) {
+                disableMaintenanceMode();
+            } else {
+                const modal = document.getElementById('maintenance-setup-modal');
+                const datetimeInput = document.getElementById('maintenance-end-datetime');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    if (datetimeInput) {
+                        const defaultEnd = new Date();
+                        defaultEnd.setDate(defaultEnd.getDate() + 2);
+                        defaultEnd.setMinutes(defaultEnd.getMinutes() - defaultEnd.getTimezoneOffset());
+                        datetimeInput.value = defaultEnd.toISOString().slice(0, 16);
+                    }
+                }
+            }
+        };
 
+        window.closeMaintenanceSetupModal = function() {
+            const modal = document.getElementById('maintenance-setup-modal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.confirmMaintenanceStart = async function() {
+            const datetimeInput = document.getElementById('maintenance-end-datetime');
+            if (!datetimeInput || !datetimeInput.value) {
+                showToast("Пожалуйста, укажите дату и время окончания!", "error");
+                return;
+            }
+
+            const endTimeISO = new Date(datetimeInput.value).toISOString();
+
+            const updatedConfig = { ...configData };
+            updatedConfig.maintenanceMode = true;
+            updatedConfig.maintenanceEnd = endTimeISO;
+
+            await saveConfigData(updatedConfig);
+            closeMaintenanceSetupModal();
+            showToast("Режим обслуживания систем успешно запущен!", "success");
+        };
+
+        async function disableMaintenanceMode() {
+            const updatedConfig = { ...configData };
+            updatedConfig.maintenanceMode = false;
+            updatedConfig.maintenanceEnd = null;
+
+            await saveConfigData(updatedConfig);
+            showToast("Режим обслуживания отключен!", "success");
+        }
+
+        async function saveConfigData(updatedConfig) {
             if (firebaseInitialized) {
                 try {
                     await ensureAuth();
@@ -1642,17 +2101,14 @@
                 if (updatedConfig.maintenanceMode) {
                     btn.className = "py-3 px-4 bg-orange-600 text-white font-bold rounded-xl text-xs hover:bg-orange-500 transition";
                     btn.innerHTML = `<i class="fas fa-tools mr-1"></i> Выкл. Тех.`;
-                    showToast("Режим обслуживания систем активирован!", "success");
                 } else {
                     btn.className = "py-3 px-4 bg-orange-500/20 border border-orange-500/50 text-orange-400 font-bold rounded-xl text-xs hover:bg-orange-500 hover:text-white transition";
                     btn.innerHTML = `<i class="fas fa-tools mr-1"></i> Тех. Работы`;
-                    showToast("Режим обслуживания отключен!", "success");
                 }
             }
             checkMaintenanceMode();
-        };
+        }
 
-        // Скачать резервную копию базы данных в JSON
         window.downloadJsonData = function() {
             const exportData = {
                 appId: appId,
@@ -1674,15 +2130,11 @@
             showToast("Резервная копия базы (JSON) скачана!", "success");
         };
 
-        // =================================================================
-        // БЕЗОПАСНЫЙ СБРОС СТАТИСТИКИ (С подтверждением Double-Click для iframe)
-        // =================================================================
         window.clearAnalytics = async function(btnElement) {
             if (!btnElement) {
                 btnElement = document.querySelector('button[onclick^="clearAnalytics"]');
             }
             
-            // ХИРУРГИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обход блокировок confirm() песочницы iframe через визуальный двухэтапный клик
             if (btnElement && btnElement.getAttribute('data-confirmed') !== 'true') {
                 btnElement.setAttribute('data-confirmed', 'true');
                 btnElement.innerHTML = `<i class="fas fa-exclamation-triangle mr-1"></i> Точно сбросить?`;
@@ -1691,17 +2143,16 @@
                 setTimeout(() => {
                     if (btnElement) {
                         btnElement.setAttribute('data-confirmed', 'false');
-                        btnElement.innerHTML = `<i class="fas fa-eraser mr-1"></i> Сброс Стат.`;
+                        btnElement.innerHTML = `<i class="fas fa-eraser mr-1"></i> Сброс Stat.`;
                         btnElement.className = "py-3 px-4 bg-white/5 border border-white/10 text-slate-400 font-bold rounded-xl text-xs hover:text-white transition";
                     }
                 }, 3000);
                 return;
             }
 
-            // Возврат кнопке исходного вида перед сбросом
             if (btnElement) {
                 btnElement.setAttribute('data-confirmed', 'false');
-                btnElement.innerHTML = `<i class="fas fa-eraser mr-1"></i> Сброс Стат.`;
+                btnElement.innerHTML = `<i class="fas fa-eraser mr-1"></i> Сброс Stat.`;
                 btnElement.className = "py-3 px-4 bg-white/5 border border-white/10 text-slate-400 font-bold rounded-xl text-xs hover:text-white transition";
             }
             
@@ -1727,13 +2178,15 @@
             }
         };
 
-        // Сохранить настройки системы администратором
         window.saveAdminSettings = async function() {
             const handle = document.getElementById('setting-tg').value.trim();
             const isHoliday = document.getElementById('setting-holiday').checked;
             const newPass = document.getElementById('setting-new-pass').value;
 
-            // Сбор недельного расписания по дням недели
+            const updatedConfig = { ...configData };
+            updatedConfig.telegramHandle = handle;
+            updatedConfig.isHoliday = isHoliday;
+            
             const updatedSchedule = {};
             const days = [1, 2, 3, 4, 5, 6, 0];
             days.forEach(d => {
@@ -1742,11 +2195,10 @@
                 const closedVal = document.getElementById(`sch-${d}-c`)?.checked || false;
                 updatedSchedule[d] = { s: startVal, e: endVal, c: closedVal };
             });
-
-            const updatedConfig = { ...configData };
-            updatedConfig.telegramHandle = handle;
-            updatedConfig.isHoliday = isHoliday;
             updatedConfig.schedule = updatedSchedule;
+            
+            updatedConfig.maintenanceMode = configData.maintenanceMode || false; 
+            updatedConfig.maintenanceEnd = configData.maintenanceEnd || null;
 
             if (newPass) {
                 updatedConfig.adminPassHash = CryptoJS.SHA256(newPass).toString();
@@ -1775,7 +2227,11 @@
             showToast("Системные параметры успешно применены!", "success");
         };
 
-        // Интегрированный обработчик выбора и заказа тарифа с инкрементированием метрик
+        window.saveWeeklyScheduleAndClose = async function() {
+            await window.saveAdminSettings();
+            closeScheduleEditModal();
+        };
+
         window.handleOrderById = async function(titleId) {
             const el = document.querySelector(`[data-id="${titleId}"]`);
             const titleText = el ? el.textContent : "Выбранный тариф";
@@ -1808,7 +2264,6 @@
             }
         };
 
-        // Реализация функции обновления превью кейса для Visual CMS
         window.savePortfolioUpdate = async function(caseId, newVideo, newImg) {
             const updated = { ...window.portfolioLinks };
             updated[`case${caseId}_video`] = newVideo;
@@ -1828,26 +2283,21 @@
             showToast(`Кейс ${caseId} успешно сохранен в системе!`, "success");
         };
 
-        // =================================================================
-        // БЕЗОПАСНОЕ УДАЛЕНИЕ КЛИЕНТСКИХ ПРОЕКТОВ (С подтверждением Double-Click для iframe)
-        // =================================================================
         window.deleteClientProject = async function(id, btnElement) {
             if (!btnElement) {
                 btnElement = document.querySelector(`#crm-row-${id} button[onclick^="deleteClientProject"]`);
             }
             
-            // Если первое нажатие - просим подтверждение прямо в интерфейсе кнопки (обход блокировок confirm фрейма)
             if (btnElement && btnElement.getAttribute('data-confirmed') !== 'true') {
                 btnElement.setAttribute('data-confirmed', 'true');
                 btnElement.textContent = "ТОЧНО УДАЛИТЬ?";
                 btnElement.className = "px-4 py-2 bg-rose-600 text-white font-black rounded-lg text-[10px] uppercase transition shadow-[0_0_10px_rgba(244,63,94,0.4)]";
                 
-                // Сброс состояния через 3 секунды бездействия
                 setTimeout(() => {
                     if (btnElement) {
                         btnElement.setAttribute('data-confirmed', 'false');
-                        btnElement.textContent = "Удалить";
-                        btnElement.className = "px-4 py-2 bg-transparent border border-rose-500/50 text-rose-500 hover:bg-rose-500/10 font-bold rounded-lg text-[10px] uppercase transition";
+                        btnElement.textContent = "Удалить Кабинет";
+                        btnElement.className = "px-4 py-2 bg-transparent border border-rose-500/50 text-rose-500 hover:bg-rose-500/10 font-bold rounded-lg text-[10px] uppercase transition font-space";
                     }
                 }, 3000);
                 return;
@@ -1869,9 +2319,6 @@
             }
         };
 
-        // =================================================================
-        // ИНИЦИАЛИЗАЦИЯ И ПОДКЛЮЧЕНИЕ К ИСТОЧНИКУ ДАННЫХ
-        // =================================================================
         const initAppData = async () => {
             window.portfolioLinks = defaultPortfolioSettings;
 
@@ -1882,12 +2329,12 @@
                     telegramHandle: "your_telegram", 
                     schedule: defaultSchedule, 
                     isHoliday: false,
-                    maintenanceMode: false
+                    maintenanceMode: false,
+                    maintenanceEnd: null
                 };
                 window.configData = configData;
                 window.portfolioLinks = JSON.parse(localStorage.getItem('space_portfolio_links')) || defaultPortfolioSettings;
 
-                // Загрузка локальной телеметрии
                 let localStats = JSON.parse(localStorage.getItem('space_analytics_local')) || { views: 0, click_t1: 0, click_t2: 0, click_t3: 0 };
                 localStats.views = (localStats.views || 0) + 1;
                 localStorage.setItem('space_analytics_local', JSON.stringify(localStats));
@@ -1921,7 +2368,6 @@
                 else { siteContentData = defaultContent; await setDoc(contentDocRef, defaultContent); }
                 applySiteContent();
 
-                // РЕАКТИВНОЕ ОБНОВЛЕНИЕ КОНФИГУРАЦИИ СТРАНИЦЫ И РЕЖИМА ОБСЛУЖИВАНИЯ (В РЕАЛЬНОМ ВРЕМЕНИ)
                 onSnapshot(configDocRef, (snap) => {
                     if (snap.exists()) {
                         configData = snap.data();
@@ -1931,14 +2377,14 @@
                             telegramHandle: "your_telegram", 
                             schedule: defaultSchedule, 
                             isHoliday: false,
-                            maintenanceMode: false
+                            maintenanceMode: false,
+                            maintenanceEnd: null
                         };
                         setDoc(configDocRef, configData);
                     }
                     if(!configData.schedule) configData.schedule = defaultSchedule;
                     window.configData = configData;
                     
-                    // Синхронизация кнопки техработ в админке
                     const btn = document.getElementById('btn-toggle-maintenance');
                     if (btn) {
                         if (configData.maintenanceMode) {
@@ -1993,7 +2439,6 @@
             initAppData();
         }
 
-        // Глобальные интерактивные обработчики
         window.loginPortalWithCode = async function() {
             const code = document.getElementById('portal-access-code').value.trim().toLowerCase();
             if (!code) { showToast("Введите ваш уникальный код доступа!", "error"); return; }
@@ -2050,9 +2495,75 @@
             catch (e) { plainCode = project.code; }
             
             document.getElementById('client-user-name').textContent = `${project.clientName} (Код: ${plainCode})`;
-            document.getElementById('client-progress-value').textContent = `${project.progress || 0}%`;
-            document.getElementById('client-project-notes').textContent = project.notes || "Монтажер пока не оставил заметок.";
+            
+            // Встраиваем персональную ссылку менеджера
+            const managerTgLink = project.managerTg || ('https://t.me/' + (configData.telegramHandle || 'your_telegram'));
+            document.getElementById('client-manager-contact').innerHTML = `
+                <span class="text-slate-500">Ваш менеджер:</span>
+                <a href="${managerTgLink}" target="_blank" class="px-4 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-full font-bold transition flex items-center gap-1.5 shadow-[0_0_10px_rgba(0,198,251,0.15)]"><i class="fab fa-telegram"></i> Написать</a>
+            `;
+
+            const progressValue = project.progress || 0;
+            document.getElementById('client-progress-value').textContent = `${progressValue}%`;
+            
+            const circleBar = document.getElementById('hologram-circle-bar');
+            if (circleBar) {
+                const strokeLength = 364.4;
+                const offset = strokeLength - (progressValue / 100) * strokeLength;
+                circleBar.style.strokeDashoffset = offset;
+            }
+
+            document.getElementById('client-project-notes').textContent = project.notes || "Менеджер работает над проектом. Скоро здесь появится комментарий.";
             document.getElementById('client-project-deadline').textContent = formatDateRussian(project.deadline);
+
+            const basePrice = project.basePrice || 0;
+            document.getElementById('client-base-price').textContent = `${basePrice.toLocaleString()} ₽`;
+            
+            const addonsContainer = document.getElementById('client-addons-container');
+            let totalAddonsPrice = 0;
+            
+            if (addonsContainer) {
+                if (project.addons && project.addons.length > 0) {
+                    addonsContainer.innerHTML = project.addons.map(addon => {
+                        totalAddonsPrice += addon.price;
+                        return `
+                            <div class="flex justify-between text-slate-500 pl-2 border-l border-white/5">
+                                <span>+ ${addon.label}:</span>
+                                <span class="font-mono">${addon.price.toLocaleString()} ₽</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    addonsContainer.innerHTML = `<p class="text-[10px] text-slate-600 italic">Дополнительные услуги не подключены</p>`;
+                }
+            }
+
+            const totalPrice = basePrice + totalAddonsPrice;
+            document.getElementById('client-total-price').textContent = `${totalPrice.toLocaleString()} ₽`;
+
+            // УБРАН ТЕМПОРИТМ: Оставлено только 4 характеристики
+            const pStats = project.stats || { dynamics: 50, sound: 50, color: 50, vfx: 50 };
+            const statsContainer = document.getElementById('client-radar-bars');
+            if (statsContainer) {
+                const statsMap = [
+                    { label: "Динамика монтажа", val: pStats.dynamics || 50, color: "bg-cyan-400 shadow-[0_0_8px_#00c6fb]" },
+                    { label: "Саунд-дизайн (SFX / музыка)", val: pStats.sound || 50, color: "bg-blue-400 shadow-[0_0_8px_#4facfe]" },
+                    { label: "Цветокоррекция (стилистика)", val: pStats.color || 50, color: "bg-purple-400 shadow-[0_0_8px_#a855f7]" },
+                    { label: "VFX / Графика & Анимация", val: pStats.vfx || 50, color: "bg-pink-400 shadow-[0_0_8px_#ec4899]" }
+                ];
+                
+                statsContainer.innerHTML = statsMap.map(st => `
+                    <div>
+                        <div class="flex justify-between text-[10px] uppercase font-space text-slate-400 mb-1">
+                            <span>${st.label}</span>
+                            <span class="font-bold text-white">${st.val}%</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-black/50 border border-white/10 rounded-full overflow-hidden">
+                            <div class="h-full ${st.color} transition-all duration-1000" style="width: ${st.val}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
 
             const s1 = project.s1 || "ТЗ & Бриф"; const s2 = project.s2 || "Черновик";
             const s3 = project.s3 || "Звук & FX"; const s4 = project.s4 || "Цвет"; const s5 = project.s5 || "Сдача";
@@ -2071,20 +2582,43 @@
                 const bottomLabel = idx === 4 ? "Готово" : `Стадия ${num}`;
 
                 return `
-                    <div class="stage-step p-4 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center justify-between transition-all duration-500 ${activeClass}">
+                    <div class="stage-step p-4 rounded-2xl bg-[#020110] border border-white/5 text-center flex flex-col items-center justify-between transition-all duration-500 ${activeClass}">
                         <i class="fas ${icon} text-2xl text-cyan-400 mb-2"></i>
-                        <span class="text-[10px] sm:text-xs font-bold block text-white">${title}</span>
+                        <span class="text-[10px] sm:text-xs font-bold block text-white font-space">${title}</span>
                         <span class="text-[9px] text-slate-500 mt-1 uppercase">${bottomLabel}</span>
                     </div>
                 `;
             }).join('');
 
             container.innerHTML = stagesHtml;
+
+            const logsContainer = document.getElementById('client-logs-list');
+            if (logsContainer) {
+                const logsList = project.logs && project.logs.length > 0 ? project.logs : [
+                    { text: "Орбитальный бриф успешно согласован", blink: false, date: "Система получила техническое задание." },
+                    { text: "Исходные материалы загружены в бортовой архив", blink: false, date: "Все файлы импортированы." }
+                ];
+
+                logsContainer.innerHTML = logsList.map(log => {
+                    const indicatorDot = `
+                        <span class="relative flex h-2 w-2 mt-1.5 flex-shrink-0">
+                            <span class="${log.blink ? 'animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75' : ''}"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 ${log.blink ? 'bg-cyan-400 shadow-[0_0_8px_#00c6fb]' : 'bg-emerald-500 shadow-[0_0_6px_#10b981]'}"></span>
+                        </span>
+                    `;
+                    return `
+                        <div class="flex items-start gap-3 bg-white/[0.01] border border-white/5 p-3 rounded-2xl">
+                            ${indicatorDot}
+                            <div>
+                                <p class="text-white font-semibold leading-relaxed">${log.text}</p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">${log.date || ''}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
-        // =================================================================
-        // CRM ДЛЯ АДМИНИСТРАТОРА (АККОРДЕОН И УПРАВЛЕНИЕ)
-        // =================================================================
         function loadCrmProjectsRealtime() {
             if (!firebaseInitialized) return;
             ensureAuth().then(() => {
@@ -2103,25 +2637,45 @@
             const name = document.getElementById('crm-new-name').value.trim();
             const project = document.getElementById('crm-new-project').value.trim();
             const deadline = document.getElementById('crm-new-deadline').value;
+            const basePrice = parseInt(document.getElementById('crm-new-price').value) || 0;
 
             if (!rawCode || !name || !project) {
                 showToast("Пожалуйста, заполните Код доступа, Имя и Проект!", "error");
                 return;
             }
 
+            if (deadline) {
+                const selDate = new Date(deadline);
+                const minDate = new Date(today);
+                const maxDate = new Date("2100-12-31");
+                if (selDate < minDate || selDate > maxDate) {
+                    showToast("Дедлайн за границами калибровки (2026—2100 гг.)", "error");
+                    return;
+                }
+            }
+
             const encryptedCode = CryptoJS.AES.encrypt(rawCode.toLowerCase(), cryptoSecret).toString();
+            // По умолчанию добавляем ссылку на главный ТГ, если есть
+            const defTgLink = "https://t.me/" + (configData.telegramHandle || "your_telegram");
 
             const data = {
                 code: encryptedCode, 
                 clientName: name, projectName: project, deadline: deadline,
                 s1: "ТЗ & Бриф", s2: "Черновик", s3: "Звук & FX", s4: "Цвет", s5: "Сдача",
                 stage: "brief", progress: 10,
-                notes: "Кабинет успешно настроен. Ждем ваши видеоматериалы!"
+                basePrice: basePrice,
+                managerTg: defTgLink,
+                addons: [],
+                stats: { dynamics: 50, sound: 50, color: 50, vfx: 50 },
+                notes: "Кабинет успешно настроен. Ждем ваши видеоматериалы!",
+                logs: [
+                    { text: "Кабинет клиента успешно настроен", blink: true, date: formatDateRussian(new Date().toISOString()) }
+                ]
             };
 
             if (firebaseInitialized) {
                 try {
-                    await ensureAuth(); // Обязательная проверка авторизации
+                    await ensureAuth(); 
                     if (!auth.currentUser) return;
                     await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'projects'), data);
                     showToast("Кабинет клиента успешно создан в базе!", "success");
@@ -2140,6 +2694,7 @@
             document.getElementById('crm-new-name').value = "";
             document.getElementById('crm-new-project').value = "";
             document.getElementById('crm-new-deadline').value = "";
+            document.getElementById('crm-new-price').value = "";
         };
 
         window.toggleCrmAccordion = function(id) {
@@ -2193,12 +2748,33 @@
             const notes = row.querySelector('.crm-notes-input').value.trim();
             const deadline = row.querySelector('.crm-deadline-input').value;
 
+            if (deadline) {
+                const selDate = new Date(deadline);
+                const minDate = new Date(today);
+                const maxDate = new Date("2100-12-31");
+                if (selDate < minDate || selDate > maxDate) {
+                    showToast("Дедлайн за границами калибровки (2026—2100 гг.)", "error");
+                    return;
+                }
+            }
+
+            const basePrice = parseInt(row.querySelector('.crm-price-input').value) || 0;
+            const managerTg = row.querySelector('.crm-manager-tg').value.trim();
+
+            const dynamics = parseInt(row.querySelector('.crm-range-dynamics').value) || 50;
+            const sound = parseInt(row.querySelector('.crm-range-sound').value) || 50;
+            const color = parseInt(row.querySelector('.crm-range-color').value) || 50;
+            const vfx = parseInt(row.querySelector('.crm-range-vfx').value) || 50;
+
+            // УБРАН ТЕМПОРИТМ ИЗ СОХРАНЕНИЯ
+            const stats = { dynamics, sound, color, vfx };
+
             if (firebaseInitialized) {
                 try {
                     await ensureAuth();
                     if (!auth.currentUser) throw new Error("Нет авторизации базы данных");
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'projects', id);
-                    await updateDoc(docRef, { s1, s2, s3, s4, s5, stage, progress, notes, deadline });
+                    await setDoc(docRef, { s1, s2, s3, s4, s5, stage, progress, notes, deadline, basePrice, managerTg, stats }, { merge: true });
                     showToast("Настройки кабинета успешно обновлены!", "success");
                 } catch (err) { showToast("Ошибка сохранения: " + err.message, "error"); }
             } else {
@@ -2206,6 +2782,9 @@
                 if (p) {
                     p.s1 = s1; p.s2 = s2; p.s3 = s3; p.s4 = s4; p.s5 = s5;
                     p.stage = stage; p.progress = progress; p.notes = notes; p.deadline = deadline;
+                    p.basePrice = basePrice;
+                    p.managerTg = managerTg;
+                    p.stats = stats;
                     saveLocalProjects();
                     showToast("Локальный кабинет обновлен!", "success");
                     renderCrmProjects();
@@ -2213,7 +2792,7 @@
             }
         };
 
-        // Экспорт функции отрисовки в глобальную область видимости
+        // ПРЕМИАЛЬНАЯ ВЕРСТКА КАРТОЧЕК КЛИЕНТА В АДМИНКЕ
         window.renderCrmProjects = function() {
             const container = document.getElementById('crm-projects-list');
             if (!container) return;
@@ -2221,7 +2800,7 @@
             const list = firebaseInitialized ? clientProjects : localDemoProjects;
 
             if (!list || list.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 font-space">Активных проектов нет.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 font-space text-center py-6">Активных ЛК пользователей не зарегистрировано.</p>`;
                 return;
             }
 
@@ -2233,10 +2812,34 @@
                 const s1 = p.s1 || "ТЗ & Бриф"; const s2 = p.s2 || "Черновик";
                 const s3 = p.s3 || "Звук & FX"; const s4 = p.s4 || "Цвет"; const s5 = p.s5 || "Сдача";
 
+                const basePrice = p.basePrice || 0;
+                const managerTg = p.managerTg || "";
+                const addons = p.addons || [];
+                const stats = p.stats || { dynamics: 50, sound: 50, color: 50, vfx: 50 };
+
+                const addonsHtml = addons.map((addon, idx) => `
+                    <div class="flex items-center justify-between bg-black/40 border border-white/5 p-2 rounded-xl text-[11px] mb-1.5">
+                        <span class="text-slate-300">${addon.label} — <strong class="text-cyan-400 font-mono">${addon.price} ₽</strong></span>
+                        <button onclick="deleteProjectAddon('${p.id}', ${idx})" class="text-rose-500 hover:text-rose-400 px-2" title="Удалить доп. услугу"><i class="fas fa-times"></i></button>
+                    </div>
+                `).join('');
+
+                const logs = p.logs || [];
+                let logsHtml = logs.map((log, index) => `
+                    <div class="flex items-center justify-between bg-black/30 border border-white/5 p-2 rounded-xl text-[11px] mb-1.5">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full ${log.blink ? 'bg-cyan-400 shadow-[0_0_4px_#00c6fb] animate-pulse' : 'bg-emerald-500'}"></span>
+                            <span class="text-slate-300 font-medium">${log.text}</span>
+                        </div>
+                        <button onclick="deleteProjectLog('${p.id}', ${index})" class="text-rose-500 hover:text-rose-400 px-2" title="Удалить запись"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `).join('');
+
+                if (logs.length === 0) logsHtml = `<p class="text-[10px] text-slate-600 italic">Журнал логов пуст.</p>`;
+
                 return `
-                    <div class="bg-white/5 border border-white/5 rounded-2xl mb-3 overflow-hidden" id="crm-row-${p.id}">
-                        <!-- Шапка Аккордеона -->
-                        <div class="p-4 cursor-pointer hover:bg-white/5 transition flex justify-between items-center animate-fade-in" onclick="toggleCrmAccordion('${p.id}')">
+                    <div class="bg-[#020110] border border-white/5 rounded-2xl mb-3 overflow-hidden" id="crm-row-${p.id}">
+                        <div class="p-4 cursor-pointer hover:bg-white/5 transition flex justify-between items-center" onclick="toggleCrmAccordion('${p.id}')">
                             <div>
                                 <span class="text-xs text-cyan-400 font-mono font-bold block">${p.projectName} <span class="text-[9px] text-emerald-400 ml-2">(Дедлайн: ${formatDateRussian(p.deadline)})</span></span>
                                 <span class="text-[10px] text-slate-400">Клиент: ${p.clientName} | <strong class="text-emerald-400 font-mono tracking-wider">Код: ${plainCode}</strong></span>
@@ -2244,50 +2847,121 @@
                             <i class="fas fa-chevron-down text-slate-500 transition-transform duration-300" id="crm-icon-${p.id}"></i>
                         </div>
 
-                        <!-- Тело настройки клиента -->
-                        <div class="hidden p-4 border-t border-white/5 bg-black/40" id="crm-body-${p.id}">
-                            <div class="flex justify-between items-end mb-3">
-                                <h5 class="text-[10px] font-bold text-slate-300 uppercase font-space">Настройка этапов</h5>
-                                <div class="flex flex-col">
-                                    <label class="text-[8px] text-slate-400 uppercase font-bold mb-1">Дедлайн</label>
-                                    <input type="date" class="crm-deadline-input bg-[#010008] border border-white/10 text-[9px] rounded p-1 text-white outline-none" value="${p.deadline || ''}">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-4">
-                                <input type="text" id="s1-${p.id}" class="crm-s1 w-full bg-[#010008] border border-white/10 text-[10px] rounded p-2 text-white" value="${s1}" placeholder="Этап 1">
-                                <input type="text" id="s2-${p.id}" class="crm-s2 w-full bg-[#010008] border border-white/10 text-[10px] rounded p-2 text-white" value="${s2}" placeholder="Этап 2">
-                                <input type="text" id="s3-${p.id}" class="crm-s3 w-full bg-[#010008] border border-white/10 text-[10px] rounded p-2 text-white" value="${s3}" placeholder="Этап 3">
-                                <input type="text" id="s4-${p.id}" class="crm-s4 w-full bg-[#010008] border border-white/10 text-[10px] rounded p-2 text-white" value="${s4}" placeholder="Этап 4">
-                                <input type="text" id="s5-${p.id}" class="crm-s5 w-full bg-[#010008] border border-white/10 text-[10px] rounded p-2 text-white" value="${s5}" placeholder="Этап 5">
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label class="text-[9px] text-slate-400 uppercase font-bold block mb-2">Текущая стадия (Кликни для переключения)</label>
-                                    <div class="grid grid-cols-5 gap-1 bg-[#010008] p-1.5 rounded-xl border border-white/10">
-                                        <input type="hidden" class="crm-stage-select" id="input-stage-${p.id}" value="${p.stage}">
-                                        <button type="button" onclick="changeCrmStage('${p.id}', 'brief')" id="btn-stage-${p.id}-brief" title="${s1}" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'brief' ? 'bg-cyan-500 text-slate-950 shadow-[0_0_10px_rgba(0,198,251,0.4)]' : 'text-slate-500 hover:text-white hover:bg-white/5'}">1</button>
-                                        <button type="button" onclick="changeCrmStage('${p.id}', 'edit')" id="btn-stage-${p.id}-edit" title="${s2}" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'edit' ? 'bg-cyan-500 text-slate-950 shadow-[0_0_10px_rgba(0,198,251,0.4)]' : 'text-slate-500 hover:text-white hover:bg-white/5'}">2</button>
-                                        <button type="button" onclick="changeCrmStage('${p.id}', 'effects')" id="btn-stage-${p.id}-effects" title="${s3}" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'effects' ? 'bg-cyan-500 text-slate-950 shadow-[0_0_10px_rgba(0,198,251,0.4)]' : 'text-slate-500 hover:text-white hover:bg-white/5'}">3</button>
-                                        <button type="button" onclick="changeCrmStage('${p.id}', 'color')" id="btn-stage-${p.id}-color" title="${s4}" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'color' ? 'bg-cyan-500 text-slate-950 shadow-[0_0_10px_rgba(0,198,251,0.4)]' : 'text-slate-500 hover:text-white hover:bg-white/5'}">4</button>
-                                        <button type="button" onclick="changeCrmStage('${p.id}', 'done')" id="btn-stage-${p.id}-done" title="${s5}" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'done' ? 'bg-cyan-500 text-slate-950 shadow-[0_0_10px_rgba(0,198,251,0.4)]' : 'text-slate-500 hover:text-white hover:bg-white/5'}">5</button>
+                        <!-- РЕДИЗАЙН: КАРТОЧКИ УПРАВЛЕНИЯ ВНУТРИ ЛК -->
+                        <div class="hidden p-5 border-t border-white/5 bg-black/40" id="crm-body-${p.id}">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                
+                                <!-- ЛЕВАЯ КОЛОНКА -->
+                                <div class="space-y-4">
+                                    <!-- Основная информация -->
+                                    <div class="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-3">
+                                        <h6 class="text-[9px] text-cyan-400 uppercase tracking-widest font-bold border-b border-white/5 pb-1 font-space">Основные настройки</h6>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="text-[8px] text-slate-500 uppercase font-bold mb-1 block">Дедлайн</label>
+                                                <input type="date" class="crm-deadline-input w-full bg-[#010008] border border-white/10 text-[10px] rounded-xl p-2 text-white outline-none focus:border-cyan-500" min="${today}" max="2100-12-31" value="${p.deadline || ''}">
+                                            </div>
+                                            <div>
+                                                <label class="text-[8px] text-slate-500 uppercase font-bold mb-1 block">Базовая цена (₽)</label>
+                                                <input type="number" class="crm-price-input w-full bg-[#010008] border border-white/10 text-[10px] rounded-xl p-2 text-white outline-none focus:border-cyan-500 font-mono" value="${basePrice}">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="text-[8px] text-slate-500 uppercase font-bold mb-1 block">Персональный Telegram менеджера</label>
+                                            <input type="text" class="crm-manager-tg w-full bg-[#010008] border border-white/10 text-[10px] rounded-xl p-2 text-white outline-none focus:border-cyan-500 font-mono" placeholder="https://t.me/your_telegram" value="${managerTg}">
+                                        </div>
                                     </div>
-                                    <div class="mt-1 px-1"><span class="text-[9px] text-cyan-500 font-bold font-space" id="lbl-stage-${p.id}">${p.stage === 'brief' ? s1 : p.stage === 'edit' ? s2 : p.stage === 'effects' ? s3 : p.stage === 'color' ? s4 : s5}</span></div>
-                                </div>
-                                <div>
-                                    <label class="text-[9px] text-slate-400 uppercase font-bold block mb-1">Прогресс: <span class="text-cyan-400 font-black" id="lbl-range-${p.id}">${p.progress || 0}%</span></label>
-                                    <input type="range" min="0" max="100" value="${p.progress || 0}" class="crm-progress-range w-full accent-cyan-400 cursor-pointer" oninput="document.getElementById('lbl-range-${p.id}').textContent = this.value + '%'">
-                                </div>
-                            </div>
 
-                            <div class="mb-4">
-                                <label class="text-[9px] text-slate-400 uppercase font-bold block mb-1">Индивидуальный комментарий клиенту</label>
-                                <input type="text" class="crm-notes-input w-full bg-[#010008] border border-white/10 rounded-lg text-xs px-3 py-2 text-white outline-none focus:border-cyan-500" value="${p.notes || ''}">
-                            </div>
+                                    <!-- Смета / Доп услуги -->
+                                    <div class="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-3">
+                                        <h6 class="text-[9px] text-cyan-400 uppercase tracking-widest font-bold border-b border-white/5 pb-1 font-space">Доп. услуги (Смета)</h6>
+                                        <div>${addonsHtml || '<p class="text-[9px] text-slate-600">Смета пуста</p>'}</div>
+                                        <div class="grid grid-cols-3 gap-2">
+                                            <input type="text" id="addon-label-${p.id}" placeholder="Название услуги" class="col-span-2 bg-[#010008] border border-white/10 rounded-lg text-[9px] px-2 py-1.5 text-white outline-none focus:border-cyan-500">
+                                            <input type="number" id="addon-price-${p.id}" placeholder="Цена" class="bg-[#010008] border border-white/10 rounded-lg text-[9px] px-2 py-1.5 text-white outline-none focus:border-cyan-500 font-mono">
+                                        </div>
+                                        <button onclick="addProjectAddon('${p.id}')" class="w-full py-1.5 bg-cyan-500/10 text-cyan-400 font-bold rounded-lg text-[9px] uppercase transition hover:bg-cyan-500/20 font-space">+ Добавить</button>
+                                    </div>
 
-                            <div class="flex gap-2 justify-end">
-                                <button onclick="deleteClientProject('${p.id}', this)" class="px-4 py-2 bg-transparent border border-rose-500/50 text-rose-500 hover:bg-rose-500/10 font-bold rounded-lg text-[10px] uppercase transition">Удалить</button>
-                                <button onclick="updateCrmProjectData('${p.id}')" class="px-5 py-2 bg-emerald-500 text-slate-950 font-black rounded-lg text-[10px] uppercase hover:scale-105 transition shadow-[0_0_10px_rgba(16,185,129,0.3)]">Сохранить настройки</button>
+                                    <!-- Комментарий -->
+                                    <div class="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-2">
+                                        <h6 class="text-[9px] text-cyan-400 uppercase tracking-widest font-bold border-b border-white/5 pb-1 font-space">Комментарий менеджера проекта</h6>
+                                        <textarea class="crm-notes-input w-full bg-[#010008] border border-white/10 rounded-xl p-2 text-[10px] text-white outline-none focus:border-cyan-500 resize-none h-16">${p.notes || ''}</textarea>
+                                    </div>
+                                </div>
+
+                                <!-- ПРАВАЯ КОЛОНКА -->
+                                <div class="space-y-4">
+                                    <!-- Прогресс и Стадии -->
+                                    <div class="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-3">
+                                        <h6 class="text-[9px] text-cyan-400 uppercase tracking-widest font-bold border-b border-white/5 pb-1 font-space">Стадии и Прогресс</h6>
+                                        <div class="flex items-center justify-between">
+                                            <label class="text-[8px] text-slate-500 uppercase font-bold">Прогресс калибровки:</label>
+                                            <span class="text-[10px] text-cyan-400 font-black font-mono" id="lbl-range-${p.id}">${p.progress || 0}%</span>
+                                        </div>
+                                        <input type="range" min="0" max="100" value="${p.progress || 0}" class="crm-progress-range w-full accent-cyan-400 cursor-pointer" oninput="document.getElementById('lbl-range-${p.id}').textContent = this.value + '%'">
+                                        
+                                        <div class="grid grid-cols-5 gap-1 pt-2">
+                                            <input type="text" id="s1-${p.id}" class="crm-s1 w-full bg-[#010008] border border-white/10 text-[9px] rounded p-1 text-center text-white" value="${s1}" title="Этап 1">
+                                            <input type="text" id="s2-${p.id}" class="crm-s2 w-full bg-[#010008] border border-white/10 text-[9px] rounded p-1 text-center text-white" value="${s2}" title="Этап 2">
+                                            <input type="text" id="s3-${p.id}" class="crm-s3 w-full bg-[#010008] border border-white/10 text-[9px] rounded p-1 text-center text-white" value="${s3}" title="Этап 3">
+                                            <input type="text" id="s4-${p.id}" class="crm-s4 w-full bg-[#010008] border border-white/10 text-[9px] rounded p-1 text-center text-white" value="${s4}" title="Этап 4">
+                                            <input type="text" id="s5-${p.id}" class="crm-s5 w-full bg-[#010008] border border-white/10 text-[9px] rounded p-1 text-center text-white" value="${s5}" title="Этап 5">
+                                        </div>
+                                        
+                                        <div class="bg-[#010008] p-1 rounded-xl border border-white/10 grid grid-cols-5 gap-1 mt-1">
+                                            <input type="hidden" class="crm-stage-select" id="input-stage-${p.id}" value="${p.stage}">
+                                            <button type="button" onclick="changeCrmStage('${p.id}', 'brief')" id="btn-stage-${p.id}-brief" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'brief' ? 'bg-cyan-500 text-slate-950' : 'text-slate-500 hover:text-white'}">1</button>
+                                            <button type="button" onclick="changeCrmStage('${p.id}', 'edit')" id="btn-stage-${p.id}-edit" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'edit' ? 'bg-cyan-500 text-slate-950' : 'text-slate-500 hover:text-white'}">2</button>
+                                            <button type="button" onclick="changeCrmStage('${p.id}', 'effects')" id="btn-stage-${p.id}-effects" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'effects' ? 'bg-cyan-500 text-slate-950' : 'text-slate-500 hover:text-white'}">3</button>
+                                            <button type="button" onclick="changeCrmStage('${p.id}', 'color')" id="btn-stage-${p.id}-color" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'color' ? 'bg-cyan-500 text-slate-950' : 'text-slate-500 hover:text-white'}">4</button>
+                                            <button type="button" onclick="changeCrmStage('${p.id}', 'done')" id="btn-stage-${p.id}-done" class="py-1.5 text-[10px] font-black rounded-lg transition-all ${p.stage === 'done' ? 'bg-cyan-500 text-slate-950' : 'text-slate-500 hover:text-white'}">5</button>
+                                        </div>
+                                        <div class="text-center mt-1"><span class="text-[9px] text-cyan-500 font-bold font-space" id="lbl-stage-${p.id}">${p.stage === 'brief' ? s1 : p.stage === 'edit' ? s2 : p.stage === 'effects' ? s3 : p.stage === 'color' ? s4 : s5}</span></div>
+                                    </div>
+
+                                    <!-- Характеристики (без темпоритма) -->
+                                    <div class="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-2">
+                                        <h6 class="text-[9px] text-cyan-400 uppercase tracking-widest font-bold border-b border-white/5 pb-1 font-space">Характеристики (Графики)</h6>
+                                        <div class="grid grid-cols-2 gap-3 pt-1">
+                                            <div>
+                                                <label class="block text-[8px] text-slate-500 mb-1">Динамика: <span class="text-white font-bold" id="lbl-dyn-${p.id}">${stats.dynamics}%</span></label>
+                                                <input type="range" class="crm-range-dynamics w-full accent-cyan-400" min="0" max="100" value="${stats.dynamics}" oninput="document.getElementById('lbl-dyn-${p.id}').textContent = this.value + '%'">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[8px] text-slate-500 mb-1">Звук: <span class="text-white font-bold" id="lbl-snd-${p.id}">${stats.sound}%</span></label>
+                                                <input type="range" class="crm-range-sound w-full accent-cyan-400" min="0" max="100" value="${stats.sound}" oninput="document.getElementById('lbl-snd-${p.id}').textContent = this.value + '%'">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[8px] text-slate-500 mb-1">Цвет: <span class="text-white font-bold" id="lbl-col-${p.id}">${stats.color}%</span></label>
+                                                <input type="range" class="crm-range-color w-full accent-cyan-400" min="0" max="100" value="${stats.color}" oninput="document.getElementById('lbl-col-${p.id}').textContent = this.value + '%'">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[8px] text-slate-500 mb-1">VFX: <span class="text-white font-bold" id="lbl-vfx-${p.id}">${stats.vfx}%</span></label>
+                                                <input type="range" class="crm-range-vfx w-full accent-cyan-400" min="0" max="100" value="${stats.vfx}" oninput="document.getElementById('lbl-vfx-${p.id}').textContent = this.value + '%'">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Логи (Бортовой журнал) -->
+                                    <div class="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-2">
+                                        <h6 class="text-[9px] text-cyan-400 uppercase tracking-widest font-bold border-b border-white/5 pb-1 font-space">Бортовой журнал (Логи)</h6>
+                                        <div class="space-y-1 mb-2">${logsHtml}</div>
+                                        <div class="flex items-center justify-between bg-[#010008] border border-white/10 rounded-lg p-1.5">
+                                            <input type="text" id="log-text-${p.id}" placeholder="Текст нового лога..." class="w-full bg-transparent text-[9px] px-2 text-white outline-none">
+                                            <label class="flex items-center gap-1 text-[8px] text-slate-400 cursor-pointer mr-2 border-l border-white/10 pl-2">
+                                                <input type="checkbox" id="log-blink-${p.id}" class="accent-cyan-500 cursor-pointer"> Активный
+                                            </label>
+                                            <button onclick="addProjectLog('${p.id}')" class="px-2 py-1 bg-cyan-500 text-slate-950 font-bold rounded text-[8px] uppercase hover:scale-105">ОК</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!-- End Grid -->
+
+                            <!-- Action Buttons -->
+                            <div class="flex gap-3 justify-end border-t border-white/5 pt-4 mt-2">
+                                <button onclick="deleteClientProject('${p.id}', this)" class="px-5 py-2.5 bg-transparent border border-rose-500/50 text-rose-500 hover:bg-rose-500/10 font-bold rounded-xl text-[10px] uppercase transition font-space">Удалить Кабинет</button>
+                                <button onclick="updateCrmProjectData('${p.id}')" class="px-6 py-2.5 bg-emerald-500 text-slate-950 font-black rounded-xl text-[10px] uppercase hover:scale-105 transition shadow-[0_0_15px_rgba(16,185,129,0.3)] font-space">Сохранить Кабинет</button>
                             </div>
                         </div>
                     </div>
@@ -2295,9 +2969,6 @@
             }).join('');
         }
 
-        // =================================================================
-        // ВИЗУАЛЬНЫЙ CMS РЕДАКТОР (ФРОНТЕНД)
-        // =================================================================
         window.toggleVisualCmsMode = function() {
             if (!window.currentAdminState) return;
             isVisualCmsMode = !isVisualCmsMode;
@@ -2348,12 +3019,25 @@
             const newValue = document.getElementById('editor-text-input').value.trim();
 
             if (newValue) {
+                const oldValue = siteContentData[activeEditFieldId] || "";
+                
+                if (oldValue !== newValue) {
+                    window.editHistory.push({
+                        fieldId: activeEditFieldId,
+                        oldValue: oldValue,
+                        newValue: newValue
+                    });
+                    if (window.editHistory.length > 25) {
+                        window.editHistory.shift(); 
+                    }
+                }
+
                 if (firebaseInitialized) {
                     try {
                         await ensureAuth();
                         if (!auth.currentUser) return;
                         const contentDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_content', 'main');
-                        await updateDoc(contentDocRef, { [activeEditFieldId]: newValue });
+                        await setDoc(contentDocRef, { [activeEditFieldId]: newValue }, { merge: true });
                     } catch (e) { console.error("Content save error:", e); }
                 } else {
                     siteContentData[activeEditFieldId] = newValue;
@@ -2367,7 +3051,71 @@
             closeEditorModal();
         };
 
-        // Экспорт состояния админа для UI-компонентов
+        window.undoLastChange = async function() {
+            if (!window.editHistory || window.editHistory.length === 0) {
+                showToast("История изменений пуста!", "error");
+                return;
+            }
+            const lastChange = window.editHistory.pop();
+            const { fieldId, oldValue } = lastChange;
+
+            if (firebaseInitialized) {
+                try {
+                    await ensureAuth();
+                    if (!auth.currentUser) return;
+                    const contentDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_content', 'main');
+                    await setDoc(contentDocRef, { [fieldId]: oldValue }, { merge: true });
+                } catch (e) {
+                    console.error("Undo Firebase failed:", e);
+                }
+            } else {
+                siteContentData[fieldId] = oldValue;
+                localStorage.setItem('space_site_content', JSON.stringify(siteContentData));
+            }
+
+            siteContentData[fieldId] = oldValue;
+            const el = document.querySelector(`[data-id="${fieldId}"]`);
+            if (el) el.textContent = oldValue;
+            showToast(`Изменение поля "${fieldId}" успешно отменено!`, "success");
+        };
+
+        function updateMaintenanceCountdown() {
+            const container = document.getElementById('maintenance-timer-container');
+            const overlay = document.getElementById('maintenance-overlay');
+            if (!overlay || overlay.classList.contains('hidden')) return;
+
+            if (configData && configData.maintenanceMode && configData.maintenanceEnd) {
+                const endTime = new Date(configData.maintenanceEnd).getTime();
+                const now = new Date().getTime();
+                const timeLeft = endTime - now;
+
+                if (timeLeft <= 0) {
+                    disableMaintenanceMode();
+                    return;
+                }
+
+                container.classList.remove('hidden');
+                
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                document.getElementById('timer-days').textContent = String(days).padStart(2, '0');
+                document.getElementById('timer-hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('timer-minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('timer-seconds').textContent = String(seconds).padStart(2, '0');
+
+                const endDate = new Date(configData.maintenanceEnd);
+                document.getElementById('maintenance-end-date-display').textContent = 
+                    `${String(endDate.getDate()).padStart(2, '0')}.${String(endDate.getMonth() + 1).padStart(2, '0')}.${endDate.getFullYear()} в ${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        setInterval(updateMaintenanceCountdown, 1000);
+
         window.setAdminState = function(state) {
             window.currentAdminState = state;
         };
