@@ -1146,7 +1146,8 @@
 
     <!-- АДМИН-ПАНЕЛЬ И ПРЕМИУМ СИСТЕМА УПРАВЛЕНИЯ -->
     <div id="admin-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-        <div class="w-full max-w-5xl apple-liquid-glass p-6 sm:p-8 border border-cyan-500/20 max-h-[90vh] overflow-y-auto relative scroll-smooth">
+        <div class="w-full max-w-5xl apple-liquid-glass border border-cyan-500/20 relative flex flex-col" style="max-height:90vh;">
+        <div class="p-6 sm:p-8 overflow-y-auto flex-1 scroll-smooth">
             <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
                 <h3 class="text-2xl font-space font-bold text-white flex items-center gap-2">
                     <i class="fas fa-shield-alt text-cyan-400"></i> Панель Управления SPACE
@@ -1256,13 +1257,10 @@
                         </div>
                     </div>
 
-                    <!-- Сброс статистики + выход -->
+                    <!-- Сброс статистики -->
                     <div class="flex gap-3 pt-2">
                         <button onclick="clearAnalytics(this)" class="flex items-center gap-2 px-5 py-3 rounded-xl border border-white/10 text-slate-400 font-bold text-xs font-space hover:text-white hover:border-white/20 transition" style="background:rgba(255,255,255,0.03)">
                             <i class="fas fa-eraser"></i> Сбросить статистику
-                        </button>
-                        <button onclick="logoutAdmin()" class="flex items-center gap-2 px-5 py-3 rounded-xl border border-white/10 text-slate-400 font-bold text-xs font-space hover:text-white hover:border-white/20 transition ml-auto" style="background:rgba(255,255,255,0.03)">
-                            <i class="fas fa-sign-out-alt"></i> Выйти
                         </button>
                     </div>
                 </div>
@@ -1505,16 +1503,6 @@
                                 </button>
                             </div>
 
-                            <div class="mt-5 pt-5 border-t border-white/5">
-                                <p class="text-[10px] text-slate-500 mb-3 font-bold">Редактировать существующие видео</p>
-                                <select id="video-select-edit" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 text-sm transition-all duration-300 mb-3">
-                                    <option value="">-- Выберите видео --</option>
-                                </select>
-                                <input type="text" id="video-new-src" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700 mb-3" placeholder="Новая ссылка на видео">
-                                <button onclick="updateVideoSrc()" class="w-full py-3 rounded-2xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 hover:border-purple-500/35 text-purple-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2">
-                                    <i class="fas fa-sync-alt text-purple-400 text-xs"></i> Обновить ссылку
-                                </button>
-                            </div>
                         </div>
 
                         <!-- БЛОК 3: Статус сайта -->
@@ -1573,22 +1561,55 @@
 
                     </div>
 
-                    <!-- Кнопки действий (Выйти + Сохранить) -->
-                    <div class="flex gap-3">
-                        <button onclick="logoutAdmin()" class="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-white/8 text-slate-400 font-bold font-space text-sm hover:bg-white/5 hover:text-white hover:border-white/15 transition-all duration-300">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span class="hidden sm:inline">Выйти</span>
-                        </button>
-                        <button onclick="saveAdminSettings()" class="flex-1 py-4 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(16,185,129,0.25)] flex items-center justify-center gap-2.5" style="background: linear-gradient(135deg, rgba(16,185,129,0.45) 0%, rgba(5,150,105,0.25) 100%); border-top: 1px solid rgba(255,255,255,0.2); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(5,150,105,0.2); border-bottom: 1px solid rgba(5,150,105,0.1); color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
-                            <i class="fas fa-satellite-dish"></i>
-                            Сохранить параметры системы
-                        </button>
+                        <!-- БЛОК 5: Синхронизация Firebase -->
+                        <div class="group relative overflow-hidden rounded-3xl border border-white/5 p-6 transition-all duration-300 hover:border-blue-500/25 hover:shadow-[0_10px_40px_rgba(59,130,246,0.06)]" style="background: rgba(255,255,255,0.025);">
+                            <div class="absolute top-0 right-0 w-28 h-28 bg-blue-500/5 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/25 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-cloud text-blue-400 text-base"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-white font-space">Синхронизация устройств</p>
+                                    <p id="firebase-sync-status" class="text-[10px] mt-0.5 font-bold"></p>
+                                </div>
+                            </div>
+                            <div id="firebase-not-configured" class="space-y-3">
+                                <p class="text-xs text-slate-400 leading-relaxed">Firebase <span class="text-red-400 font-bold">не подключён</span> — изменения хранятся только на этом устройстве. Чтобы телефон и компьютер синхронизировались, вставьте конфиг Firebase ниже.</p>
+                                <p class="text-[10px] text-slate-600">Бесплатно: <a href="https://console.firebase.google.com" target="_blank" class="text-cyan-400 underline">console.firebase.google.com</a> → создайте проект → Firestore → настройки проекта → скопируйте firebaseConfig</p>
+                                <textarea id="firebase-config-input" rows="4" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/60 font-mono text-xs transition-all duration-300 placeholder:text-slate-700" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
+                                <button onclick="saveFirebaseConfig()" class="w-full py-3 rounded-2xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2">
+                                    <i class="fas fa-cloud-upload-alt text-blue-400 text-xs"></i> Подключить Firebase
+                                </button>
+                            </div>
+                            <div id="firebase-configured" class="hidden space-y-3">
+                                <p class="text-xs text-emerald-400 font-bold">✓ Firebase подключён — все устройства синхронизируются в реальном времени</p>
+                                <button onclick="clearFirebaseConfig()" class="w-full py-3 rounded-2xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 font-bold text-xs font-space transition-all duration-300 flex items-center justify-center gap-2">
+                                    <i class="fas fa-unlink text-xs"></i> Отключить Firebase
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
+
                 </div>
 
             </div>
+        </div><!-- end scroll area -->
+
+        <!-- Sticky footer: всегда виден, не перекрывается контентом -->
+        <div class="flex-shrink-0 flex gap-3 px-6 sm:px-8 py-4 border-t border-white/5" style="background: rgba(1,0,8,0.7); backdrop-filter: blur(20px); border-radius: 0 0 32px 32px;">
+            <button onclick="logoutAdmin()" class="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border border-white/8 text-slate-400 font-bold font-space text-sm hover:bg-white/5 hover:text-white hover:border-white/15 transition-all duration-300">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="hidden sm:inline">Выйти</span>
+            </button>
+            <button onclick="saveAdminSettings()" class="flex-1 py-3 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(16,185,129,0.25)] flex items-center justify-center gap-2.5" style="background: linear-gradient(135deg, rgba(16,185,129,0.45) 0%, rgba(5,150,105,0.25) 100%); border-top: 1px solid rgba(255,255,255,0.2); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(5,150,105,0.2); border-bottom: 1px solid rgba(5,150,105,0.1); color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                <i class="fas fa-satellite-dish"></i>
+                Сохранить параметры системы
+            </button>
         </div>
-    </div>
+
+        </div><!-- end modal card -->
+    </div><!-- end admin-modal -->
 
     <!-- Модальное окно редактора текстов -->
     <div id="editor-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
@@ -2267,6 +2288,30 @@
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("admin-2fa-pass1")?.addEventListener("keydown", e => { if(e.key==="Enter") document.getElementById("admin-2fa-pass2")?.focus(); });
             document.getElementById("admin-2fa-pass2")?.addEventListener("keydown", e => { if(e.key==="Enter") window.verifyAdmin2FACode(); });
+
+            // Показываем статус Firebase в UI
+            const hasFbConfig = !!localStorage.getItem('space_firebase_config');
+            const statusEl = document.getElementById('firebase-sync-status');
+            const notConfigured = document.getElementById('firebase-not-configured');
+            const configured = document.getElementById('firebase-configured');
+            if (statusEl) {
+                if (hasFbConfig) {
+                    statusEl.textContent = '● Синхронизация активна';
+                    statusEl.className = 'text-[10px] mt-0.5 font-bold text-emerald-400';
+                } else {
+                    statusEl.textContent = '● Только локальное хранение';
+                    statusEl.className = 'text-[10px] mt-0.5 font-bold text-red-400';
+                }
+            }
+            if (notConfigured && configured) {
+                if (hasFbConfig) {
+                    notConfigured.classList.add('hidden');
+                    configured.classList.remove('hidden');
+                } else {
+                    notConfigured.classList.remove('hidden');
+                    configured.classList.add('hidden');
+                }
+            }
         });
 
         // === ПАСХАЛКИ ===
@@ -2404,7 +2449,17 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const MY_FIREBASE_CONFIG = null; 
+        // =====================================================================
+        // FIREBASE CONFIG — загружается из настроек или localStorage
+        // =====================================================================
+        let MY_FIREBASE_CONFIG = null;
+        try {
+            const savedFbCfg = localStorage.getItem('space_firebase_config');
+            if (savedFbCfg) MY_FIREBASE_CONFIG = JSON.parse(savedFbCfg);
+        } catch(e) {}
+
+        // BroadcastChannel: мгновенная синхронизация между вкладками одного браузера
+        const syncChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('space_agency_sync') : null;
 
         let isVisualCmsMode = false; 
         let siteContentData = {};
@@ -3105,9 +3160,16 @@
                     await setDoc(configDocRef, updatedConfig, { merge: true });
                 } catch (e) {
                     console.error("Firebase maintenance save failed:", e);
+                    // Fallback: сохраняем локально при ошибке Firebase
+                    localStorage.setItem('space_site_config', JSON.stringify(updatedConfig));
                 }
             } else {
                 localStorage.setItem('space_site_config', JSON.stringify(updatedConfig));
+            }
+
+            // BroadcastChannel: мгновенно уведомляем все открытые вкладки
+            if (syncChannel) {
+                try { syncChannel.postMessage({ type: 'CONFIG_UPDATED', data: updatedConfig }); } catch(e) {}
             }
 
             configData = updatedConfig;
@@ -3125,6 +3187,57 @@
             }
             checkMaintenanceMode();
         }
+
+        // =====================================================================
+        // СИНХРОНИЗАЦИЯ МЕЖДУ ВКЛАДКАМИ (BroadcastChannel)
+        // Работает когда несколько вкладок открыты в одном браузере
+        // Для синхронизации разных устройств нужен Firebase (см. настройки)
+        // =====================================================================
+        if (syncChannel) {
+            syncChannel.onmessage = function(event) {
+                const msg = event.data;
+                if (!msg || !msg.type) return;
+                if (msg.type === 'CONFIG_UPDATED' && msg.data) {
+                    configData = msg.data;
+                    window.configData = msg.data;
+                    checkMaintenanceMode();
+                    const btn = document.getElementById('btn-toggle-maintenance');
+                    if (btn) {
+                        if (msg.data.maintenanceMode) {
+                            btn.className = "w-full py-3 rounded-xl border border-orange-500/20 bg-orange-600 text-white font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2";
+                            btn.innerHTML = `<i class="fas fa-tools"></i> Выкл. техработы`;
+                        } else {
+                            btn.className = "w-full py-3 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2";
+                            btn.innerHTML = `<i class="fas fa-tools"></i> Режим техработ`;
+                        }
+                    }
+                }
+            };
+        }
+
+        // Сохранение Firebase конфига из админки
+        window.saveFirebaseConfig = function() {
+            const raw = document.getElementById('firebase-config-input') ? document.getElementById('firebase-config-input').value.trim() : '';
+            if (!raw) {
+                showToast('Вставьте конфиг Firebase!', 'error');
+                return;
+            }
+            try {
+                const parsed = JSON.parse(raw);
+                if (!parsed.apiKey || !parsed.projectId) throw new Error('Неверная структура конфига');
+                localStorage.setItem('space_firebase_config', JSON.stringify(parsed));
+                showToast('Firebase конфиг сохранён! Перезагрузите страницу.', 'success');
+                setTimeout(() => location.reload(), 2000);
+            } catch(e) {
+                showToast('Ошибка: неверный JSON конфиг', 'error');
+            }
+        };
+
+        window.clearFirebaseConfig = function() {
+            localStorage.removeItem('space_firebase_config');
+            showToast('Firebase конфиг удалён. Перезагрузите страницу.', 'success');
+            setTimeout(() => location.reload(), 2000);
+        };
 
         window.downloadJsonData = function() {
             const exportData = {
