@@ -1146,8 +1146,7 @@
 
     <!-- АДМИН-ПАНЕЛЬ И ПРЕМИУМ СИСТЕМА УПРАВЛЕНИЯ -->
     <div id="admin-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-        <div class="w-full max-w-5xl apple-liquid-glass border border-cyan-500/20 relative flex flex-col" style="max-height:90vh;">
-        <div class="p-6 sm:p-8 overflow-y-auto flex-1 scroll-smooth">
+        <div class="w-full max-w-5xl apple-liquid-glass p-6 sm:p-8 border border-cyan-500/20 max-h-[90vh] overflow-y-auto relative scroll-smooth">
             <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
                 <h3 class="text-2xl font-space font-bold text-white flex items-center gap-2">
                     <i class="fas fa-shield-alt text-cyan-400"></i> Панель Управления SPACE
@@ -1591,25 +1590,22 @@
 
                     </div>
 
+                    <!-- Кнопки действий (Выйти + Сохранить) -->
+                    <div class="flex gap-3 mt-6">
+                        <button onclick="logoutAdmin()" class="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-white/8 text-slate-400 font-bold font-space text-sm hover:bg-white/5 hover:text-white hover:border-white/15 transition-all duration-300">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="hidden sm:inline">Выйти</span>
+                        </button>
+                        <button onclick="saveAdminSettings()" class="flex-1 py-4 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(16,185,129,0.25)] flex items-center justify-center gap-2.5" style="background: linear-gradient(135deg, rgba(16,185,129,0.45) 0%, rgba(5,150,105,0.25) 100%); border-top: 1px solid rgba(255,255,255,0.2); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(5,150,105,0.2); border-bottom: 1px solid rgba(5,150,105,0.1); color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                            <i class="fas fa-satellite-dish"></i>
+                            Сохранить параметры системы
+                        </button>
+                    </div>
                 </div>
 
             </div>
-        </div><!-- end scroll area -->
-
-        <!-- Sticky footer: всегда виден, не перекрывается контентом -->
-        <div class="flex-shrink-0 flex gap-3 px-6 sm:px-8 py-4 border-t border-white/5" style="background: rgba(1,0,8,0.7); backdrop-filter: blur(20px); border-radius: 0 0 32px 32px;">
-            <button onclick="logoutAdmin()" class="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border border-white/8 text-slate-400 font-bold font-space text-sm hover:bg-white/5 hover:text-white hover:border-white/15 transition-all duration-300">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="hidden sm:inline">Выйти</span>
-            </button>
-            <button onclick="saveAdminSettings()" class="flex-1 py-3 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(16,185,129,0.25)] flex items-center justify-center gap-2.5" style="background: linear-gradient(135deg, rgba(16,185,129,0.45) 0%, rgba(5,150,105,0.25) 100%); border-top: 1px solid rgba(255,255,255,0.2); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(5,150,105,0.2); border-bottom: 1px solid rgba(5,150,105,0.1); color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
-                <i class="fas fa-satellite-dish"></i>
-                Сохранить параметры системы
-            </button>
         </div>
-
-        </div><!-- end modal card -->
-    </div><!-- end admin-modal -->
+    </div>
 
     <!-- Модальное окно редактора текстов -->
     <div id="editor-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
