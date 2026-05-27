@@ -478,7 +478,6 @@
 
                 <div class="hidden md:flex items-center space-x-8" id="nav-links-container">
                     <a href="#portfolio" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_portfolio">Портфолио</a>
-                    <a href="#" id="nav_portfolio_tg" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_portfolio_tg">Портфолио в ТГ</a>
                     <a href="#workflow" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_process">Процесс</a>
                     <a href="#pricing" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_pricing">Тарифы</a>
                     <a href="#about-us" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_about">О нас</a>
@@ -487,9 +486,15 @@
                         <i class="fas fa-user-astronaut"></i> Личный кабинет
                     </button>
 
-                    <div class="neon-btn-container">
-                        <div class="neon-btn-glow"></div>
-                        <a href="#contacts" class="px-6 py-2.5 btn-liquid-glass text-white rounded-full font-bold text-sm tracking-wide edit-field" data-id="nav_contact_btn">Связаться</a>
+                    <div class="flex items-center gap-3">
+                        <div class="neon-btn-container">
+                            <div class="neon-btn-glow"></div>
+                            <a href="#" id="nav_portfolio_tg" class="px-6 py-2.5 btn-liquid-glass text-white rounded-full font-bold text-sm tracking-wide edit-field" data-id="nav_portfolio_tg">Портфолио в ТГ</a>
+                        </div>
+                        <div class="neon-btn-container">
+                            <div class="neon-btn-glow"></div>
+                            <a href="#contacts" class="px-6 py-2.5 btn-liquid-glass text-white rounded-full font-bold text-sm tracking-wide edit-field" data-id="nav_contact_btn">Связаться</a>
+                        </div>
                     </div>
                 </div>
 
@@ -778,15 +783,15 @@
             <h2 class="text-4xl sm:text-5xl font-space font-bold mb-6 edit-field" data-id="contacts_title">Готовы запустить проект?</h2>
             <p class="text-slate-400 max-w-xl mx-auto mb-12 edit-field" data-id="contacts_desc">Свяжитесь с нами прямо сейчас. Расскажите о ваших целях, и мы рассчитаем стоимость монтажа в кратчайшие сроки.</p>
             
-            <div class="flex flex-wrap justify-center items-center gap-6">
-                <a href="#" id="tg-btn" target="_blank" class="flex items-center gap-3 px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300">
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 w-full max-w-2xl mx-auto">
+                <a href="#" id="tg-btn" target="_blank" class="flex items-center justify-center gap-3 px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300 w-full sm:flex-1 whitespace-nowrap">
                     <i class="fab fa-telegram text-xl"></i> <span class="edit-field" data-id="tg_btn_text">Написать в Telegram</span>
                 </a>
-                <a href="#" id="tg-portfolio-btn" target="_blank" class="flex items-center gap-3 px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300">
+                <a href="#" id="tg-portfolio-btn" target="_blank" class="flex items-center justify-center gap-3 px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300 w-full sm:flex-1 whitespace-nowrap">
                     <i class="fab fa-telegram text-xl"></i> <span>Портфолио в Telegram</span>
                 </a>
                 
-                <button onclick="openPortalModal()" class="flex items-center gap-3 px-8 py-4 bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 rounded-full font-bold transition duration-300">
+                <button onclick="openPortalModal()" class="flex items-center justify-center gap-3 px-8 py-4 bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 rounded-full font-bold transition duration-300 w-full sm:flex-1 whitespace-nowrap">
                     <i class="fas fa-user-astronaut text-xl"></i> <span>Личный кабинет</span>
                 </button>
             </div>
@@ -1403,6 +1408,26 @@
                         </div>
                     </div>
 
+                    <!-- Быстрые действия -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                        <button onclick="openScheduleEditModal()" class="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 text-blue-300 font-bold text-xs font-space transition-all duration-300 flex flex-col items-center gap-2">
+                            <i class="fas fa-clock text-lg"></i>
+                            <span>Расписание</span>
+                        </button>
+                        <button onclick="toggleVisualCmsMode()" class="p-4 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 text-cyan-300 font-bold text-xs font-space transition-all duration-300 flex flex-col items-center gap-2">
+                            <i class="fas fa-pencil-alt text-lg"></i>
+                            <span>Редактор</span>
+                        </button>
+                        <button onclick="toggleMaintenanceAdmin()" class="p-4 rounded-2xl border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-300 font-bold text-xs font-space transition-all duration-300 flex flex-col items-center gap-2">
+                            <i class="fas fa-tools text-lg"></i>
+                            <span>Техработы</span>
+                        </button>
+                        <button onclick="downloadJsonData()" class="p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs font-space transition-all duration-300 flex flex-col items-center gap-2">
+                            <i class="fas fa-download text-lg"></i>
+                            <span>База</span>
+                        </button>
+                    </div>
+
                     <!-- Сетка настроек 2 колонки на десктопе -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
 
@@ -1425,149 +1450,128 @@
                             </div>
 
                             <div class="mt-5">
-                                <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Telegram Portfolio Link</label>
+                                <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Главная ссылка на портфолио (все кнопки)</label>
                                 <input type="text" id="setting-tg-portfolio-link" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://t.me/your_telegram">
                             </div>
 
-                            <div class="mt-5">
-                                <p class="text-[10px] text-slate-500 mb-3 font-bold">Добавить видео в портфолио</p>
-
-                                <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">YouTube Embed URL</label>
-                                <input type="text" id="portfolio-add-video-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://www.youtube.com/embed/...">
-
-                                <div class="mt-3">
-                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Image URL (poster)</label>
-                                    <input type="text" id="portfolio-add-image-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://images...">
-                                </div>
-
-                                <div class="mt-3">
-                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Category</label>
-                                    <input type="text" id="portfolio-add-category" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="reels | youtube | promo" value="reels">
-                                </div>
-
-                                <button onclick="addPortfolioVideoFromAdmin()" class="w-full mt-4 py-3.5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/35 text-cyan-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2.5">
-                                    <i class="fas fa-plus text-cyan-400 text-xs"></i> Добавить в портфолио
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- БЛОК 2: График работы -->
-                        <div class="group relative overflow-hidden rounded-3xl border border-white/5 p-6 transition-all duration-300 hover:border-blue-500/25 hover:shadow-[0_10px_40px_rgba(59,130,246,0.06)]" style="background: rgba(255,255,255,0.025);">
-                            <div class="absolute top-0 right-0 w-28 h-28 bg-blue-500/5 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            <div class="flex items-center gap-3 mb-5">
-                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/10 border border-blue-500/25 flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-calendar-week text-blue-400 text-base"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-white font-space">График работы</p>
-                                    <p class="text-[10px] text-slate-600 mt-0.5">Часы приёма по дням недели</p>
-                                </div>
-                            </div>
-                            <button onclick="openScheduleEditModal()" class="w-full py-3.5 rounded-2xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/35 text-blue-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2.5 group/btn">
-                                <i class="fas fa-clock text-blue-400 group-hover/btn:rotate-12 transition-transform duration-300"></i>
-                                Редактировать расписание
-                                <i class="fas fa-chevron-right text-blue-500/50 text-xs ml-auto"></i>
-                            </button>
-                        </div>
-
-                    </div>
-
-                    <!-- БЛОК 3: Статус сайта (широкий) -->
-                    <div class="relative overflow-hidden rounded-3xl border border-orange-500/15 p-6 mb-5" style="background: linear-gradient(135deg, rgba(249,115,22,0.04) 0%, rgba(0,0,0,0) 60%);">
-                        <div class="absolute top-0 right-0 w-36 h-36 bg-orange-500/5 rounded-full blur-2xl pointer-events-none"></div>
-                        <div class="relative z-10">
-                            <div class="flex items-center justify-between mb-5">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-satellite text-orange-400 text-base"></i>
+                            <div class="mt-5 pt-5 border-t border-white/5">
+                                <p class="text-[10px] text-slate-500 mb-3 font-bold">Дополнительные ссылки (опционально)</p>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-[9px] text-slate-600 uppercase tracking-[0.15em] mb-2 font-space font-bold">Ссылка в хедере ПК</label>
+                                        <input type="text" id="setting-tg-portfolio-header" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://t.me/...">
                                     </div>
                                     <div>
-                                        <p class="text-sm font-bold text-white font-space">Статус сайта</p>
-                                        <p class="text-[10px] text-slate-600 mt-0.5">Управление видимостью и режимом техработ</p>
+                                        <label class="block text-[9px] text-slate-600 uppercase tracking-[0.15em] mb-2 font-space font-bold">Ссылка в мобильном меню</label>
+                                        <input type="text" id="setting-tg-portfolio-mobile" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://t.me/...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-slate-600 uppercase tracking-[0.15em] mb-2 font-space font-bold">Ссылка в контактах</label>
+                                        <input type="text" id="setting-tg-portfolio-contacts" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://t.me/...">
                                     </div>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <!-- Переключатель: Закрыто -->
-                                <div class="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-black/30 hover:border-white/10 transition-all duration-300">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-7 h-7 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                                            <i class="fas fa-moon text-yellow-400 text-[10px]"></i>
-                                        </div>
-                                        <div>
-                                            <span class="text-xs font-bold text-white block">Выходной день</span>
-                                            <span class="text-[9px] text-slate-600">Объявляет нерабочий день</span>
-                                        </div>
-                                    </div>
-                                    <div class="relative flex-shrink-0">
-                                        <input type="checkbox" id="setting-holiday" class="toggle-switch-input" onchange="syncToggleHoliday(this.checked)">
-                                        <label for="setting-holiday" class="toggle-switch-label"></label>
-                                    </div>
+                        </div>
+
+                        <!-- БЛОК 2: Управление портфолио -->
+                        <div class="group relative overflow-hidden rounded-3xl border border-white/5 p-6 transition-all duration-300 hover:border-purple-500/25 hover:shadow-[0_10px_40px_rgba(168,85,247,0.06)]" style="background: rgba(255,255,255,0.025);">
+                            <div class="absolute top-0 right-0 w-28 h-28 bg-purple-500/5 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/10 border border-purple-500/25 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-video text-purple-400 text-base"></i>
                                 </div>
-                                <!-- Кнопка: Техработы -->
-                                <button onclick="toggleMaintenanceAdmin()" id="btn-toggle-maintenance" class="flex items-center justify-between p-4 rounded-2xl border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 hover:border-orange-500/35 transition-all duration-300 w-full text-left group/mnt">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-7 h-7 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
-                                            <i class="fas fa-tools text-orange-400 text-[10px] group-hover/mnt:rotate-12 transition-transform duration-300"></i>
-                                        </div>
-                                        <div>
-                                            <span class="text-xs font-bold text-orange-300 block">Режим техработ</span>
-                                            <span class="text-[9px] text-slate-600">Включить / выключить</span>
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-power-off text-orange-400/50 text-sm group-hover/mnt:text-orange-400 transition-colors duration-300"></i>
+                                <div>
+                                    <p class="text-sm font-bold text-white font-space">Портфолио</p>
+                                    <p class="text-[10px] text-slate-600 mt-0.5">Управление видео-кейсами</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Video URL (Embed Link)</label>
+                                    <input type="text" id="portfolio-add-video-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://www.youtube.com/embed/... или Vimeo/Rutube">
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Category</label>
+                                    <select id="portfolio-add-category" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 text-sm transition-all duration-300">
+                                        <option value="reels">Reels</option>
+                                        <option value="youtube">YouTube</option>
+                                        <option value="vimeo">Vimeo</option>
+                                        <option value="rutube">Rutube</option>
+                                        <option value="promo">Promo</option>
+                                    </select>
+                                </div>
+                                <button onclick="addPortfolioVideoFromAdmin()" class="w-full py-3 rounded-2xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 hover:border-purple-500/35 text-purple-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2">
+                                    <i class="fas fa-plus text-purple-400 text-xs"></i> Добавить видео
+                                </button>
+                            </div>
+
+                            <div class="mt-5 pt-5 border-t border-white/5">
+                                <p class="text-[10px] text-slate-500 mb-3 font-bold">Редактировать существующие видео</p>
+                                <select id="video-select-edit" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 text-sm transition-all duration-300 mb-3">
+                                    <option value="">-- Выберите видео --</option>
+                                </select>
+                                <input type="text" id="video-new-src" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700 mb-3" placeholder="Новая ссылка на видео">
+                                <button onclick="updateVideoSrc()" class="w-full py-3 rounded-2xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 hover:border-purple-500/35 text-purple-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2">
+                                    <i class="fas fa-sync-alt text-purple-400 text-xs"></i> Обновить ссылку
                                 </button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- БЛОК 4: Безопасность (широкий) -->
-                    <div class="relative overflow-hidden rounded-3xl border border-rose-500/15 p-6 mb-6" style="background: linear-gradient(135deg, rgba(244,63,94,0.04) 0%, rgba(0,0,0,0) 60%);">
-                        <div class="absolute top-0 right-0 w-36 h-36 bg-rose-500/5 rounded-full blur-2xl pointer-events-none"></div>
-                        <div class="relative z-10">
+                        <!-- БЛОК 3: Статус сайта -->
+                        <div class="group relative overflow-hidden rounded-3xl border border-white/5 p-6 transition-all duration-300 hover:border-orange-500/25 hover:shadow-[0_10px_40px_rgba(249,115,22,0.06)]" style="background: rgba(255,255,255,0.025);">
+                            <div class="absolute top-0 right-0 w-28 h-28 bg-orange-500/5 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             <div class="flex items-center gap-3 mb-5">
-                                <div class="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0">
+                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500/20 to-red-500/10 border border-orange-500/25 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-satellite text-orange-400 text-base"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-white font-space">Статус сайта</p>
+                                    <p class="text-[10px] text-slate-600 mt-0.5">Управление видимостью</p>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-black/30">
+                                    <span class="text-xs text-white">Выходной день</span>
+                                    <input type="checkbox" id="setting-holiday" class="toggle-switch-input" onchange="syncToggleHoliday(this.checked)">
+                                    <label for="setting-holiday" class="toggle-switch-label"></label>
+                                </div>
+                                <button onclick="toggleMaintenanceAdmin()" id="btn-toggle-maintenance" class="w-full py-3 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2">
+                                    <i class="fas fa-tools"></i> Режим техработ
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- БЛОК 4: Безопасность -->
+                        <div class="group relative overflow-hidden rounded-3xl border border-white/5 p-6 transition-all duration-300 hover:border-rose-500/25 hover:shadow-[0_10px_40px_rgba(244,63,94,0.06)]" style="background: rgba(255,255,255,0.025);">
+                            <div class="absolute top-0 right-0 w-28 h-28 bg-rose-500/5 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-500/10 border border-rose-500/25 flex items-center justify-center flex-shrink-0">
                                     <i class="fas fa-shield-halved text-rose-400 text-base"></i>
                                 </div>
                                 <div>
                                     <p class="text-sm font-bold text-white font-space">Безопасность</p>
-                                    <p class="text-[10px] text-slate-600 mt-0.5">Ключи доступа и пароли системы</p>
+                                    <p class="text-[10px] text-slate-600 mt-0.5">Ключи доступа</p>
                                 </div>
                             </div>
-
-                            <!-- Новый пароль администратора -->
-                            <div class="mb-4">
-                                <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Новый пароль администратора</label>
-                                <div class="relative">
-                                    <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-700 text-sm"></i>
-                                    <input type="password" id="setting-new-pass" class="w-full bg-black/40 border border-white/8 rounded-2xl pl-10 pr-4 py-3.5 text-white focus:outline-none focus:border-rose-500/50 focus:bg-black/60 text-sm font-mono transition-all duration-300 placeholder:text-slate-700" placeholder="Оставьте пустым — без изменений">
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Новый пароль админа</label>
+                                    <input type="password" id="setting-new-pass" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-rose-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="Оставьте пустым — без изменений">
                                 </div>
-                            </div>
-
-                            <!-- Пароли техработ -->
-                            <div class="p-5 rounded-2xl border border-rose-500/10 bg-black/25">
-                                <div class="flex items-center gap-2 mb-4">
-                                    <i class="fas fa-key text-rose-400 text-xs"></i>
-                                    <p class="text-[9px] text-rose-400/80 uppercase tracking-[0.18em] font-space font-bold">Ключи экрана тех. работ (2FA)</p>
-                                </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label class="block text-[9px] text-slate-600 uppercase tracking-[0.15em] mb-2 font-space font-bold">Ключ № 1</label>
-                                        <div class="relative">
-                                            <i class="fas fa-hashtag absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 text-xs"></i>
-                                            <input type="text" id="setting-maint-pass1" class="w-full bg-black/50 border border-white/8 rounded-xl pl-9 pr-4 py-3 text-white focus:outline-none focus:border-rose-500/40 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="spaceadmin">
-                                        </div>
+                                        <label class="block text-[9px] text-slate-600 uppercase tracking-[0.15em] mb-2 font-space font-bold">Ключ №1</label>
+                                        <input type="text" id="setting-maint-pass1" class="w-full bg-black/50 border border-white/8 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-rose-500/40 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="spaceadmin">
                                     </div>
                                     <div>
-                                        <label class="block text-[9px] text-slate-600 uppercase tracking-[0.15em] mb-2 font-space font-bold">Ключ № 2</label>
-                                        <div class="relative">
-                                            <i class="fas fa-hashtag absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 text-xs"></i>
-                                            <input type="text" id="setting-maint-pass2" class="w-full bg-black/50 border border-white/8 rounded-xl pl-9 pr-4 py-3 text-white focus:outline-none focus:border-rose-500/40 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="space1">
-                                        </div>
+                                        <label class="block text-[9px] text-slate-600 uppercase tracking-[0.15em] mb-2 font-space font-bold">Ключ №2</label>
+                                        <input type="text" id="setting-maint-pass2" class="w-full bg-black/50 border border-white/8 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-rose-500/40 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="space1">
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                     <!-- Кнопки действий (Выйти + Сохранить) -->
@@ -2566,7 +2570,6 @@
                     <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onmouseenter="playPreviewVideo(${caseId})" onmouseleave="stopPreviewVideo(${caseId})" onclick="openVideoForCase(${caseId})">
                         <button onclick="triggerPortfolioEdit(${caseId}, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
                         <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 ${ratioClass}">
-                            <img id="case-img-${caseId}" src="${videoObj.img || ''}" alt="Case ${caseId}" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
                             <iframe id="case-iframe-${caseId}" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                         </div>
                         <div class="mt-3 p-4 flex justify-between items-start">
@@ -2714,6 +2717,57 @@
             await saveData(defaultPortfolioSettings);
             return normalizePortfolioData(defaultPortfolioSettings);
         }
+
+        function setupRealtimeSync() {
+            if (!firebaseInitialized) return;
+
+            // Real-time listener for portfolio_links
+            const portfolioDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
+            onSnapshot(portfolioDocRef, (snap) => {
+                if (snap.exists()) {
+                    const normalizedCloud = normalizePortfolioData(snap.data());
+                    window.portfolioLinks = normalizedCloud;
+                    applyPortfolioData(normalizedCloud);
+                    updateTgLinks();
+                    if (typeof window.populateVideoEditList === 'function') window.populateVideoEditList();
+                }
+            }, (err) => console.error("Portfolio realtime sync error:", err));
+
+            // Real-time listener for site_config
+            const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
+            onSnapshot(configDocRef, (snap) => {
+                if (snap.exists()) {
+                    window.configData = snap.data();
+                    updateTgLinks();
+                    evaluateLiveStatus();
+                    checkMaintenanceMode();
+                    if (window.currentAdminState && typeof window.populateAdminFields === 'function') {
+                        window.populateAdminFields();
+                    }
+                }
+            }, (err) => console.error("Config realtime sync error:", err));
+
+            // Real-time listener for site_content
+            const contentDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_content', 'main');
+            onSnapshot(contentDocRef, (snap) => {
+                if (snap.exists()) {
+                    window.siteContentData = snap.data();
+                    applySiteContent(window.siteContentData);
+                }
+            }, (err) => console.error("Content realtime sync error:", err));
+
+            // Real-time listener for projects (CRM)
+            const projectsRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+            onSnapshot(projectsRef, (snap) => {
+                clientProjects = [];
+                snap.forEach(doc => { clientProjects.push({ id: doc.id, ...doc.data() }); });
+                if (window.currentAdminState && typeof window.renderCrmProjects === 'function') {
+                    window.renderCrmProjects();
+                }
+            }, (err) => console.error("CRM realtime sync error:", err));
+        }
+        window.setupRealtimeSync = setupRealtimeSync;
+
         window.saveData = saveData;
         window.loadData = loadData;
 
@@ -2875,6 +2929,7 @@
             if (mp2) mp2.value = configData.maintenancePass2 || "space1";
 
             renderScheduleInputs();
+            if (typeof window.populateVideoEditList === 'function') window.populateVideoEditList();
         };
 
         window.loginAdmin = function() {
@@ -3067,6 +3122,9 @@
             const handle = document.getElementById('setting-tg').value.trim();
             const tgPortfolioLinkInput = document.getElementById('setting-tg-portfolio-link');
             const tgPortfolioLink = tgPortfolioLinkInput ? tgPortfolioLinkInput.value.trim() : "";
+            const tgPortfolioHeader = document.getElementById('setting-tg-portfolio-header')?.value.trim() || "";
+            const tgPortfolioMobile = document.getElementById('setting-tg-portfolio-mobile')?.value.trim() || "";
+            const tgPortfolioContacts = document.getElementById('setting-tg-portfolio-contacts')?.value.trim() || "";
             const isHoliday = document.getElementById('setting-holiday').checked;
             const newPass = document.getElementById('setting-new-pass').value;
             const maintPass1 = document.getElementById('setting-maint-pass1')?.value.trim();
@@ -3075,7 +3133,7 @@
             const updatedConfig = { ...configData };
             updatedConfig.telegramHandle = handle;
             updatedConfig.isHoliday = isHoliday;
-            
+
             const updatedSchedule = {};
             const days = [1, 2, 3, 4, 5, 6, 0];
             days.forEach(d => {
@@ -3085,8 +3143,8 @@
                 updatedSchedule[d] = { s: startVal, e: endVal, c: closedVal };
             });
             updatedConfig.schedule = updatedSchedule;
-            
-            updatedConfig.maintenanceMode = configData.maintenanceMode || false; 
+
+            updatedConfig.maintenanceMode = configData.maintenanceMode || false;
             updatedConfig.maintenanceEnd = configData.maintenanceEnd || null;
 
             if (newPass) {
@@ -3103,7 +3161,13 @@
 
                     if (tgPortfolioLinkInput) {
                         const portfolioDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
-                        await setDoc(portfolioDocRef, { tg_portfolio_link: tgPortfolioLink }, { merge: true });
+                        const portfolioPayload = {
+                            tg_portfolio_link: tgPortfolioLink,
+                            tg_portfolio_header: tgPortfolioHeader || tgPortfolioLink,
+                            tg_portfolio_mobile: tgPortfolioMobile || tgPortfolioLink,
+                            tg_portfolio_contacts: tgPortfolioContacts || tgPortfolioLink
+                        };
+                        await setDoc(portfolioDocRef, portfolioPayload, { merge: true });
                     }
                 } catch (e) {
                     console.error("Config save failed on Firebase:", e);
@@ -3114,6 +3178,9 @@
                 if (tgPortfolioLinkInput) {
                     const currentPortfolio = JSON.parse(localStorage.getItem('space_portfolio_links') || "null") || defaultPortfolioSettings;
                     currentPortfolio.tg_portfolio_link = tgPortfolioLink;
+                    currentPortfolio.tg_portfolio_header = tgPortfolioHeader || tgPortfolioLink;
+                    currentPortfolio.tg_portfolio_mobile = tgPortfolioMobile || tgPortfolioLink;
+                    currentPortfolio.tg_portfolio_contacts = tgPortfolioContacts || tgPortfolioLink;
                     localStorage.setItem('space_portfolio_links', JSON.stringify(currentPortfolio));
                 }
             }
@@ -3125,12 +3192,15 @@
             if (tgPortfolioLinkInput) {
                 window.portfolioLinks = window.portfolioLinks || defaultPortfolioSettings;
                 window.portfolioLinks.tg_portfolio_link = tgPortfolioLink;
+                window.portfolioLinks.tg_portfolio_header = tgPortfolioHeader || tgPortfolioLink;
+                window.portfolioLinks.tg_portfolio_mobile = tgPortfolioMobile || tgPortfolioLink;
+                window.portfolioLinks.tg_portfolio_contacts = tgPortfolioContacts || tgPortfolioLink;
             }
-            
+
             updateTgLinks();
             evaluateLiveStatus();
             checkMaintenanceMode();
-            
+
             showToast("Системные параметры успешно применены!", "success");
         };
 
@@ -3178,6 +3248,59 @@
             updated.videos[idx] = { video: newVideo, img: newImg, category: currentCategory };
             await saveData(updated);
             showToast(`Кейс ${caseId} успешно сохранен в системе!`, "success");
+        };
+
+        window.populateVideoEditList = function() {
+            const select = document.getElementById('video-select-edit');
+            const list = document.getElementById('video-edit-list');
+            if (!select || !list) return;
+
+            const videos = window.portfolioLinks?.videos || defaultPortfolioSettings.videos;
+            
+            // Populate select dropdown
+            select.innerHTML = '<option value="">-- Выберите видео --</option>';
+            videos.forEach((v, idx) => {
+                const option = document.createElement('option');
+                option.value = idx;
+                option.textContent = `Видео ${idx + 1}: ${v.video.substring(0, 40)}...`;
+                select.appendChild(option);
+            });
+
+            // Populate list view
+            list.innerHTML = videos.map((v, idx) => `
+                <div class="flex items-center justify-between p-2 rounded-xl bg-black/30 border border-white/5">
+                    <span class="text-[10px] text-slate-300 truncate flex-1 mr-2">Видео ${idx + 1}</span>
+                    <span class="text-[9px] text-cyan-400 font-mono truncate max-w-[150px]">${v.video.substring(0, 25)}...</span>
+                </div>
+            `).join('');
+        };
+
+        window.updateVideoSrc = async function() {
+            const select = document.getElementById('video-select-edit');
+            const newSrc = document.getElementById('video-new-src').value.trim();
+            
+            if (!select.value || select.value === "") {
+                showToast("Выберите видео для редактирования!", "error");
+                return;
+            }
+            
+            if (!newSrc) {
+                showToast("Введите новую ссылку на видео!", "error");
+                return;
+            }
+
+            const idx = parseInt(select.value);
+            const updated = normalizePortfolioData(window.portfolioLinks);
+            
+            if (updated.videos[idx]) {
+                updated.videos[idx].video = newSrc;
+                await saveData(updated);
+                showToast(`Ссылка на видео ${idx + 1} успешно обновлена!`, "success");
+                document.getElementById('video-new-src').value = "";
+                window.populateVideoEditList();
+            } else {
+                showToast("Ошибка: видео не найдено!", "error");
+            }
         };
 
         window.addPortfolioVideoFromAdmin = async function() {
@@ -3343,6 +3466,8 @@
                 });
 
                 await loadData();
+
+                setupRealtimeSync();
 
                 await setDoc(statsDocRef, { views: increment(1) }, { merge: true });
                 onSnapshot(statsDocRef, (snap) => {
@@ -3703,12 +3828,17 @@
             // УБРАН ТЕМПОРИТМ ИЗ СОХРАНЕНИЯ
             const stats = { dynamics, sound, color, vfx };
 
+            // Get current project to preserve addons and logs
+            const currentProject = firebaseInitialized ? clientProjects.find(x => x.id === id) : localDemoProjects.find(x => x.id === id);
+            const addons = currentProject?.addons || [];
+            const logs = currentProject?.logs || [];
+
             if (firebaseInitialized) {
                 try {
                     await ensureAuth();
                     if (!auth.currentUser) throw new Error("Нет авторизации базы данных");
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'projects', id);
-                    await setDoc(docRef, { s1, s2, s3, s4, s5, stage, progress, notes, deadline, basePrice, managerTg, stats }, { merge: true });
+                    await setDoc(docRef, { s1, s2, s3, s4, s5, stage, progress, notes, deadline, basePrice, managerTg, stats, addons, logs }, { merge: true });
                     showToast("Настройки кабинета успешно обновлены!", "success");
                 } catch (err) { showToast("Ошибка сохранения: " + err.message, "error"); }
             } else {
@@ -3719,6 +3849,8 @@
                     p.basePrice = basePrice;
                     p.managerTg = managerTg;
                     p.stats = stats;
+                    p.addons = addons;
+                    p.logs = logs;
                     saveLocalProjects();
                     showToast("Локальный кабинет обновлен!", "success");
                     renderCrmProjects();
@@ -4175,3 +4307,4 @@
     </script>
 </body>
 </html>
+
