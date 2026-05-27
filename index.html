@@ -1488,17 +1488,16 @@
 
                             <div class="space-y-3">
                                 <div>
-                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Video URL (Embed Link)</label>
-                                    <input type="text" id="portfolio-add-video-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://www.youtube.com/embed/... или Vimeo/Rutube">
+                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Ссылка на видео (любой сайт)</label>
+                                    <input type="text" id="portfolio-add-video-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://... (YouTube, VK, Rutube, Vimeo и любые другие)">
+                                    <p class="text-[9px] text-slate-600 mt-1.5 leading-relaxed">Обложка подгружается автоматически с сайта видео. Для YouTube используйте embed-ссылку (<span class="text-purple-400 font-mono">youtube.com/embed/ID</span>).</p>
                                 </div>
                                 <div>
-                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Category</label>
+                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Категория</label>
                                     <select id="portfolio-add-category" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 text-sm transition-all duration-300">
-                                        <option value="reels">Reels</option>
-                                        <option value="youtube">YouTube</option>
-                                        <option value="vimeo">Vimeo</option>
-                                        <option value="rutube">Rutube</option>
-                                        <option value="promo">Promo</option>
+                                        <option value="reels">Reels / Shorts</option>
+                                        <option value="youtube">YouTube / Влог</option>
+                                        <option value="promo">Реклама / Промо</option>
                                     </select>
                                 </div>
                                 <button onclick="addPortfolioVideoFromAdmin()" class="w-full py-3 rounded-2xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 hover:border-purple-500/35 text-purple-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2">
@@ -1987,27 +1986,84 @@
         }
 
         window.playPreviewVideo = function(caseId) {
-            if (window.innerWidth < 768) return;
+            if (window.innerWidth < 768) return; // на мобиле управляется через touch
             if (!window.portfolioLinks) return; 
             stopAllPreviewVideos();
             const iframe = document.getElementById(`case-iframe-${caseId}`);
+            const thumb = document.getElementById(`case-thumb-${caseId}`);
             const baseVideoUrl = window.portfolioLinks[`case${caseId}_video`];
             if (iframe && baseVideoUrl) {
                 let embedUrl = baseVideoUrl;
                 if (!embedUrl.includes('?')) embedUrl += '?autoplay=1&mute=1&controls=0&loop=1';
                 else if (!embedUrl.includes('autoplay=')) embedUrl += '&autoplay=1&mute=1&controls=0&loop=1';
                 iframe.src = embedUrl;
+                iframe.classList.remove('opacity-0');
+                if (thumb) thumb.classList.add('opacity-0');
             }
         };
 
         window.stopPreviewVideo = function(caseId) {
             if (window.innerWidth < 768) return;
             const iframe = document.getElementById(`case-iframe-${caseId}`);
-            if (iframe) iframe.src = ""; 
+            const thumb = document.getElementById(`case-thumb-${caseId}`);
+            if (iframe) { iframe.src = ""; iframe.classList.add('opacity-0'); }
+            if (thumb) thumb.classList.remove('opacity-0');
+        };
+
+        // Состояния мобильных карточек (первый тап — играть, второй — открыть модалку)
+        const mobileTapState = {};
+
+        window.handlePortfolioCardClick = function(caseId, event) {
+            if (window.innerWidth >= 768) {
+                // Десктоп: просто открываем модалку
+                openVideoForCase(caseId);
+                return;
+            }
+            // Мобиль: первый тап — показать видео, второй — открыть модалку
+            if (!mobileTapState[caseId]) {
+                // Первый тап: запустить видео в карточке
+                event.preventDefault();
+                const iframe = document.getElementById(`case-iframe-${caseId}`);
+                const thumb = document.getElementById(`case-thumb-${caseId}`);
+                const playBtn = document.getElementById(`case-play-btn-${caseId}`);
+                const baseVideoUrl = window.portfolioLinks && window.portfolioLinks[`case${caseId}_video`];
+                if (iframe && baseVideoUrl) {
+                    // Останавливаем все остальные мобильные превью
+                    Object.keys(mobileTapState).forEach(id => {
+                        if (parseInt(id) !== caseId && mobileTapState[id]) {
+                            mobileTapState[id] = false;
+                            const otherIframe = document.getElementById(`case-iframe-${id}`);
+                            const otherThumb = document.getElementById(`case-thumb-${id}`);
+                            const otherBtn = document.getElementById(`case-play-btn-${id}`);
+                            if (otherIframe) { otherIframe.src = ""; otherIframe.classList.add('opacity-0'); }
+                            if (otherThumb) otherThumb.classList.remove('opacity-0');
+                            if (otherBtn) otherBtn.style.display = '';
+                        }
+                    });
+                    let embedUrl = baseVideoUrl;
+                    if (!embedUrl.includes('?')) embedUrl += '?autoplay=1&mute=1&controls=1&loop=1';
+                    else if (!embedUrl.includes('autoplay=')) embedUrl += '&autoplay=1&mute=1&controls=1&loop=1';
+                    iframe.src = embedUrl;
+                    iframe.classList.remove('opacity-0');
+                    if (thumb) thumb.classList.add('opacity-0');
+                    if (playBtn) playBtn.style.display = 'none';
+                    mobileTapState[caseId] = true;
+                } else {
+                    openVideoForCase(caseId);
+                }
+            } else {
+                // Второй тап: открыть модалку с полным видео
+                mobileTapState[caseId] = false;
+                openVideoForCase(caseId);
+            }
         };
 
         function stopAllPreviewVideos() {
-            document.querySelectorAll('.case-video-iframe').forEach(iframe => iframe.src = "");
+            document.querySelectorAll('.case-video-iframe').forEach(iframe => {
+                iframe.src = "";
+                iframe.classList.add('opacity-0');
+            });
+            document.querySelectorAll('[id^="case-thumb-"]').forEach(thumb => thumb.classList.remove('opacity-0'));
         }
 
         function initStars() {
@@ -2566,11 +2622,18 @@
                     : "portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full";
                 const ratioClass = isHorizontal ? "aspect-video" : "aspect-[9/16]";
 
+                const imgUrl = videoObj.img || getAutoThumbnail(videoObj.video) || "";
                 return `
-                    <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onmouseenter="playPreviewVideo(${caseId})" onmouseleave="stopPreviewVideo(${caseId})" onclick="openVideoForCase(${caseId})">
+                    <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onmouseenter="playPreviewVideo(${caseId})" onmouseleave="stopPreviewVideo(${caseId})" onclick="handlePortfolioCardClick(${caseId}, event)">
                         <button onclick="triggerPortfolioEdit(${caseId}, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
                         <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 ${ratioClass}">
-                            <iframe id="case-iframe-${caseId}" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                            ${imgUrl ? `<img id="case-thumb-${caseId}" src="${imgUrl}" class="w-full h-full absolute inset-0 object-cover z-0 transition-opacity duration-300" alt="preview" loading="lazy">` : ''}
+                            <iframe id="case-iframe-${caseId}" class="case-video-iframe w-full h-full absolute inset-0 z-0 opacity-0 transition-opacity duration-300" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                            <div id="case-play-btn-${caseId}" class="md:hidden absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                                <div class="w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                                    <i class="fas fa-play text-white text-sm ml-1"></i>
+                                </div>
+                            </div>
                         </div>
                         <div class="mt-3 p-4 flex justify-between items-start">
                             <div class="flex-1 mr-2">
@@ -2600,7 +2663,7 @@
                 else card.classList.add('md:hidden');
             });
 
-            const shouldShowButton = visibleCounter > 3;
+            const shouldShowButton = visibleCounter > 3 && window.innerWidth >= 768;
             if (shouldShowButton) showMoreWrap.classList.remove('hidden');
             else showMoreWrap.classList.add('hidden');
 
@@ -2734,10 +2797,24 @@
             }, (err) => console.error("Portfolio realtime sync error:", err));
 
             // Real-time listener for site_config
-            const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
-            onSnapshot(configDocRef, (snap) => {
+            const configDocRef2 = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
+            onSnapshot(configDocRef2, (snap) => {
                 if (snap.exists()) {
-                    window.configData = snap.data();
+                    configData = snap.data();
+                    if (!configData.schedule) configData.schedule = defaultSchedule;
+                    window.configData = configData;
+
+                    const btn = document.getElementById('btn-toggle-maintenance');
+                    if (btn) {
+                        if (configData.maintenanceMode) {
+                            btn.className = "w-full py-3 rounded-xl border border-orange-500/20 bg-orange-600 text-white font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2";
+                            btn.innerHTML = `<i class="fas fa-tools"></i> Выкл. техработы`;
+                        } else {
+                            btn.className = "w-full py-3 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2";
+                            btn.innerHTML = `<i class="fas fa-tools"></i> Режим техработ`;
+                        }
+                    }
+
                     updateTgLinks();
                     evaluateLiveStatus();
                     checkMaintenanceMode();
@@ -3039,11 +3116,11 @@
             const btn = document.getElementById('btn-toggle-maintenance');
             if (btn) {
                 if (updatedConfig.maintenanceMode) {
-                    btn.className = "py-3 px-4 bg-orange-600 text-white font-bold rounded-xl text-xs hover:bg-orange-500 transition";
-                    btn.innerHTML = `<i class="fas fa-tools mr-1"></i> Выкл. Тех.`;
+                    btn.className = "w-full py-3 rounded-xl border border-orange-500/20 bg-orange-600 text-white font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2";
+                    btn.innerHTML = `<i class="fas fa-tools"></i> Выкл. техработы`;
                 } else {
-                    btn.className = "py-3 px-4 bg-orange-500/20 border border-orange-500/50 text-orange-400 font-bold rounded-xl text-xs hover:bg-orange-500 hover:text-white transition";
-                    btn.innerHTML = `<i class="fas fa-tools mr-1"></i> Тех. Работы`;
+                    btn.className = "w-full py-3 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2";
+                    btn.innerHTML = `<i class="fas fa-tools"></i> Режим техработ`;
                 }
             }
             checkMaintenanceMode();
@@ -3256,23 +3333,36 @@
             if (!select || !list) return;
 
             const videos = window.portfolioLinks?.videos || defaultPortfolioSettings.videos;
-            
+
+            if (!videos || videos.length === 0) {
+                select.innerHTML = '<option value="">-- Видео не добавлены --</option>';
+                list.innerHTML = '<div class="text-[10px] text-slate-500 text-center py-4">Нет сохранённых видео</div>';
+                return;
+            }
+
             // Populate select dropdown
             select.innerHTML = '<option value="">-- Выберите видео --</option>';
             videos.forEach((v, idx) => {
+                const videoSrc = (v && v.video) ? v.video : '';
                 const option = document.createElement('option');
                 option.value = idx;
-                option.textContent = `Видео ${idx + 1}: ${v.video.substring(0, 40)}...`;
+                const label = videoSrc.length > 40 ? videoSrc.substring(0, 40) + '...' : (videoSrc || '(без ссылки)');
+                option.textContent = `Видео ${idx + 1}: ${label}`;
                 select.appendChild(option);
             });
 
             // Populate list view
-            list.innerHTML = videos.map((v, idx) => `
-                <div class="flex items-center justify-between p-2 rounded-xl bg-black/30 border border-white/5">
-                    <span class="text-[10px] text-slate-300 truncate flex-1 mr-2">Видео ${idx + 1}</span>
-                    <span class="text-[9px] text-cyan-400 font-mono truncate max-w-[150px]">${v.video.substring(0, 25)}...</span>
-                </div>
-            `).join('');
+            list.innerHTML = videos.map((v, idx) => {
+                const videoSrc = (v && v.video) ? v.video : '';
+                const category = (v && v.category) ? v.category.toUpperCase() : '—';
+                const shortSrc = videoSrc.length > 30 ? videoSrc.substring(0, 30) + '...' : (videoSrc || '(без ссылки)');
+                return `
+                <div class="flex items-center justify-between p-2 rounded-xl bg-black/30 border border-white/5 gap-2">
+                    <span class="text-[10px] text-slate-300 flex-shrink-0">Видео ${idx + 1}</span>
+                    <span class="text-[9px] text-cyan-400 font-mono truncate flex-1">${shortSrc}</span>
+                    <span class="text-[8px] text-slate-500 flex-shrink-0 uppercase">${category}</span>
+                </div>`;
+            }).join('');
         };
 
         window.updateVideoSrc = async function() {
@@ -3303,18 +3393,32 @@
             }
         };
 
+        function getAutoThumbnail(videoUrl) {
+            if (!videoUrl) return "";
+            // YouTube embed: youtube.com/embed/ID
+            const ytEmbed = videoUrl.match(/youtube\.com\/embed\/([^?&/]+)/);
+            if (ytEmbed) return `https://img.youtube.com/vi/${ytEmbed[1]}/hqdefault.jpg`;
+            // YouTube watch: youtube.com/watch?v=ID или youtu.be/ID
+            const ytWatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^?&/]+)/);
+            if (ytWatch) return `https://img.youtube.com/vi/${ytWatch[1]}/hqdefault.jpg`;
+            // Vimeo: vimeo.com/ID — нет прямого img, возвращаем пустую строку (iframe сам покажет превью)
+            return "";
+        }
+
         window.addPortfolioVideoFromAdmin = async function() {
             const videoUrl = document.getElementById('portfolio-add-video-url')?.value.trim();
-            const imgUrl = document.getElementById('portfolio-add-image-url')?.value.trim();
             const categoryRaw = document.getElementById('portfolio-add-category')?.value.trim().toLowerCase();
 
-            if (!videoUrl || !imgUrl) {
-                showToast("Заполните YouTube Embed URL и Image URL (poster).", "error");
+            if (!videoUrl) {
+                showToast("Введите ссылку на видео.", "error");
                 return;
             }
 
             const allowedCategories = new Set(['reels', 'youtube', 'promo']);
             const category = allowedCategories.has(categoryRaw) ? categoryRaw : 'reels';
+
+            // Обложка подгружается автоматически с сайта видео
+            const imgUrl = getAutoThumbnail(videoUrl);
 
             const current = normalizePortfolioData(window.portfolioLinks || defaultPortfolioSettings);
             const updated = {
@@ -3325,10 +3429,96 @@
             await saveData(updated);
 
             document.getElementById('portfolio-add-video-url').value = "";
-            document.getElementById('portfolio-add-image-url').value = "";
             document.getElementById('portfolio-add-category').value = "reels";
 
             showToast("Видео добавлено в портфолио!", "success");
+            if (typeof window.populateVideoEditList === 'function') window.populateVideoEditList();
+        };
+
+        // ═══════════════════════════════════════════════════════════
+        // ДОСТУПНЫЕ ФУНКЦИИ: ДОП. УСЛУГИ И БОРТОВОЙ ЖУРНАЛ (с Firebase)
+        // ═══════════════════════════════════════════════════════════
+
+        async function saveProjectToFirebaseOrLocal(id, updatedFields) {
+            if (firebaseInitialized) {
+                try {
+                    await ensureAuth();
+                    if (!auth.currentUser) throw new Error("Нет авторизации");
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'projects', id);
+                    await setDoc(docRef, updatedFields, { merge: true });
+                } catch (err) {
+                    showToast("Ошибка сохранения: " + err.message, "error");
+                    return false;
+                }
+            } else {
+                const p = localDemoProjects.find(x => x.id === id);
+                if (p) {
+                    Object.assign(p, updatedFields);
+                    saveLocalProjects();
+                }
+            }
+            return true;
+        }
+
+        window.addProjectAddon = async function(id) {
+            const labelEl = document.getElementById(`addon-label-${id}`);
+            const priceEl = document.getElementById(`addon-price-${id}`);
+            if (!labelEl || !priceEl) return;
+            const label = labelEl.value.trim();
+            const price = parseInt(priceEl.value) || 0;
+            if (!label) { showToast("Введите название услуги!", "error"); return; }
+            const p = firebaseInitialized ? clientProjects.find(x => x.id === id) : localDemoProjects.find(x => x.id === id);
+            if (!p) return;
+            const addons = [...(p.addons || []), { label, price }];
+            const ok = await saveProjectToFirebaseOrLocal(id, { addons });
+            if (ok) {
+                if (!firebaseInitialized) { p.addons = addons; saveLocalProjects(); renderCrmProjects(); }
+                labelEl.value = ""; priceEl.value = "";
+                showToast("Услуга добавлена!", "success");
+            }
+        };
+
+        window.deleteProjectAddon = async function(id, idx) {
+            const p = firebaseInitialized ? clientProjects.find(x => x.id === id) : localDemoProjects.find(x => x.id === id);
+            if (!p) return;
+            const addons = (p.addons || []).filter((_, i) => i !== idx);
+            const ok = await saveProjectToFirebaseOrLocal(id, { addons });
+            if (ok) {
+                if (!firebaseInitialized) { p.addons = addons; saveLocalProjects(); renderCrmProjects(); }
+                showToast("Услуга удалена!", "success");
+            }
+        };
+
+        window.addProjectLog = async function(id) {
+            const textEl = document.getElementById(`log-text-${id}`);
+            const blinkEl = document.getElementById(`log-blink-${id}`);
+            if (!textEl) return;
+            const text = textEl.value.trim();
+            if (!text) { showToast("Введите текст записи журнала!", "error"); return; }
+            const blink = blinkEl ? blinkEl.checked : false;
+            const now = new Date();
+            const dateStr = String(now.getDate()).padStart(2,'0') + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + now.getFullYear() + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+            const p = firebaseInitialized ? clientProjects.find(x => x.id === id) : localDemoProjects.find(x => x.id === id);
+            if (!p) return;
+            const logs = [...(p.logs || []), { text, blink, date: dateStr }];
+            const ok = await saveProjectToFirebaseOrLocal(id, { logs });
+            if (ok) {
+                if (!firebaseInitialized) { p.logs = logs; saveLocalProjects(); renderCrmProjects(); }
+                textEl.value = "";
+                if (blinkEl) blinkEl.checked = false;
+                showToast("Запись добавлена в журнал!", "success");
+            }
+        };
+
+        window.deleteProjectLog = async function(id, idx) {
+            const p = firebaseInitialized ? clientProjects.find(x => x.id === id) : localDemoProjects.find(x => x.id === id);
+            if (!p) return;
+            const logs = (p.logs || []).filter((_, i) => i !== idx);
+            const ok = await saveProjectToFirebaseOrLocal(id, { logs });
+            if (ok) {
+                if (!firebaseInitialized) { p.logs = logs; saveLocalProjects(); renderCrmProjects(); }
+                showToast("Запись удалена!", "success");
+            }
         };
 
         window.deleteClientProject = async function(id, btnElement) {
@@ -3443,17 +3633,17 @@
                         };
                         setDoc(configDocRef, configData);
                     }
-                    if(!configData.schedule) configData.schedule = defaultSchedule;
+                    if (!configData.schedule) configData.schedule = defaultSchedule;
                     window.configData = configData;
                     
                     const btn = document.getElementById('btn-toggle-maintenance');
                     if (btn) {
                         if (configData.maintenanceMode) {
-                            btn.className = "py-3 px-4 bg-orange-600 text-white font-bold rounded-xl text-xs hover:bg-orange-500 transition";
-                            btn.innerHTML = `<i class="fas fa-tools mr-1"></i> Выкл. Тех.`;
+                            btn.className = "w-full py-3 rounded-xl border border-orange-500/20 bg-orange-600 text-white font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2";
+                            btn.innerHTML = `<i class="fas fa-tools"></i> Выкл. техработы`;
                         } else {
-                            btn.className = "py-3 px-4 bg-orange-500/20 border border-orange-500/50 text-orange-400 font-bold rounded-xl text-xs hover:bg-orange-500 hover:text-white transition";
-                            btn.innerHTML = `<i class="fas fa-tools mr-1"></i> Тех. Работы`;
+                            btn.className = "w-full py-3 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 text-orange-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2";
+                            btn.innerHTML = `<i class="fas fa-tools"></i> Режим техработ`;
                         }
                     }
 
