@@ -418,6 +418,9 @@
             <a href="https://t.me/your_telegram" id="maintenance-tg" target="_blank" class="px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300">
                 <i class="fab fa-telegram text-xl mr-2"></i> Написать в Telegram
             </a>
+            <a href="https://t.me/your_telegram" id="maintenance-tg-portfolio" target="_blank" class="px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300">
+                <i class="fab fa-telegram text-xl mr-2"></i> Портфолио в Telegram
+            </a>
             
             <button onclick="openPortalModal()" class="px-8 py-4 bg-[#00c6fb]/10 hover:bg-[#00c6fb]/20 border border-[#00c6fb]/30 text-cyan-400 rounded-full font-bold transition duration-300">
                 <i class="fas fa-user-astronaut mr-2"></i> Личный кабинет
@@ -475,6 +478,7 @@
 
                 <div class="hidden md:flex items-center space-x-8" id="nav-links-container">
                     <a href="#portfolio" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_portfolio">Портфолио</a>
+                    <a href="#" id="nav_portfolio_tg" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_portfolio_tg">Портфолио в ТГ</a>
                     <a href="#workflow" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_process">Процесс</a>
                     <a href="#pricing" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_pricing">Тарифы</a>
                     <a href="#about-us" class="nav-item-link text-sm font-medium text-slate-300 hover:text-cyan-400 transition duration-300 edit-field" data-id="nav_about">О нас</a>
@@ -497,6 +501,7 @@
 
         <div id="mobile-menu" class="hidden md:hidden bg-[#010008]/95 backdrop-blur-xl border-b border-white/5 px-6 py-6 space-y-4">
             <a href="#portfolio" class="block text-lg font-medium text-slate-300 hover:text-cyan-400 transition edit-field" data-id="nav_portfolio_mob" onclick="toggleMobileMenu()">Портфолио</a>
+            <a href="#" id="nav_portfolio_tg_mob" class="block text-lg font-medium text-slate-300 hover:text-cyan-400 transition edit-field" data-id="nav_portfolio_tg_mob" onclick="toggleMobileMenu()">Портфолио в ТГ</a>
             <a href="#workflow" class="block text-lg font-medium text-slate-300 hover:text-cyan-400 transition edit-field" data-id="nav_process_mob" onclick="toggleMobileMenu()">Процесс</a>
             <a href="#pricing" class="block text-lg font-medium text-slate-300 hover:text-cyan-400 transition edit-field" data-id="nav_pricing_mob" onclick="toggleMobileMenu()">Тарифы</a>
             <a href="#about-us" class="block text-lg font-medium text-slate-300 hover:text-cyan-400 transition edit-field" data-id="nav_about_mob" onclick="toggleMobileMenu()">О нас</a>
@@ -592,157 +597,12 @@
 
             <!-- Контейнер портфолио (на мобиле управляется JS-классами mob-collapsed/mob-expanded) -->
             <div id="portfolio-mobile-container">
-            <!-- Идеально структурированная сетка. Ряд 1 и 2 - только вертикальные. Ряд 3 - только горизонтальные! -->
-            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8" id="portfolio-grid">
-                
-                <!-- === РЯД 1: ВЕРТИКАЛЬНЫЕ ВИДЕО (ПЕРВЫЕ КЕЙСЫ) === -->
-                <!-- Кейс 1: Вертикальный Reels (База / Reels) -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="reels" id="case-card-1" onmouseenter="playPreviewVideo(1)" onmouseleave="stopPreviewVideo(1)" onclick="openVideoForCase(1)">
-                    <button onclick="triggerPortfolioEdit(1, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
-                        <img id="case-img-1" src="" alt="Reels 1" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                        <iframe id="case-iframe-1" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="mt-3 p-4 flex justify-between items-start">
-                        <div class="flex-1 mr-2">
-                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t1">Разговорный Reels</h3>
-                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d1">Субтитры, динамика, SFX</p>
-                        </div>
-                        <span class="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[9px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels">REELS</span>
-                    </div>
+                <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8" id="portfolio-grid"></div>
+                <div class="hidden md:flex justify-center mt-8" id="portfolio-show-more-wrap">
+                    <button onclick="showAllPortfolioDesktop()" id="portfolio-show-more-btn" class="px-8 py-3 btn-liquid-glass text-white rounded-full font-bold tracking-wide transition duration-300">
+                        Смотреть всё портфолио
+                    </button>
                 </div>
-
-                <!-- Кейс 2: Вертикальный YouTube (PRO / Влоги) -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="youtube" id="case-card-2" onmouseenter="playPreviewVideo(2)" onmouseleave="stopPreviewVideo(2)" onclick="openVideoForCase(2)">
-                    <button onclick="triggerPortfolioEdit(2, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
-                        <img id="case-img-2" src="" alt="YouTube 1" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                        <iframe id="case-iframe-2" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="mt-3 p-4 flex justify-between items-start">
-                        <div class="flex-1 mr-2">
-                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t2">Тизер Подкаста</h3>
-                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d2">Вертикальный нарез подкаста</p>
-                        </div>
-                        <span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[9px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube">YOUTUBE</span>
-                    </div>
-                </div>
-
-                <!-- Кейс 3: Вертикальный Promo (Exclusive / VFX) -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="promo" id="case-card-3" onmouseenter="playPreviewVideo(3)" onmouseleave="stopPreviewVideo(3)" onclick="openVideoForCase(3)">
-                    <button onclick="triggerPortfolioEdit(3, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
-                        <img id="case-img-3" src="" alt="Promo 1" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                        <iframe id="case-iframe-3" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="mt-3 p-4 flex justify-between items-start">
-                        <div class="flex-1 mr-2">
-                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t3">Продуктовое промо</h3>
-                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d3">Эстетичный обзор в 9:16</p>
-                        </div>
-                        <span class="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[9px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo">PROMO</span>
-                    </div>
-                </div>
-
-                <!-- === РЯД 2: ВЕРТИКАЛЬНЫЕ ВИДЕО (ВТОРЫЕ КЕЙСЫ) === -->
-                <!-- Кейс 4: Вертикальный Reels 2 -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="reels" id="case-card-4" onmouseenter="playPreviewVideo(4)" onmouseleave="stopPreviewVideo(4)" onclick="openVideoForCase(4)">
-                    <button onclick="triggerPortfolioEdit(4, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
-                        <img id="case-img-4" src="" alt="Reels 2" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                        <iframe id="case-iframe-4" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="mt-3 p-4 flex justify-between items-start">
-                        <div class="flex-1 mr-2">
-                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t4">Динамичный Shorts</h3>
-                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d4">Плотный визуальный ряд, удержание</p>
-                        </div>
-                        <span class="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[9px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels_2">REELS</span>
-                    </div>
-                </div>
-
-                <!-- Кейс 5: Вертикальный YouTube 2 -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="youtube" id="case-card-5" onmouseenter="playPreviewVideo(5)" onmouseleave="stopPreviewVideo(5)" onclick="openVideoForCase(5)">
-                    <button onclick="triggerPortfolioEdit(5, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
-                        <img id="case-img-5" src="" alt="YouTube 2" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                        <iframe id="case-iframe-5" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="mt-3 p-4 flex justify-between items-start">
-                        <div class="flex-1 mr-2">
-                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t5">Микро-Влог Shorts</h3>
-                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d5">Обзор путешествия в 9:16</p>
-                        </div>
-                        <span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[9px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube_2">YOUTUBE</span>
-                    </div>
-                </div>
-
-                <!-- Кейс 6: Вертикальный Promo 2 -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full" data-category="promo" id="case-card-6" onmouseenter="playPreviewVideo(6)" onmouseleave="stopPreviewVideo(6)" onclick="openVideoForCase(6)">
-                    <button onclick="triggerPortfolioEdit(6, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-[9/16]">
-                        <img id="case-img-6" src="" alt="Promo 2" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                        <iframe id="case-iframe-6" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="mt-3 p-4 flex justify-between items-start">
-                        <div class="flex-1 mr-2">
-                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t6">Рекламное промо</h3>
-                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d6">Коммерческий креатив</p>
-                        </div>
-                        <span class="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[9px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo_2">PROMO</span>
-                    </div>
-                </div>
-
-                <!-- === РЯД 3: ГОРИЗОНТАЛЬНЫЕ ВИДЕО (В САМОМ НИЗУ) === -->
-                <!-- Кейс 7: Горизонтальный Reels (Шоурил Вертикалок) -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] w-full" data-category="reels" id="case-card-7" onmouseenter="playPreviewVideo(7)" onmouseleave="stopPreviewVideo(7)" onclick="openVideoForCase(7)">
-                    <button onclick="triggerPortfolioEdit(7, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-video">
-                        <img id="case-img-7" src="" alt="Reels Horizontal" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                        <iframe id="case-iframe-7" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="mt-3 p-4 flex justify-between items-start">
-                        <div class="flex-1 mr-2">
-                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t7">Шоурил Вертикалок</h3>
-                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d7">Горизонтальный обзор лучших Reels</p>
-                        </div>
-                        <span class="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[9px] text-cyan-400 rounded-full font-mono uppercase edit-field" data-id="tag_reels_3">REELS</span>
-                    </div>
-                </div>
-
-                <!-- Кейс 8: Горизонтальный YouTube (Выпуск Подкаста Full) -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] w-full" data-category="youtube" id="case-card-8" onmouseenter="playPreviewVideo(8)" onmouseleave="stopPreviewVideo(8)" onclick="openVideoForCase(8)">
-                    <button onclick="triggerPortfolioEdit(8, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-video">
-                        <img id="case-img-8" src="" alt="YouTube Horizontal" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                        <iframe id="case-iframe-8" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="mt-3 p-4 flex justify-between items-start">
-                        <div class="flex-1 mr-2">
-                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t8">Выпуск Подкаста</h3>
-                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d8">Мультикамерный монтаж, чистка звука</p>
-                        </div>
-                        <span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[9px] text-blue-400 rounded-full font-mono uppercase edit-field" data-id="tag_youtube_3">YOUTUBE</span>
-                    </div>
-                </div>
-
-                <!-- Кейс 9: Горизонтальный Promo (Имиджевый Промо-ролик) -->
-                <div class="portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] w-full" data-category="promo" id="case-card-9" onmouseenter="playPreviewVideo(9)" onmouseleave="stopPreviewVideo(9)" onclick="openVideoForCase(9)">
-                    <button onclick="triggerPortfolioEdit(9, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                    <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 aspect-video">
-                        <img id="case-img-9" src="" alt="Promo Horizontal" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
-                        <iframe id="case-iframe-9" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="mt-3 p-4 flex justify-between items-start">
-                        <div class="flex-1 mr-2">
-                            <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="portfolio_t9">Имиджевый Промо-ролик</h3>
-                            <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="portfolio_d9">Цветокоррекция, VFX, Cinema Sound</p>
-                        </div>
-                        <span class="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 text-[9px] text-purple-400 rounded-full font-mono uppercase edit-field" data-id="tag_promo_3">PROMO</span>
-                    </div>
-                </div>
-
-            </div>
             </div><!-- /portfolio-mobile-container -->
         </div>
     </section>
@@ -921,6 +781,9 @@
             <div class="flex flex-wrap justify-center items-center gap-6">
                 <a href="#" id="tg-btn" target="_blank" class="flex items-center gap-3 px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300">
                     <i class="fab fa-telegram text-xl"></i> <span class="edit-field" data-id="tg_btn_text">Написать в Telegram</span>
+                </a>
+                <a href="#" id="tg-portfolio-btn" target="_blank" class="flex items-center gap-3 px-8 py-4 btn-liquid-glass text-white rounded-full font-bold transition duration-300">
+                    <i class="fab fa-telegram text-xl"></i> <span>Портфолио в Telegram</span>
                 </a>
                 
                 <button onclick="openPortalModal()" class="flex items-center gap-3 px-8 py-4 bg-transparent border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 rounded-full font-bold transition duration-300">
@@ -1560,6 +1423,32 @@
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 text-sm font-mono">@</span>
                                 <input type="text" id="setting-tg" class="w-full bg-black/40 border border-white/8 rounded-2xl pl-8 pr-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="your_telegram">
                             </div>
+
+                            <div class="mt-5">
+                                <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Telegram Portfolio Link</label>
+                                <input type="text" id="setting-tg-portfolio-link" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://t.me/your_telegram">
+                            </div>
+
+                            <div class="mt-5">
+                                <p class="text-[10px] text-slate-500 mb-3 font-bold">Добавить видео в портфолио</p>
+
+                                <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">YouTube Embed URL</label>
+                                <input type="text" id="portfolio-add-video-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://www.youtube.com/embed/...">
+
+                                <div class="mt-3">
+                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Image URL (poster)</label>
+                                    <input type="text" id="portfolio-add-image-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://images...">
+                                </div>
+
+                                <div class="mt-3">
+                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Category</label>
+                                    <input type="text" id="portfolio-add-category" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="reels | youtube | promo" value="reels">
+                                </div>
+
+                                <button onclick="addPortfolioVideoFromAdmin()" class="w-full mt-4 py-3.5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/35 text-cyan-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2.5">
+                                    <i class="fas fa-plus text-cyan-400 text-xs"></i> Добавить в портфолио
+                                </button>
+                            </div>
                         </div>
 
                         <!-- БЛОК 2: График работы -->
@@ -1743,17 +1632,7 @@
         window.currentAdminState = false;
         window.configData = null;
         
-        window.portfolioLinks = {
-            case1_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            case2_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            case3_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            case4_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            case5_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            case6_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            case7_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            case8_video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            case9_video: "https://www.youtube.com/embed/dQw4w9WgXcQ"
-        };
+        window.portfolioLinks = {};
 
         const today = new Date().toISOString().slice(0, 10);
         document.addEventListener("DOMContentLoaded", () => {
@@ -1861,6 +1740,7 @@
                 container.classList.add('mob-collapsed');
                 container.classList.remove('mob-expanded');
             }
+            if (typeof applyDesktopPortfolioLimit === 'function') applyDesktopPortfolioLimit();
         });
 
         // Инициализация при загрузке
@@ -1964,7 +1844,7 @@
                     }
                     
                     html += `
-                        <div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0 ${isToday ? 'bg-cyan-500/5 px-3 rounded-xl border border-cyan-500/20 shadow-[0_0_10px_rgba(0,198,251,0.05)]' : 'px-1'}">
+                        <div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0 ${isToday ? 'px-1 bg-cyan-500/5 rounded-xl ring-1 ring-cyan-500/20 shadow-[0_0_10px_rgba(0,198,251,0.05)]' : 'px-1'}">
                             <span class="text-sm font-semibold text-slate-200 flex items-center">${d.name} ${todayBadge}</span>
                             <span class="text-sm font-semibold">${timeText}</span>
                         </div>
@@ -2197,6 +2077,8 @@
                     item.style.display = 'none';
                 }
             });
+            portfolioDesktopExpanded = false;
+            if (typeof applyDesktopPortfolioLimit === 'function') applyDesktopPortfolioLimit();
         };
 
         let isAboutOpen = false;
@@ -2462,15 +2344,8 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const MY_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s",
-  authDomain: "space-video-agency.firebaseapp.com",
-  projectId: "space-video-agency",
-  storageBucket: "space-video-agency.firebasestorage.app",
-  messagingSenderId: "591140214223",
-  appId: "1:591140214223:web:7bc45a81f66a7181f8eeba",
-  measurementId: "G-6QQ2RBJWMK"
-};
+        const MY_FIREBASE_CONFIG = null; 
+
         let isVisualCmsMode = false; 
         let siteContentData = {};
         let configData = {};
@@ -2594,15 +2469,18 @@
         };
 
         const defaultPortfolioSettings = {
-            case1_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case1_img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
-            case2_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case2_img: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80",
-            case3_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case3_img: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=800&q=80",
-            case4_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case4_img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=600&q=80",
-            case5_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case5_img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&q=80",
-            case6_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case6_img: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
-            case7_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case7_img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80",
-            case8_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case8_img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80",
-            case9_video: "https://www.youtube.com/embed/dQw4w9WgXcQ", case9_img: "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=800&q=80"
+            tg_portfolio_link: "https://t.me/your_telegram",
+            videos: [
+                { video: "https://www.youtube.com/embed/dQw4w9WgXcQ", img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80", category: "reels" },
+                { video: "https://www.youtube.com/embed/dQw4w9WgXcQ", img: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80", category: "youtube" },
+                { video: "https://www.youtube.com/embed/dQw4w9WgXcQ", img: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=800&q=80", category: "promo" },
+                { video: "https://www.youtube.com/embed/dQw4w9WgXcQ", img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=600&q=80", category: "reels" },
+                { video: "https://www.youtube.com/embed/dQw4w9WgXcQ", img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&q=80", category: "youtube" },
+                { video: "https://www.youtube.com/embed/dQw4w9WgXcQ", img: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80", category: "promo" },
+                { video: "https://www.youtube.com/embed/dQw4w9WgXcQ", img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80", category: "reels" },
+                { video: "https://www.youtube.com/embed/dQw4w9WgXcQ", img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80", category: "youtube" },
+                { video: "https://www.youtube.com/embed/dQw4w9WgXcQ", img: "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=800&q=80", category: "promo" }
+            ]
         };
 
         const defaultSchedule = {
@@ -2645,23 +2523,199 @@
         }
         window.applySiteContent = applySiteContent;
 
-        function applyPortfolioData(data) {
-            window.portfolioLinks = data;
-            for (let i = 1; i <= 9; i++) {
-                const imgEl = document.getElementById(`case-img-${i}`);
-                if (imgEl && data[`case${i}_img`]) imgEl.src = data[`case${i}_img`];
+        let portfolioDesktopExpanded = false;
+
+        function getPortfolioLabel(category, idx) {
+            const cat = (category || '').toLowerCase();
+            const tagFieldMap = [
+                "tag_reels", "tag_youtube", "tag_promo",
+                "tag_reels_2", "tag_youtube_2", "tag_promo_2",
+                "tag_reels_3", "tag_youtube_3", "tag_promo_3"
+            ];
+            const fieldId = tagFieldMap[idx - 1] || "";
+            if (cat === 'youtube') return { key: fieldId, text: 'YOUTUBE', cls: "bg-blue-500/10 border-blue-500/20 text-blue-400" };
+            if (cat === 'promo') return { key: fieldId, text: 'PROMO', cls: "bg-purple-500/10 border-purple-500/20 text-purple-400" };
+            return { key: fieldId, text: 'REELS', cls: "bg-cyan-500/10 border-cyan-500/20 text-cyan-400" };
+        }
+
+        function renderPortfolioGrid(data) {
+            const grid = document.getElementById('portfolio-grid');
+            if (!grid) return;
+
+            const mergedContent = { ...defaultContent, ...(siteContentData || {}) };
+            const videos = Array.isArray(data.videos) ? data.videos : [];
+
+            grid.innerHTML = videos.map((videoObj, index) => {
+                const caseId = index + 1;
+                const titleId = `portfolio_t${caseId}`;
+                const descId = `portfolio_d${caseId}`;
+                const category = (videoObj.category || 'reels').toLowerCase();
+                const label = getPortfolioLabel(category, caseId);
+
+                const titleText = mergedContent[titleId] || `Кейс ${caseId}`;
+                const descText = mergedContent[descId] || 'Описание кейса';
+                const tagText = (label.key && mergedContent[label.key]) || label.text;
+
+                const isHorizontal = caseId > 6;
+                const cardClass = isHorizontal
+                    ? "portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] w-full"
+                    : "portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full";
+                const ratioClass = isHorizontal ? "aspect-video" : "aspect-[9/16]";
+
+                return `
+                    <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onmouseenter="playPreviewVideo(${caseId})" onmouseleave="stopPreviewVideo(${caseId})" onclick="openVideoForCase(${caseId})">
+                        <button onclick="triggerPortfolioEdit(${caseId}, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
+                        <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 ${ratioClass}">
+                            <img id="case-img-${caseId}" src="${videoObj.img || ''}" alt="Case ${caseId}" class="case-poster absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:opacity-0 z-10">
+                            <iframe id="case-iframe-${caseId}" class="case-video-iframe w-full h-full absolute inset-0 z-0" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                        <div class="mt-3 p-4 flex justify-between items-start">
+                            <div class="flex-1 mr-2">
+                                <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="${titleId}">${titleText}</h3>
+                                <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="${descId}">${descText}</p>
+                            </div>
+                            <span class="px-2 py-0.5 ${label.cls} border text-[9px] rounded-full font-mono uppercase ${label.key ? 'edit-field' : ''}" ${label.key ? `data-id="${label.key}"` : ''}>${tagText}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function applyDesktopPortfolioLimit() {
+            const cards = Array.from(document.querySelectorAll('#portfolio-grid .portfolio-item'));
+            const showMoreWrap = document.getElementById('portfolio-show-more-wrap');
+            if (!cards.length || !showMoreWrap) return;
+
+            let visibleCounter = 0;
+            cards.forEach((card) => {
+                if (card.style.display === 'none') {
+                    card.classList.remove('md:hidden');
+                    return;
+                }
+                visibleCounter += 1;
+                if (portfolioDesktopExpanded || visibleCounter <= 3) card.classList.remove('md:hidden');
+                else card.classList.add('md:hidden');
+            });
+
+            const shouldShowButton = visibleCounter > 3;
+            if (shouldShowButton) showMoreWrap.classList.remove('hidden');
+            else showMoreWrap.classList.add('hidden');
+
+            const btn = document.getElementById('portfolio-show-more-btn');
+            if (btn) btn.textContent = portfolioDesktopExpanded ? 'Скрыть портфолио' : 'Смотреть всё портфолио';
+        }
+
+        window.showAllPortfolioDesktop = function() {
+            portfolioDesktopExpanded = !portfolioDesktopExpanded;
+            applyDesktopPortfolioLimit();
+        };
+
+        function normalizePortfolioData(rawData) {
+            const source = rawData && typeof rawData === 'object' ? rawData : {};
+            const normalizedVideos = Array.isArray(source.videos) && source.videos.length > 0
+                ? source.videos
+                : defaultPortfolioSettings.videos.map((def, idx) => ({
+                    video: source[`case${idx + 1}_video`] || def.video,
+                    img: source[`case${idx + 1}_img`] || def.img,
+                    category: source[`case${idx + 1}_category`] || def.category
+                }));
+
+            const merged = {
+                tg_portfolio_link: source.tg_portfolio_link || defaultPortfolioSettings.tg_portfolio_link,
+                videos: normalizedVideos.map((videoObj, idx) => ({
+                    video: (videoObj && videoObj.video) || defaultPortfolioSettings.videos[idx]?.video || defaultPortfolioSettings.videos[0].video,
+                    img: (videoObj && videoObj.img) || defaultPortfolioSettings.videos[idx]?.img || defaultPortfolioSettings.videos[0].img,
+                    category: (videoObj && videoObj.category) || defaultPortfolioSettings.videos[idx]?.category || "reels"
+                }))
+            };
+
+            for (let i = 1; i <= merged.videos.length; i++) {
+                const videoObj = merged.videos[i - 1] || {};
+                merged[`case${i}_video`] = videoObj.video;
+                merged[`case${i}_img`] = videoObj.img;
+                merged[`case${i}_category`] = videoObj.category;
             }
+
+            return merged;
+        }
+
+        function applyPortfolioData(data) {
+            const normalized = normalizePortfolioData(data);
+            window.portfolioLinks = normalized;
+            portfolioDesktopExpanded = false;
+            renderPortfolioGrid(normalized);
+            applyDesktopPortfolioLimit();
+            const tgBtn = document.getElementById('tg-btn');
+            if (tgBtn && normalized.tg_portfolio_link) tgBtn.href = normalized.tg_portfolio_link;
+            const tgPortfolioBtn = document.getElementById('tg-portfolio-btn');
+            if (tgPortfolioBtn && normalized.tg_portfolio_link) tgPortfolioBtn.href = normalized.tg_portfolio_link;
+            const maintenancePortfolioBtn = document.getElementById('maintenance-tg-portfolio');
+            if (maintenancePortfolioBtn && normalized.tg_portfolio_link) maintenancePortfolioBtn.href = normalized.tg_portfolio_link;
         }
         window.applyPortfolioData = applyPortfolioData;
 
         function updateTgLinks() {
             const handle = configData.telegramHandle || "your_telegram";
+            const portfolioTg = (window.portfolioLinks && window.portfolioLinks.tg_portfolio_link) || "";
             const tgBtn = document.getElementById('tg-btn');
-            if (tgBtn) tgBtn.href = `https://t.me/${handle}`;
+            if (tgBtn) tgBtn.href = portfolioTg || `https://t.me/${handle}`;
+            const tgPortfolioBtn = document.getElementById('tg-portfolio-btn');
+            if (tgPortfolioBtn) tgPortfolioBtn.href = portfolioTg || `https://t.me/${handle}`;
             const mBtn = document.getElementById('maintenance-tg');
             if (mBtn) mBtn.href = `https://t.me/${handle}`;
+            const mPortfolioBtn = document.getElementById('maintenance-tg-portfolio');
+            if (mPortfolioBtn) mPortfolioBtn.href = portfolioTg || `https://t.me/${handle}`;
+            const navTgBtn = document.getElementById('nav_portfolio_tg');
+            if (navTgBtn) navTgBtn.href = portfolioTg || `https://t.me/${handle}`;
+            const navTgBtnMob = document.getElementById('nav_portfolio_tg_mob');
+            if (navTgBtnMob) navTgBtnMob.href = portfolioTg || `https://t.me/${handle}`;
         }
         window.updateTgLinks = updateTgLinks;
+
+        async function saveData(updatedPortfolioInput) {
+            const normalized = normalizePortfolioData(updatedPortfolioInput);
+            const payload = {
+                tg_portfolio_link: normalized.tg_portfolio_link,
+                videos: normalized.videos
+            };
+
+            if (firebaseInitialized) {
+                try {
+                    await ensureAuth();
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
+                    await setDoc(docRef, payload, { merge: true });
+                } catch (e) {
+                    console.error("Failed saving portfolio data:", e);
+                }
+            } else {
+                localStorage.setItem('space_portfolio_links', JSON.stringify(payload));
+            }
+
+            applyPortfolioData(payload);
+            return normalized;
+        }
+
+        async function loadData() {
+            if (!firebaseInitialized) {
+                const localRaw = JSON.parse(localStorage.getItem('space_portfolio_links') || "null") || defaultPortfolioSettings;
+                const normalizedLocal = normalizePortfolioData(localRaw);
+                applyPortfolioData(normalizedLocal);
+                return normalizedLocal;
+            }
+
+            const portfolioDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
+            const snap = await getDoc(portfolioDocRef);
+            if (snap.exists()) {
+                const normalizedCloud = normalizePortfolioData(snap.data());
+                applyPortfolioData(normalizedCloud);
+                return normalizedCloud;
+            }
+
+            await saveData(defaultPortfolioSettings);
+            return normalizePortfolioData(defaultPortfolioSettings);
+        }
+        window.saveData = saveData;
+        window.loadData = loadData;
 
         function evaluateLiveStatus() {
             const statusBadge = document.getElementById('live-status-badge');
@@ -2805,6 +2859,12 @@
         window.populateAdminFields = function() {
             const handleInput = document.getElementById('setting-tg');
             if (handleInput) handleInput.value = configData.telegramHandle || "your_telegram";
+
+            const portfolioTgInput = document.getElementById('setting-tg-portfolio-link');
+            const portfolioTgValue = (window.portfolioLinks && window.portfolioLinks.tg_portfolio_link)
+                ? window.portfolioLinks.tg_portfolio_link
+                : defaultPortfolioSettings.tg_portfolio_link;
+            if (portfolioTgInput) portfolioTgInput.value = portfolioTgValue;
             
             const holidayCheckbox = document.getElementById('setting-holiday');
             if (holidayCheckbox) holidayCheckbox.checked = configData.isHoliday || false;
@@ -3005,6 +3065,8 @@
 
         window.saveAdminSettings = async function() {
             const handle = document.getElementById('setting-tg').value.trim();
+            const tgPortfolioLinkInput = document.getElementById('setting-tg-portfolio-link');
+            const tgPortfolioLink = tgPortfolioLinkInput ? tgPortfolioLinkInput.value.trim() : "";
             const isHoliday = document.getElementById('setting-holiday').checked;
             const newPass = document.getElementById('setting-new-pass').value;
             const maintPass1 = document.getElementById('setting-maint-pass1')?.value.trim();
@@ -3038,16 +3100,32 @@
                     await ensureAuth();
                     const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
                     await setDoc(configDocRef, updatedConfig, { merge: true });
+
+                    if (tgPortfolioLinkInput) {
+                        const portfolioDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
+                        await setDoc(portfolioDocRef, { tg_portfolio_link: tgPortfolioLink }, { merge: true });
+                    }
                 } catch (e) {
                     console.error("Config save failed on Firebase:", e);
                 }
             } else {
                 localStorage.setItem('space_site_config', JSON.stringify(updatedConfig));
+
+                if (tgPortfolioLinkInput) {
+                    const currentPortfolio = JSON.parse(localStorage.getItem('space_portfolio_links') || "null") || defaultPortfolioSettings;
+                    currentPortfolio.tg_portfolio_link = tgPortfolioLink;
+                    localStorage.setItem('space_portfolio_links', JSON.stringify(currentPortfolio));
+                }
             }
 
             configData = updatedConfig;
             window.configData = updatedConfig;
             document.getElementById('setting-new-pass').value = "";
+
+            if (tgPortfolioLinkInput) {
+                window.portfolioLinks = window.portfolioLinks || defaultPortfolioSettings;
+                window.portfolioLinks.tg_portfolio_link = tgPortfolioLink;
+            }
             
             updateTgLinks();
             evaluateLiveStatus();
@@ -3094,22 +3172,40 @@
         };
 
         window.savePortfolioUpdate = async function(caseId, newVideo, newImg) {
-            const updated = { ...window.portfolioLinks };
-            updated[`case${caseId}_video`] = newVideo;
-            updated[`case${caseId}_img`] = newImg;
-
-            if (firebaseInitialized) {
-                try {
-                    await ensureAuth();
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
-                    await setDoc(docRef, updated, { merge: true });
-                } catch (e) { console.error("Failed saving portfolio updates:", e); }
-            } else {
-                localStorage.setItem('space_portfolio_links', JSON.stringify(updated));
-            }
-            window.portfolioLinks = updated;
-            applyPortfolioData(updated);
+            const updated = normalizePortfolioData(window.portfolioLinks);
+            const idx = caseId - 1;
+            const currentCategory = updated.videos[idx]?.category || defaultPortfolioSettings.videos[idx]?.category || "reels";
+            updated.videos[idx] = { video: newVideo, img: newImg, category: currentCategory };
+            await saveData(updated);
             showToast(`Кейс ${caseId} успешно сохранен в системе!`, "success");
+        };
+
+        window.addPortfolioVideoFromAdmin = async function() {
+            const videoUrl = document.getElementById('portfolio-add-video-url')?.value.trim();
+            const imgUrl = document.getElementById('portfolio-add-image-url')?.value.trim();
+            const categoryRaw = document.getElementById('portfolio-add-category')?.value.trim().toLowerCase();
+
+            if (!videoUrl || !imgUrl) {
+                showToast("Заполните YouTube Embed URL и Image URL (poster).", "error");
+                return;
+            }
+
+            const allowedCategories = new Set(['reels', 'youtube', 'promo']);
+            const category = allowedCategories.has(categoryRaw) ? categoryRaw : 'reels';
+
+            const current = normalizePortfolioData(window.portfolioLinks || defaultPortfolioSettings);
+            const updated = {
+                tg_portfolio_link: current.tg_portfolio_link,
+                videos: [...(current.videos || []), { video: videoUrl, img: imgUrl, category }]
+            };
+
+            await saveData(updated);
+
+            document.getElementById('portfolio-add-video-url').value = "";
+            document.getElementById('portfolio-add-image-url').value = "";
+            document.getElementById('portfolio-add-category').value = "reels";
+
+            showToast("Видео добавлено в портфолио!", "success");
         };
 
         window.deleteClientProject = async function(id, btnElement) {
@@ -3204,7 +3300,6 @@
                 const contentDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_content', 'main');
                 const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main');
                 const statsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'analytics_doc', 'main');
-                const portfolioDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
 
                 const contentSnap = await getDoc(contentDocRef);
                 if (contentSnap.exists()) { siteContentData = contentSnap.data(); } 
@@ -3247,11 +3342,7 @@
                     console.error("Config real-time load error:", err);
                 });
 
-                const portSnap = await getDoc(portfolioDocRef);
-                let portfolioData = {};
-                if (portSnap.exists()) { portfolioData = portSnap.data(); } 
-                else { portfolioData = defaultPortfolioSettings; await setDoc(portfolioDocRef, defaultPortfolioSettings); }
-                applyPortfolioData(portfolioData);
+                await loadData();
 
                 await setDoc(statsDocRef, { views: increment(1) }, { merge: true });
                 onSnapshot(statsDocRef, (snap) => {
