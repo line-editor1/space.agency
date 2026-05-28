@@ -45,7 +45,7 @@
             border-left: 1px solid rgba(255, 255, 255, 0.08); border-right: 1px solid rgba(255, 255, 255, 0.02);
             border-bottom: 1px solid rgba(255, 255, 255, 0.01);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.12), inset 0 -1px 8px rgba(0, 0, 0, 0.4);
-            overflow: hidden; transition: border-color 0.5s ease, box-shadow 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: border-color 0.5s ease, box-shadow 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .glass-shine {
@@ -54,9 +54,14 @@
             pointer-events: none; transition: transform 0.1s ease-out; z-index: 1;
         }
 
-        .apple-liquid-glass:hover, .portfolio-item:hover {
+        .apple-liquid-glass:hover {
             border-top-color: rgba(0, 198, 251, 0.4); border-left-color: rgba(0, 198, 251, 0.3);
             box-shadow: 0 30px 60px rgba(0, 198, 251, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.2); transform: translateY(-6px);
+        }
+        .portfolio-item:hover {
+            border-top-color: transparent; border-left-color: transparent;
+            border-right-color: transparent; border-bottom-color: transparent;
+            box-shadow: 0 28px 55px rgba(0, 198, 251, 0.18), 0 0 40px rgba(0, 198, 251, 0.08); transform: translateY(-6px);
         }
 
         /* СВЕЧЕНИЕ КНОПОК */
@@ -253,7 +258,7 @@
 
         /* ПОРТФОЛИО МОБИЛЬ: плавный раскрывающийся контейнер + 2 колонки */
         #portfolio-mobile-container {
-            overflow: hidden;
+            overflow: visible;
             transition: max-height 0.55s cubic-bezier(0.16, 1, 0.3, 1),
                         opacity 0.4s ease;
         }
@@ -261,11 +266,13 @@
             max-height: 0 !important;
             opacity: 0;
             pointer-events: none;
+            overflow: hidden;
         }
         #portfolio-mobile-container.mob-expanded {
             max-height: 9999px;
             opacity: 1;
             pointer-events: auto;
+            overflow: visible;
         }
 
         @media (max-width: 767px) {
@@ -605,7 +612,7 @@
 
             <!-- Контейнер портфолио (на мобиле управляется JS-классами mob-collapsed/mob-expanded) -->
             <div id="portfolio-mobile-container">
-                <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8" id="portfolio-grid"></div>
+                <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 px-2 py-4" id="portfolio-grid"></div>
                 <div class="hidden md:flex justify-center mt-8" id="portfolio-show-more-wrap">
                     <button onclick="showAllPortfolioDesktop()" id="portfolio-show-more-btn" class="px-8 py-3 btn-liquid-glass text-white rounded-full font-bold tracking-wide transition duration-300">
                         Смотреть всё портфолио
@@ -1494,6 +1501,10 @@
                                         <option value="youtube">YouTube / Влог</option>
                                         <option value="promo">Реклама / Промо</option>
                                     </select>
+                                    <select id="portfolio-add-orientation" class="bg-black/40 border border-white/8 rounded-2xl px-3 py-3 text-white focus:outline-none focus:border-purple-500/60 text-sm transition-all duration-300" title="Ориентация видео">
+                                        <option value="vertical">⬜ Верт.</option>
+                                        <option value="horizontal">🔲 Гориз.</option>
+                                    </select>
                                     <button onclick="addPortfolioVideoFromAdmin()" class="px-5 py-3 rounded-2xl border border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 font-bold text-sm font-space transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
                                         <i class="fas fa-plus text-xs"></i> Добавить
                                     </button>
@@ -1630,7 +1641,7 @@
         <button onclick="closeVideoModal()" class="absolute top-6 right-6 text-white hover:text-cyan-400 text-3xl transition duration-300">
             <i class="fas fa-times"></i>
         </button>
-        <div class="w-full max-w-4xl aspect-video rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(0,198,251,0.4)] border border-cyan-500/20">
+        <div id="video-modal-player" class="w-full max-w-4xl aspect-video rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(0,198,251,0.3)] border border-cyan-500/15 transition-all duration-300">
             <iframe id="modal-iframe" class="w-full h-full" src="" frameborder="0" allowfullscreen allow="autoplay"></iframe>
         </div>
     </div>
@@ -1895,9 +1906,21 @@
             const modal = document.getElementById('schedule-modal');
             if (modal) modal.classList.add('hidden');
         };
-        window.openVideoModal = function(url) {
+        window.openVideoModal = function(url, isHorizontal) {
             const iframe = document.getElementById('modal-iframe');
             if (iframe) iframe.src = getEmbedUrl(url, false);
+            // Адаптируем размер под формат видео
+            const player = document.getElementById('video-modal-player');
+            if (player) {
+                player.classList.remove('aspect-video', 'aspect-[9/16]', 'max-w-4xl', 'max-w-sm');
+                if (isHorizontal === false) {
+                    // Вертикальное видео — узкий высокий контейнер
+                    player.classList.add('aspect-[9/16]', 'max-w-sm');
+                } else {
+                    // Горизонтальное — стандартный широкий
+                    player.classList.add('aspect-video', 'max-w-4xl');
+                }
+            }
             const modal = document.getElementById('video-modal');
             if (modal) modal.classList.remove('hidden');
         };
@@ -1908,8 +1931,12 @@
             if (modal) modal.classList.add('hidden');
         };
         window.openVideoForCase = function(caseId) {
-            const videoUrl = window.portfolioLinks[`case${caseId}_video`];
-            if (videoUrl) window.openVideoModal(videoUrl);
+            const videos = window.portfolioLinks && window.portfolioLinks.videos;
+            const videoObj = videos && videos[caseId - 1];
+            const videoUrl = videoObj && videoObj.video;
+            if (!videoUrl) return;
+            const isHorizontal = videoObj.isHorizontal !== undefined ? videoObj.isHorizontal : caseId > 6;
+            window.openVideoModal(videoUrl, isHorizontal);
         };
 
         const bgCanvas = document.getElementById('stars-canvas');
@@ -2701,11 +2728,13 @@
                 const category = (videoObj.category || 'reels').toLowerCase();
                 const label = getPortfolioLabel(category, caseId);
 
-                const titleText = mergedContent[titleId] || `Кейс ${caseId}`;
-                const descText = mergedContent[descId] || 'Описание кейса';
+                // Берём из объекта видео (если уже перенесено), иначе из глобального контента
+                const titleText = videoObj.title || mergedContent[titleId] || `Кейс ${caseId}`;
+                const descText = videoObj.desc || mergedContent[descId] || 'Описание кейса';
                 const tagText = (label.key && mergedContent[label.key]) || label.text;
 
-                const isHorizontal = caseId > 6;
+                // Используем isHorizontal из данных (новые видео), для старых — fallback по caseId
+                const isHorizontal = videoObj.isHorizontal !== undefined ? videoObj.isHorizontal : caseId > 6;
                 const cardClass = isHorizontal
                     ? "portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] w-full"
                     : "portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full";
@@ -2784,7 +2813,10 @@
                 videos: normalizedVideos.map((videoObj, idx) => ({
                     video: (videoObj && videoObj.video) || defaultPortfolioSettings.videos[idx]?.video || defaultPortfolioSettings.videos[0].video,
                     img: (videoObj && videoObj.img) || getAutoThumbnail((videoObj && videoObj.video) || defaultPortfolioSettings.videos[idx]?.video || "") || defaultPortfolioSettings.videos[idx]?.img || "",
-                    category: (videoObj && videoObj.category) || defaultPortfolioSettings.videos[idx]?.category || "reels"
+                    category: (videoObj && videoObj.category) || defaultPortfolioSettings.videos[idx]?.category || "reels",
+                    isHorizontal: (videoObj && videoObj.isHorizontal !== undefined) ? videoObj.isHorizontal : undefined,
+                    title: (videoObj && videoObj.title) || undefined,
+                    desc: (videoObj && videoObj.desc) || undefined
                 }))
             };
 
@@ -2802,10 +2834,17 @@
             const normalized = normalizePortfolioData(data);
             // Автоматически восстанавливаем пустые обложки из URL видео
             if (normalized.videos) {
-                normalized.videos = normalized.videos.map(v => ({
-                    ...v,
-                    img: (v.img && v.img.length > 5) ? v.img : getAutoThumbnail(v.video) || v.img || ""
-                }));
+                normalized.videos = normalized.videos.map((v, idx) => {
+                    const caseId = idx + 1;
+                    // Если title/desc не в объекте — тянем из siteContentData по позиции (миграция)
+                    const mergedC = { ...defaultContent, ...(siteContentData || {}) };
+                    return {
+                        ...v,
+                        img: (v.img && v.img.length > 5) ? v.img : getAutoThumbnail(v.video) || v.img || "",
+                        title: v.title || mergedC[`portfolio_t${caseId}`] || "",
+                        desc:  v.desc  || mergedC[`portfolio_d${caseId}`] || ""
+                    };
+                });
             }
             window.portfolioLinks = normalized;
             portfolioDesktopExpanded = false;
@@ -3612,6 +3651,7 @@
         window.addPortfolioVideoFromAdmin = async function() {
             const videoUrl = document.getElementById('portfolio-add-video-url')?.value.trim();
             const categoryRaw = document.getElementById('portfolio-add-category')?.value.trim().toLowerCase();
+            const orientation = document.getElementById('portfolio-add-orientation')?.value || 'vertical';
 
             if (!videoUrl) {
                 showToast("Введите ссылку на видео.", "error");
@@ -3620,6 +3660,7 @@
 
             const allowedCategories = new Set(['reels', 'youtube', 'promo']);
             const category = allowedCategories.has(categoryRaw) ? categoryRaw : 'reels';
+            const isHorizontal = orientation === 'horizontal';
 
             // Обложка подгружается автоматически с сайта видео
             const imgUrl = getAutoThumbnail(videoUrl);
@@ -3627,13 +3668,14 @@
             const current = normalizePortfolioData(window.portfolioLinks || defaultPortfolioSettings);
             const updated = {
                 tg_portfolio_link: current.tg_portfolio_link,
-                videos: [...(current.videos || []), { video: videoUrl, img: imgUrl, category }]
+                videos: [...(current.videos || []), { video: videoUrl, img: imgUrl, category, isHorizontal, title: '', desc: '' }]
             };
 
             await saveData(updated);
 
             document.getElementById('portfolio-add-video-url').value = "";
             document.getElementById('portfolio-add-category').value = "reels";
+            document.getElementById('portfolio-add-orientation').value = "vertical";
 
             showToast("Видео добавлено! Расставь порядок ниже.", "success");
             renderPortfolioSortGrid();
@@ -3713,7 +3755,15 @@
         };
 
         window.savePortfolioOrder = async function() {
-            if (!window.portfolioLinks) return;
+            if (!window.portfolioLinks || !window.portfolioLinks.videos) return;
+            // Снимаем актуальные title/desc из DOM карточек и записываем в объекты видео
+            window.portfolioLinks.videos.forEach((vid, idx) => {
+                const caseId = idx + 1;
+                const titleEl = document.querySelector(`[data-id="portfolio_t${caseId}"]`);
+                const descEl  = document.querySelector(`[data-id="portfolio_d${caseId}"]`);
+                if (titleEl && titleEl.textContent.trim()) vid.title = titleEl.textContent.trim();
+                if (descEl  && descEl.textContent.trim())  vid.desc  = descEl.textContent.trim();
+            });
             await saveData(window.portfolioLinks);
             showToast("Порядок сохранён!", "success");
         };
@@ -4699,6 +4749,20 @@
                 // Всегда обновляем локальный объект и localStorage
                 siteContentData[activeEditFieldId] = newValue;
                 try { localStorage.setItem('space_site_content', JSON.stringify(siteContentData)); } catch(e) {}
+
+                // Если это title или desc портфолио — синхронизируем в объект видео
+                const titleMatch = activeEditFieldId.match(/^portfolio_t(\d+)$/);
+                const descMatch = activeEditFieldId.match(/^portfolio_d(\d+)$/);
+                if ((titleMatch || descMatch) && window.portfolioLinks && window.portfolioLinks.videos) {
+                    const vidIdx = parseInt((titleMatch || descMatch)[1]) - 1;
+                    const vid = window.portfolioLinks.videos[vidIdx];
+                    if (vid) {
+                        if (titleMatch) vid.title = newValue;
+                        if (descMatch) vid.desc = newValue;
+                        // Сохраняем обновлённый портфолио в базу
+                        await saveData(window.portfolioLinks);
+                    }
+                }
 
                 if (firebaseInitialized) {
                     try {
