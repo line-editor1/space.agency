@@ -1886,7 +1886,7 @@
         };
         window.openVideoModal = function(url) {
             const iframe = document.getElementById('modal-iframe');
-            if (iframe) iframe.src = url;
+            if (iframe) iframe.src = getEmbedUrl(url, false);
             const modal = document.getElementById('video-modal');
             if (modal) modal.classList.remove('hidden');
         };
@@ -2003,17 +2003,14 @@
         }
 
         window.playPreviewVideo = function(caseId) {
-            if (window.innerWidth < 768) return; // на мобиле управляется через touch
+            if (window.innerWidth < 768) return;
             if (!window.portfolioLinks) return; 
             stopAllPreviewVideos();
             const iframe = document.getElementById(`case-iframe-${caseId}`);
             const thumb = document.getElementById(`case-thumb-${caseId}`);
             const baseVideoUrl = window.portfolioLinks[`case${caseId}_video`];
             if (iframe && baseVideoUrl) {
-                let embedUrl = baseVideoUrl;
-                if (!embedUrl.includes('?')) embedUrl += '?autoplay=1&mute=1&controls=0&loop=1';
-                else if (!embedUrl.includes('autoplay=')) embedUrl += '&autoplay=1&mute=1&controls=0&loop=1';
-                iframe.src = embedUrl;
+                iframe.src = getEmbedUrl(baseVideoUrl, true);
                 iframe.classList.remove('opacity-0');
                 if (thumb) thumb.classList.add('opacity-0');
             }
@@ -2057,10 +2054,7 @@
                             if (otherBtn) otherBtn.style.display = '';
                         }
                     });
-                    let embedUrl = baseVideoUrl;
-                    if (!embedUrl.includes('?')) embedUrl += '?autoplay=1&mute=1&controls=1&loop=1';
-                    else if (!embedUrl.includes('autoplay=')) embedUrl += '&autoplay=1&mute=1&controls=1&loop=1';
-                    iframe.src = embedUrl;
+                    iframe.src = getEmbedUrl(baseVideoUrl, true);
                     iframe.classList.remove('opacity-0');
                     if (thumb) thumb.classList.add('opacity-0');
                     if (playBtn) playBtn.style.display = 'none';
@@ -2448,15 +2442,7 @@
         // =====================================================================
         // FIREBASE CONFIG — загружается из настроек или localStorage
         // =====================================================================
-        let MY_FIREBASE_CONFIG = { 
-  apiKey : "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s" , 
-  authDomain : "space-video-agency.firebaseapp.com" , 
-  projectId : "space-video-agency" , 
-  storageBucket : "space-video-agency.firebasestorage.app" , 
-  messagingSenderId : "591140214223" , 
-  appId : "1:591140214223:web:7bc45a81f66a7181f8eeba" , 
-  measurementId : "G-6QQ2RBJWMK" 
-};
+        let MY_FIREBASE_CONFIG = null;
         try {
             const savedFbCfg = localStorage.getItem('space_firebase_config');
             if (savedFbCfg) MY_FIREBASE_CONFIG = JSON.parse(savedFbCfg);
@@ -3510,16 +3496,46 @@
             }
         };
 
+        function getKinescopeId(videoUrl) {
+            if (!videoUrl) return null;
+            // kinescope.io/embed/ID или kinescope.io/ID
+            const m = videoUrl.match(/kinescope\.io\/(?:embed\/)?([a-zA-Z0-9]+)/);
+            return m ? m[1] : null;
+        }
+
         function getAutoThumbnail(videoUrl) {
             if (!videoUrl) return "";
-            // YouTube embed: youtube.com/embed/ID
+            // Kinescope: kinescope.io/ID или kinescope.io/embed/ID
+            const ksId = getKinescopeId(videoUrl);
+            if (ksId) return `https://kinescope.io/${ksId}/thumbnail`;
+            // YouTube embed
             const ytEmbed = videoUrl.match(/youtube\.com\/embed\/([^?&/]+)/);
             if (ytEmbed) return `https://img.youtube.com/vi/${ytEmbed[1]}/hqdefault.jpg`;
-            // YouTube watch: youtube.com/watch?v=ID или youtu.be/ID
+            // YouTube watch
             const ytWatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^?&/]+)/);
             if (ytWatch) return `https://img.youtube.com/vi/${ytWatch[1]}/hqdefault.jpg`;
-            // Vimeo: vimeo.com/ID — нет прямого img, возвращаем пустую строку (iframe сам покажет превью)
+            // Vimeo — нет прямого img
             return "";
+        }
+
+        function getEmbedUrl(videoUrl, autoplay) {
+            if (!videoUrl) return "";
+            const params = autoplay ? "?autoplay=1&muted=1&controls=1&loop=1" : "";
+            // Kinescope
+            const ksId = getKinescopeId(videoUrl);
+            if (ksId) return `https://kinescope.io/embed/${ksId}${params}`;
+            // Уже embed-ссылка YouTube
+            if (videoUrl.includes("youtube.com/embed/")) {
+                return autoplay ? (videoUrl.includes("?") ? videoUrl + "&autoplay=1&mute=1" : videoUrl + "?autoplay=1&mute=1") : videoUrl;
+            }
+            // YouTube watch
+            const ytWatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^?&/]+)/);
+            if (ytWatch) return `https://www.youtube.com/embed/${ytWatch[1]}${autoplay ? "?autoplay=1&mute=1" : ""}`;
+            // Vimeo
+            const vimeo = videoUrl.match(/vimeo\.com\/([0-9]+)/);
+            if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}${autoplay ? "?autoplay=1&muted=1" : ""}`;
+            // Уже готовая ссылка — вернуть как есть
+            return videoUrl;
         }
 
         window.addPortfolioVideoFromAdmin = async function() {
