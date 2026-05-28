@@ -1474,37 +1474,40 @@
                         </div>
 
                         <!-- БЛОК 2: Управление портфолио -->
-                        <div class="group relative overflow-hidden rounded-3xl border border-white/5 p-6 transition-all duration-300 hover:border-purple-500/25 hover:shadow-[0_10px_40px_rgba(168,85,247,0.06)]" style="background: rgba(255,255,255,0.025);">
-                            <div class="absolute top-0 right-0 w-28 h-28 bg-purple-500/5 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="relative overflow-hidden rounded-3xl border border-white/5 p-6" style="background: rgba(255,255,255,0.025);">
                             <div class="flex items-center gap-3 mb-5">
                                 <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/10 border border-purple-500/25 flex items-center justify-center flex-shrink-0">
                                     <i class="fas fa-video text-purple-400 text-base"></i>
                                 </div>
                                 <div>
                                     <p class="text-sm font-bold text-white font-space">Портфолио</p>
-                                    <p class="text-[10px] text-slate-600 mt-0.5">Управление видео-кейсами</p>
+                                    <p class="text-[10px] text-slate-600 mt-0.5">Добавить видео и расставить порядок</p>
                                 </div>
                             </div>
 
-                            <div class="space-y-3">
-                                <div>
-                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Ссылка на видео (любой сайт)</label>
-                                    <input type="text" id="portfolio-add-video-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://kinescope.io/... или https://youtu.be/...">
-                                    <p class="text-[9px] text-slate-600 mt-1.5 leading-relaxed">Обложка подтягивается автоматически. Поддерживается: <span class="text-purple-400 font-mono">Kinescope</span>, YouTube, Vimeo.</p>
-                                </div>
-                                <div>
-                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Категория</label>
-                                    <select id="portfolio-add-category" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 text-sm transition-all duration-300">
+                            <!-- Добавить новое видео -->
+                            <div class="space-y-3 mb-5">
+                                <input type="text" id="portfolio-add-video-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://kinescope.io/... или https://youtu.be/...">
+                                <div class="flex gap-2">
+                                    <select id="portfolio-add-category" class="flex-1 bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 text-sm transition-all duration-300">
                                         <option value="reels">Reels / Shorts</option>
                                         <option value="youtube">YouTube / Влог</option>
                                         <option value="promo">Реклама / Промо</option>
                                     </select>
+                                    <button onclick="addPortfolioVideoFromAdmin()" class="px-5 py-3 rounded-2xl border border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 font-bold text-sm font-space transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
+                                        <i class="fas fa-plus text-xs"></i> Добавить
+                                    </button>
                                 </div>
-                                <button onclick="addPortfolioVideoFromAdmin()" class="w-full py-3 rounded-2xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 hover:border-purple-500/35 text-purple-300 font-bold text-sm font-space transition-all duration-300 flex items-center justify-center gap-2">
-                                    <i class="fas fa-plus text-purple-400 text-xs"></i> Добавить видео
-                                </button>
                             </div>
 
+                            <!-- Сетка перестановки -->
+                            <div class="border-t border-white/5 pt-4">
+                                <p class="text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-3 font-space font-bold">Порядок видео — перетащи для перестановки</p>
+                                <div id="portfolio-sort-grid" class="grid grid-cols-3 gap-2"></div>
+                                <button onclick="savePortfolioOrder()" id="save-order-btn" class="hidden mt-3 w-full py-2.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold text-xs font-space transition-all duration-300 flex items-center justify-center gap-2">
+                                    <i class="fas fa-check text-xs"></i> Сохранить порядок
+                                </button>
+                            </div>
                         </div>
 
                         <!-- БЛОК 3: Статус сайта -->
@@ -1650,6 +1653,10 @@
             // Активировать нужную кнопку
             const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
             if (activeBtn) activeBtn.classList.add('active');
+            // При открытии настроек — рендерим сетку портфолио
+            if (tabName === 'settings' && typeof window.renderPortfolioSortGrid === 'function') {
+                window.renderPortfolioSortGrid();
+            }
         };
 
         window.currentAdminState = false;
@@ -2219,8 +2226,16 @@
                     if (customCursor) {
                         customCursor.style.left = mouse.x + 'px';
                         customCursor.style.top = mouse.y + 'px';
-                        // Скрываем курсор над карточками портфолио
-                        const overPortfolio = document.elementFromPoint(mouse.x, mouse.y)?.closest('.portfolio-item');
+                        // Скрываем курсор над карточками портфолио (включая iframe)
+                        const portfolioItems = document.querySelectorAll('.portfolio-item');
+                        let overPortfolio = false;
+                        for (const item of portfolioItems) {
+                            const r = item.getBoundingClientRect();
+                            if (mouse.x >= r.left && mouse.x <= r.right && mouse.y >= r.top && mouse.y <= r.bottom) {
+                                overPortfolio = true;
+                                break;
+                            }
+                        }
                         customCursor.style.opacity = overPortfolio ? '0' : '1';
                     }
                     moveTicking = false;
@@ -2462,16 +2477,7 @@
         // =====================================================================
         // FIREBASE CONFIG — загружается из настроек или localStorage
         // =====================================================================
-        let MY_FIREBASE_CONFIG = { 
-  apiKey : "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s" , 
-  authDomain : "space-video-agency.firebaseapp.com" , 
-  projectId : "space-video-agency" , 
-  storageBucket : "space-video-agency.firebasestorage.app" , 
-  messagingSenderId : "591140214223" , 
-  appId : "1:591140214223:web:7bc45a81f66a7181f8eeba" , 
-  measurementId : "G-6QQ2RBJWMK" 
-};
-
+        let MY_FIREBASE_CONFIG = null;
         try {
             const savedFbCfg = localStorage.getItem('space_firebase_config');
             if (savedFbCfg) MY_FIREBASE_CONFIG = JSON.parse(savedFbCfg);
@@ -3466,14 +3472,24 @@
             const idx = caseId - 1;
             const currentCategory = updated.videos[idx]?.category || defaultPortfolioSettings.videos[idx]?.category || "reels";
             updated.videos[idx] = { video: newVideo, img: newImg, category: currentCategory };
-            // Сразу обновляем локальный кэш
             window.portfolioLinks = updated;
-            await saveData(updated);
-            // Перерисовываем портфолио сразу без перезагрузки
-            renderPortfolioGrid(updated);
-            applyPortfolioData(updated);
+            try {
+                await saveData(updated);
+            } catch(e) {
+                // saveData сам вызывает applyPortfolioData, но на всякий случай
+                localStorage.setItem('space_portfolio_links', JSON.stringify({ tg_portfolio_link: updated.tg_portfolio_link, videos: updated.videos }));
+            }
+            // После перерисовки — восстанавливаем CMS-режим на новых элементах
+            if (isVisualCmsMode) {
+                document.querySelectorAll('.portfolio-edit-indicator').forEach(el => el.classList.remove('hidden'));
+                document.querySelectorAll('.edit-field').forEach(el => {
+                    el.classList.add('editable-active');
+                    el.removeEventListener('click', openEditor);
+                    el.addEventListener('click', openEditor);
+                });
+            }
             filterPortfolio(window._lastPortfolioFilter || 'all');
-            showToast(`Кейс ${caseId} сохранён! Видео обновлено.`, "success");
+            showToast(`Кейс ${caseId} сохранён!`, "success");
         };
 
         window.populateVideoEditList = function() {
@@ -3610,9 +3626,98 @@
             document.getElementById('portfolio-add-video-url').value = "";
             document.getElementById('portfolio-add-category').value = "reels";
 
-            showToast("Видео добавлено в портфолио!", "success");
-            if (typeof window.populateVideoEditList === 'function') window.populateVideoEditList();
+            showToast("Видео добавлено! Расставь порядок ниже.", "success");
+            renderPortfolioSortGrid();
         };
+
+        // ─── СЕТКА ПЕРЕСТАНОВКИ ВИДЕО ────────────────────────────────────────
+        let sortDragIdx = null;
+
+        window.renderPortfolioSortGrid = function() {
+            const grid = document.getElementById('portfolio-sort-grid');
+            const saveBtn = document.getElementById('save-order-btn');
+            if (!grid) return;
+            const videos = (window.portfolioLinks && window.portfolioLinks.videos) || [];
+            if (!videos.length) { grid.innerHTML = '<p class="text-[10px] text-slate-600 col-span-3 text-center py-3">Нет видео</p>'; return; }
+
+            const catColors = { reels: 'text-cyan-400 border-cyan-500/30', youtube: 'text-red-400 border-red-500/30', promo: 'text-purple-400 border-purple-500/30' };
+            const catLabels = { reels: 'Reels', youtube: 'YouTube', promo: 'Promo' };
+
+            grid.innerHTML = videos.map((v, i) => {
+                const ksId = getKinescopeId(v.video);
+                const thumb = v.img || (ksId ? `https://kinescope.io/${ksId}/thumbnail` : getAutoThumbnail(v.video));
+                const cat = v.category || 'reels';
+                const col = catColors[cat] || 'text-slate-400 border-white/10';
+                const label = catLabels[cat] || cat;
+                const shortUrl = v.video ? v.video.replace(/https?:\/\/(www\.)?/, '').substring(0, 22) + '…' : '—';
+                return `<div class="sort-card relative rounded-xl overflow-hidden border border-white/8 cursor-grab active:cursor-grabbing select-none transition-all duration-200"
+                    style="background:#0a0a14; aspect-ratio:9/14;"
+                    draggable="true"
+                    data-idx="${i}"
+                    ondragstart="sortDragStart(event,${i})"
+                    ondragover="sortDragOver(event)"
+                    ondrop="sortDrop(event,${i})"
+                    ondragend="sortDragEnd(event)">
+                    ${thumb ? `<img src="${thumb}" class="w-full h-full object-cover opacity-60" onerror="this.style.display='none'">` : ''}
+                    <div class="absolute inset-0 flex flex-col justify-between p-1.5">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[8px] font-bold font-space bg-black/60 rounded-full px-1.5 py-0.5 ${col} border ${col}">${label}</span>
+                            <button onclick="deletePortfolioVideo(${i})" class="w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center transition" title="Удалить">
+                                <i class="fas fa-times text-white" style="font-size:8px"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-grip-vertical text-white/20 text-lg"></i>
+                        </div>
+                        <p class="text-[7px] text-white/40 font-mono truncate text-center">${shortUrl}</p>
+                    </div>
+                </div>`;
+            }).join('');
+
+            if (saveBtn) saveBtn.classList.remove('hidden');
+        };
+
+        window.sortDragStart = function(e, idx) {
+            sortDragIdx = idx;
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => { const el = e.target; if(el) el.style.opacity = '0.4'; }, 0);
+        };
+        window.sortDragOver = function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const card = e.currentTarget;
+            document.querySelectorAll('.sort-card').forEach(c => c.style.outline = '');
+            if (card) card.style.outline = '2px solid rgba(0,198,251,0.6)';
+        };
+        window.sortDrop = function(e, targetIdx) {
+            e.preventDefault();
+            if (sortDragIdx === null || sortDragIdx === targetIdx) return;
+            const videos = [...((window.portfolioLinks && window.portfolioLinks.videos) || [])];
+            const [moved] = videos.splice(sortDragIdx, 1);
+            videos.splice(targetIdx, 0, moved);
+            window.portfolioLinks = { ...window.portfolioLinks, videos };
+            renderPortfolioSortGrid();
+        };
+        window.sortDragEnd = function(e) {
+            sortDragIdx = null;
+            document.querySelectorAll('.sort-card').forEach(c => { c.style.opacity = ''; c.style.outline = ''; });
+        };
+
+        window.savePortfolioOrder = async function() {
+            if (!window.portfolioLinks) return;
+            await saveData(window.portfolioLinks);
+            showToast("Порядок сохранён!", "success");
+        };
+
+        window.deletePortfolioVideo = async function(idx) {
+            const videos = [...((window.portfolioLinks && window.portfolioLinks.videos) || [])];
+            videos.splice(idx, 1);
+            window.portfolioLinks = { ...window.portfolioLinks, videos };
+            await saveData(window.portfolioLinks);
+            renderPortfolioSortGrid();
+            showToast("Видео удалено", "success");
+        };
+        // ─────────────────────────────────────────────────────────────────────
 
         // ═══════════════════════════════════════════════════════════
         // ДОСТУПНЫЕ ФУНКЦИИ: ДОП. УСЛУГИ И БОРТОВОЙ ЖУРНАЛ (с Firebase)
