@@ -2011,30 +2011,32 @@
             if (!window.portfolioLinks) return;
             const baseVideoUrl = window.portfolioLinks[`case${caseId}_video`];
             if (!baseVideoUrl) return;
-            // Останавливаем все остальные
-            stopAllPreviewVideos();
             const iframe = document.getElementById(`case-iframe-${caseId}`);
             const thumb = document.getElementById(`case-thumb-${caseId}`);
-            if (iframe) {
-                // Kinescope: autoplay=1, без mute — со звуком
-                const isKs = getKinescopeId(baseVideoUrl);
-                if (isKs) {
-                    iframe.src = `https://kinescope.io/embed/${getKinescopeId(baseVideoUrl)}?autoplay=1`;
-                } else {
-                    iframe.src = getEmbedUrl(baseVideoUrl, true);
-                }
-                iframe.classList.remove('opacity-0');
+            const isKs = getKinescopeId(baseVideoUrl);
+            if (isKs) {
+                if (iframe) iframe.classList.remove('opacity-0');
                 if (thumb) thumb.classList.add('opacity-0');
+            } else {
+                stopAllPreviewVideos();
+                if (iframe) {
+                    iframe.src = getEmbedUrl(baseVideoUrl, true);
+                    iframe.classList.remove('opacity-0');
+                    if (thumb) thumb.classList.add('opacity-0');
+                }
             }
         };
 
         window.stopPreviewVideo = function(caseId) {
             if (window.innerWidth < 768) return;
+            const baseVideoUrl = window.portfolioLinks && window.portfolioLinks[`case${caseId}_video`];
             const iframe = document.getElementById(`case-iframe-${caseId}`);
             const thumb = document.getElementById(`case-thumb-${caseId}`);
-            // Выгружаем iframe — видео и звук останавливаются
+            const isKs = getKinescopeId(baseVideoUrl || "");
+            if (isKs) {
+                return;
+            }
             if (iframe) { iframe.src = ""; iframe.classList.add('opacity-0'); }
-            // Показываем постер (для Kinescope — тёмный фон, плеер сам покажет обложку при следующей загрузке)
             if (thumb) thumb.classList.remove('opacity-0');
         };
 
@@ -2217,10 +2219,9 @@
                     if (customCursor) {
                         customCursor.style.left = mouse.x + 'px';
                         customCursor.style.top = mouse.y + 'px';
-                        // Скрываем курсор над портфолио и у краёв экрана
+                        // Скрываем курсор над карточками портфолио
                         const overPortfolio = document.elementFromPoint(mouse.x, mouse.y)?.closest('.portfolio-item');
-                        const nearEdge = mouse.x < 10 || mouse.x > window.innerWidth - 10;
-                        customCursor.style.opacity = (overPortfolio || nearEdge) ? '0' : '1';
+                        customCursor.style.opacity = overPortfolio ? '0' : '1';
                     }
                     moveTicking = false;
                 });
@@ -2689,9 +2690,9 @@
                 const isKinescope = getKinescopeId(videoObj.video);
                 const ytThumb = !isKinescope ? (getAutoThumbnail(videoObj.video) || "") : "";
                 const imgUrl = videoObj.img && videoObj.img.length > 5 && !isKinescope ? videoObj.img : ytThumb;
-                // iframe пустой — загружается только при наведении мыши
-                const iframeSrc = "";
-                const iframeOpacity = "opacity-0";
+                // Kinescope: грузим iframe сразу — он сам показывает постер внутри
+                const iframeSrc = isKinescope ? getEmbedUrl(videoObj.video, false) : "";
+                const iframeOpacity = isKinescope ? "opacity-100" : "opacity-0";
                 return `
                     <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onmouseenter="playPreviewVideo(${caseId})" onmouseleave="stopPreviewVideo(${caseId})" onclick="handlePortfolioCardClick(${caseId}, event)">
                         <button onclick="triggerPortfolioEdit(${caseId}, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
@@ -2706,6 +2707,7 @@
                             <div class="flex-1 mr-2">
                                 <h3 class="text-sm font-bold text-white group-hover:text-cyan-400 transition duration-300 edit-field" data-id="${titleId}">${titleText}</h3>
                                 <p class="text-slate-500 text-[10px] mt-0.5 edit-field" data-id="${descId}">${descText}</p>
+                                <p class="text-slate-600 text-[9px] mt-1.5 italic font-space">* со звуком — в <a href="#" onclick="document.getElementById('tg-portfolio-btn')?.click();return false;" class="text-cyan-600 hover:text-cyan-400 transition-colors duration-200 underline decoration-dotted">Портфолио в TG</a></p>
                             </div>
                             <span class="px-2 py-0.5 ${label.cls} border text-[9px] rounded-full font-mono uppercase ${label.key ? 'edit-field' : ''}" ${label.key ? `data-id="${label.key}"` : ''}>${tagText}</span>
                         </div>
