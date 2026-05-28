@@ -395,8 +395,8 @@
 <body class="relative">
 
     <!-- Экран технического обслуживания (Оригинальный чистый стиль) -->
-    <div id="maintenance-overlay" class="fixed inset-0 z-[999999] bg-[#010008] hidden flex-col items-center justify-center text-center px-4 backdrop-blur-xl overflow-y-auto py-12">
-        <i class="fas fa-user-astronaut text-7xl text-cyan-400 mb-8 animate-bounce filter drop-shadow-[0_0_20px_rgba(0,198,251,0.5)]"></i>
+    <div id="maintenance-overlay" class="fixed inset-0 z-[999999] bg-[#010008] hidden flex-col items-center justify-start md:justify-center text-center px-4 backdrop-blur-xl overflow-y-auto py-10 md:py-12">
+        <i class="fas fa-user-astronaut text-5xl md:text-7xl text-cyan-400 mb-6 md:mb-8 animate-bounce filter drop-shadow-[0_0_20px_rgba(0,198,251,0.5)]"></i>
         <h1 class="text-4xl md:text-5xl font-space font-bold text-white mb-4 tracking-widest font-space">ОБНОВЛЕНИЕ СИСТЕМ</h1>
         <p class="text-slate-400 max-w-lg mb-8">Мы проводим плановое техническое обслуживание корабля. Скоро сайт вернется на орбиту, а пока вы можете написать нам напрямую.</p>
         
@@ -1502,8 +1502,8 @@
                                         <option value="promo">Реклама / Промо</option>
                                     </select>
                                     <select id="portfolio-add-orientation" class="bg-black/40 border border-white/8 rounded-2xl px-3 py-3 text-white focus:outline-none focus:border-purple-500/60 text-sm transition-all duration-300" title="Ориентация видео">
-                                        <option value="vertical">⬜ Верт.</option>
-                                        <option value="horizontal">🔲 Гориз.</option>
+                                        <option value="vertical">📱 Вертикально</option>
+                                        <option value="horizontal">🖥 Горизонтально</option>
                                     </select>
                                     <button onclick="addPortfolioVideoFromAdmin()" class="px-5 py-3 rounded-2xl border border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 font-bold text-sm font-space transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
                                         <i class="fas fa-plus text-xs"></i> Добавить
@@ -1935,7 +1935,9 @@
             const videoObj = videos && videos[caseId - 1];
             const videoUrl = videoObj && videoObj.video;
             if (!videoUrl) return;
-            const isHorizontal = videoObj.isHorizontal !== undefined ? videoObj.isHorizontal : caseId > 6;
+            const isHorizontal = videoObj.isHorizontal !== undefined
+                ? (videoObj.isHorizontal === true || videoObj.isHorizontal === 'true')
+                : caseId > 6;
             window.openVideoModal(videoUrl, isHorizontal);
         };
 
@@ -2734,7 +2736,10 @@
                 const tagText = (label.key && mergedContent[label.key]) || label.text;
 
                 // Используем isHorizontal из данных (новые видео), для старых — fallback по caseId
-                const isHorizontal = videoObj.isHorizontal !== undefined ? videoObj.isHorizontal : caseId > 6;
+                // Приводим к boolean т.к. из JSON/localStorage может прийти строка "true"/"false"
+                const isHorizontal = videoObj.isHorizontal !== undefined
+                    ? (videoObj.isHorizontal === true || videoObj.isHorizontal === 'true')
+                    : caseId > 6;
                 const cardClass = isHorizontal
                     ? "portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] w-full"
                     : "portfolio-item group cursor-pointer relative transition-all duration-500 apple-liquid-glass p-0 border-none rounded-[32px] max-w-[320px] mx-auto w-full";
@@ -2814,7 +2819,7 @@
                     video: (videoObj && videoObj.video) || defaultPortfolioSettings.videos[idx]?.video || defaultPortfolioSettings.videos[0].video,
                     img: (videoObj && videoObj.img) || getAutoThumbnail((videoObj && videoObj.video) || defaultPortfolioSettings.videos[idx]?.video || "") || defaultPortfolioSettings.videos[idx]?.img || "",
                     category: (videoObj && videoObj.category) || defaultPortfolioSettings.videos[idx]?.category || "reels",
-                    isHorizontal: (videoObj && videoObj.isHorizontal !== undefined) ? videoObj.isHorizontal : undefined,
+                    isHorizontal: (videoObj && videoObj.isHorizontal !== undefined) ? (videoObj.isHorizontal === true || videoObj.isHorizontal === 'true') : undefined,
                     title: (videoObj && videoObj.title) || undefined,
                     desc: (videoObj && videoObj.desc) || undefined
                 }))
