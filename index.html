@@ -2011,34 +2011,30 @@
             if (!window.portfolioLinks) return;
             const baseVideoUrl = window.portfolioLinks[`case${caseId}_video`];
             if (!baseVideoUrl) return;
+            // Останавливаем все остальные
+            stopAllPreviewVideos();
             const iframe = document.getElementById(`case-iframe-${caseId}`);
             const thumb = document.getElementById(`case-thumb-${caseId}`);
-            const isKs = getKinescopeId(baseVideoUrl);
-            if (isKs) {
-                // Kinescope уже загружен — просто показываем (он сам управляет постером)
-                if (iframe) iframe.classList.remove('opacity-0');
-                if (thumb) thumb.classList.add('opacity-0');
-            } else {
-                stopAllPreviewVideos();
-                if (iframe) {
+            if (iframe) {
+                // Kinescope: autoplay=1, без mute — со звуком
+                const isKs = getKinescopeId(baseVideoUrl);
+                if (isKs) {
+                    iframe.src = `https://kinescope.io/embed/${getKinescopeId(baseVideoUrl)}?autoplay=1`;
+                } else {
                     iframe.src = getEmbedUrl(baseVideoUrl, true);
-                    iframe.classList.remove('opacity-0');
-                    if (thumb) thumb.classList.add('opacity-0');
                 }
+                iframe.classList.remove('opacity-0');
+                if (thumb) thumb.classList.add('opacity-0');
             }
         };
 
         window.stopPreviewVideo = function(caseId) {
             if (window.innerWidth < 768) return;
-            const baseVideoUrl = window.portfolioLinks && window.portfolioLinks[`case${caseId}_video`];
             const iframe = document.getElementById(`case-iframe-${caseId}`);
             const thumb = document.getElementById(`case-thumb-${caseId}`);
-            const isKs = getKinescopeId(baseVideoUrl || "");
-            if (isKs) {
-                // Kinescope: оставляем iframe загруженным, он вернётся к постеру сам
-                return;
-            }
+            // Выгружаем iframe — видео и звук останавливаются
             if (iframe) { iframe.src = ""; iframe.classList.add('opacity-0'); }
+            // Показываем постер (для Kinescope — тёмный фон, плеер сам покажет обложку при следующей загрузке)
             if (thumb) thumb.classList.remove('opacity-0');
         };
 
@@ -2693,9 +2689,9 @@
                 const isKinescope = getKinescopeId(videoObj.video);
                 const ytThumb = !isKinescope ? (getAutoThumbnail(videoObj.video) || "") : "";
                 const imgUrl = videoObj.img && videoObj.img.length > 5 && !isKinescope ? videoObj.img : ytThumb;
-                // Kinescope: грузим iframe сразу — он сам показывает постер внутри
-                const iframeSrc = isKinescope ? getEmbedUrl(videoObj.video, false) : "";
-                const iframeOpacity = isKinescope ? "opacity-100" : "opacity-0";
+                // iframe пустой — загружается только при наведении мыши
+                const iframeSrc = "";
+                const iframeOpacity = "opacity-0";
                 return `
                     <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onmouseenter="playPreviewVideo(${caseId})" onmouseleave="stopPreviewVideo(${caseId})" onclick="handlePortfolioCardClick(${caseId}, event)">
                         <button onclick="triggerPortfolioEdit(${caseId}, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
