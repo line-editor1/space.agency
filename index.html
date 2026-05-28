@@ -3558,14 +3558,14 @@
             }
         };
 
-        function getKinescopeId(videoUrl) {
+        window.getKinescopeId = function(videoUrl) {
             if (!videoUrl) return null;
             // kinescope.io/embed/ID или kinescope.io/ID
             const m = videoUrl.match(/kinescope\.io\/(?:embed\/)?([a-zA-Z0-9]+)/);
             return m ? m[1] : null;
         }
 
-        function getAutoThumbnail(videoUrl) {
+        window.getAutoThumbnail = function(videoUrl) {
             if (!videoUrl) return "";
             // Kinescope: kinescope.io/ID или kinescope.io/embed/ID
             const ksId = getKinescopeId(videoUrl);
@@ -3580,7 +3580,7 @@
             return "";
         }
 
-        function getEmbedUrl(videoUrl, autoplay) {
+        window.getEmbedUrl = function(videoUrl, autoplay) {
             if (!videoUrl) return "";
             const params = autoplay ? "?autoplay=1&muted=1&controls=1&loop=1" : "";
             // Kinescope
