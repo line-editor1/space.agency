@@ -385,7 +385,7 @@
 <body class="relative">
 
     <!-- Экран технического обслуживания (Оригинальный чистый стиль) -->
-    <div id="maintenance-overlay" class="fixed inset-0 z-[999999] bg-[#010008] hidden flex-col items-center justify-center text-center px-4 backdrop-blur-xl">
+    <div id="maintenance-overlay" class="fixed inset-0 z-[999999] bg-[#010008] hidden flex-col items-center justify-center text-center px-4 backdrop-blur-xl overflow-y-auto py-12">
         <i class="fas fa-user-astronaut text-7xl text-cyan-400 mb-8 animate-bounce filter drop-shadow-[0_0_20px_rgba(0,198,251,0.5)]"></i>
         <h1 class="text-4xl md:text-5xl font-space font-bold text-white mb-4 tracking-widest font-space">ОБНОВЛЕНИЕ СИСТЕМ</h1>
         <p class="text-slate-400 max-w-lg mb-8">Мы проводим плановое техническое обслуживание корабля. Скоро сайт вернется на орбиту, а пока вы можете написать нам напрямую.</p>
@@ -1486,8 +1486,8 @@
                             <div class="space-y-3">
                                 <div>
                                     <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Ссылка на видео (любой сайт)</label>
-                                    <input type="text" id="portfolio-add-video-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://... (YouTube, VK, Rutube, Vimeo и любые другие)">
-                                    <p class="text-[9px] text-slate-600 mt-1.5 leading-relaxed">Обложка подгружается автоматически с сайта видео. Для YouTube используйте embed-ссылку (<span class="text-purple-400 font-mono">youtube.com/embed/ID</span>).</p>
+                                    <input type="text" id="portfolio-add-video-url" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="https://kinescope.io/... или https://youtu.be/...">
+                                    <p class="text-[9px] text-slate-600 mt-1.5 leading-relaxed">Обложка подтягивается автоматически. Поддерживается: <span class="text-purple-400 font-mono">Kinescope</span>, YouTube, Vimeo.</p>
                                 </div>
                                 <div>
                                     <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Категория</label>
@@ -1774,15 +1774,16 @@
                 event.stopPropagation();
             }
             const currentVideo = window.portfolioLinks[`case${caseId}_video`] || "";
-            const currentImg = window.portfolioLinks[`case${caseId}_img`] || "";
 
-            const newVideo = prompt("Введите ссылку на YouTube Embed для видео-кейса " + caseId + ":", currentVideo);
+            const newVideo = prompt("Вставьте ссылку на видео (Kinescope, YouTube)\nПример: https://kinescope.io/oGnVdw5GsAvDsEJFBH7dTn\n\nКейс " + caseId + ":", currentVideo);
             if (newVideo === null) return;
-            const newImg = prompt("Введите URL изображения-обложки для превью " + caseId + ":", currentImg);
-            if (newImg === null) return;
+            if (!newVideo.trim()) return;
+
+            // Обложка подтягивается автоматически
+            const newImg = getAutoThumbnail(newVideo.trim());
 
             if (typeof window.savePortfolioUpdate === 'function') {
-                await window.savePortfolioUpdate(caseId, newVideo, newImg);
+                await window.savePortfolioUpdate(caseId, newVideo.trim(), newImg);
             }
         };
 
@@ -2127,6 +2128,7 @@
         };
 
         window.filterPortfolio = function(category) {
+            window._lastPortfolioFilter = category;
             const tabs = document.querySelectorAll('.portfolio-tab');
             tabs.forEach(tab => {
                 tab.classList.remove('active');
@@ -2442,16 +2444,7 @@
         // =====================================================================
         // FIREBASE CONFIG — загружается из настроек или localStorage
         // =====================================================================
-        let MY_FIREBASE_CONFIG = { 
-  apiKey : "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s" , 
-  authDomain : "space-video-agency.firebaseapp.com" , 
-  projectId : "space-video-agency" , 
-  storageBucket : "space-video-agency.firebasestorage.app" , 
-  messagingSenderId : "591140214223" , 
-  appId : "1:591140214223:web:7bc45a81f66a7181f8eeba" , 
-  measurementId : "G-6QQ2RBJWMK" 
-};
-
+        let MY_FIREBASE_CONFIG = null;
         try {
             const savedFbCfg = localStorage.getItem('space_firebase_config');
             if (savedFbCfg) MY_FIREBASE_CONFIG = JSON.parse(savedFbCfg);
@@ -3435,8 +3428,14 @@
             const idx = caseId - 1;
             const currentCategory = updated.videos[idx]?.category || defaultPortfolioSettings.videos[idx]?.category || "reels";
             updated.videos[idx] = { video: newVideo, img: newImg, category: currentCategory };
+            // Сразу обновляем локальный кэш
+            window.portfolioLinks = updated;
             await saveData(updated);
-            showToast(`Кейс ${caseId} успешно сохранен в системе!`, "success");
+            // Перерисовываем портфолио сразу без перезагрузки
+            renderPortfolioGrid(updated);
+            applyPortfolioData(updated);
+            filterPortfolio(window._lastPortfolioFilter || 'all');
+            showToast(`Кейс ${caseId} сохранён! Видео обновлено.`, "success");
         };
 
         window.populateVideoEditList = function() {
