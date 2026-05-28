@@ -2462,7 +2462,16 @@
         // =====================================================================
         // FIREBASE CONFIG — загружается из настроек или localStorage
         // =====================================================================
-        let MY_FIREBASE_CONFIG = null;
+        let MY_FIREBASE_CONFIG = { 
+  apiKey : "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s" , 
+  authDomain : "space-video-agency.firebaseapp.com" , 
+  projectId : "space-video-agency" , 
+  storageBucket : "space-video-agency.firebasestorage.app" , 
+  messagingSenderId : "591140214223" , 
+  appId : "1:591140214223:web:7bc45a81f66a7181f8eeba" , 
+  measurementId : "G-6QQ2RBJWMK" 
+};
+
         try {
             const savedFbCfg = localStorage.getItem('space_firebase_config');
             if (savedFbCfg) MY_FIREBASE_CONFIG = JSON.parse(savedFbCfg);
