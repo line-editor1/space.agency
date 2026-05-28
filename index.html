@@ -181,8 +181,11 @@
         #custom-cursor {
             width: 8px; height: 8px; background: #00c6fb; border-radius: 50%; position: fixed;
             transform: translate(-50%, -50%); pointer-events: none; z-index: 999;
-            box-shadow: 0 0 15px #00c6fb, 0 0 30px #4facfe; transition: width 0.1s, height 0.1s;
+            box-shadow: 0 0 15px #00c6fb, 0 0 30px #4facfe;
+            transition: width 0.2s, height 0.2s, opacity 0.3s;
         }
+        .portfolio-item:hover ~ #custom-cursor,
+        #portfolio-grid:hover #custom-cursor { opacity: 0 !important; }
 
         .editable-active { outline: 1px dashed rgba(0, 198, 251, 0.7) !important; cursor: pointer !important; transition: outline 0.3s; }
         .editable-active:hover::after { content: " ✎"; font-size: 0.8em; color: #00c6fb; vertical-align: super; font-weight: bold; }
@@ -2204,6 +2207,9 @@
                     if (customCursor) {
                         customCursor.style.left = mouse.x + 'px';
                         customCursor.style.top = mouse.y + 'px';
+                        // Скрываем курсор над карточками портфолио
+                        const overPortfolio = document.elementFromPoint(mouse.x, mouse.y)?.closest('.portfolio-item');
+                        customCursor.style.opacity = overPortfolio ? '0' : '1';
                     }
                     moveTicking = false;
                 });
@@ -2674,11 +2680,14 @@
                     <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onmouseenter="playPreviewVideo(${caseId})" onmouseleave="stopPreviewVideo(${caseId})" onclick="handlePortfolioCardClick(${caseId}, event)">
                         <button onclick="triggerPortfolioEdit(${caseId}, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
                         <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 ${ratioClass}">
-                            ${imgUrl ? `<img id="case-thumb-${caseId}" src="${imgUrl}" class="w-full h-full absolute inset-0 object-cover z-0 transition-opacity duration-300" alt="preview" loading="lazy">` : ''}
-                            <iframe id="case-iframe-${caseId}" class="case-video-iframe w-full h-full absolute inset-0 z-0 opacity-0 transition-opacity duration-300" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                            <div id="case-play-btn-${caseId}" class="md:hidden absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                                <div class="w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                                    <i class="fas fa-play text-white text-sm ml-1"></i>
+                            ${imgUrl
+                                ? `<img id="case-thumb-${caseId}" src="${imgUrl}" class="w-full h-full absolute inset-0 object-cover z-0 transition-opacity duration-300" alt="preview" loading="lazy" onerror="this.style.display='none'">`
+                                : `<div id="case-thumb-${caseId}" class="w-full h-full absolute inset-0 z-0 flex items-center justify-center transition-opacity duration-300" style="background:linear-gradient(135deg,#0d0d1a,#0a1628)"><i class="fas fa-film text-cyan-500/30 text-4xl"></i></div>`
+                            }
+                            <iframe id="case-iframe-${caseId}" class="case-video-iframe w-full h-full absolute inset-0 z-0 opacity-0 transition-opacity duration-300" src="" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                            <div id="case-play-btn-${caseId}" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none transition-opacity duration-300">
+                                <div class="w-14 h-14 rounded-full flex items-center justify-center border border-white/30 transition-all duration-300" style="background:rgba(0,0,0,0.5);backdrop-filter:blur(8px)">
+                                    <i class="fas fa-play text-white text-base ml-1"></i>
                                 </div>
                             </div>
                         </div>
@@ -2737,7 +2746,7 @@
                 tg_portfolio_link: source.tg_portfolio_link || defaultPortfolioSettings.tg_portfolio_link,
                 videos: normalizedVideos.map((videoObj, idx) => ({
                     video: (videoObj && videoObj.video) || defaultPortfolioSettings.videos[idx]?.video || defaultPortfolioSettings.videos[0].video,
-                    img: (videoObj && videoObj.img) || defaultPortfolioSettings.videos[idx]?.img || defaultPortfolioSettings.videos[0].img,
+                    img: (videoObj && videoObj.img) || getAutoThumbnail((videoObj && videoObj.video) || defaultPortfolioSettings.videos[idx]?.video || "") || defaultPortfolioSettings.videos[idx]?.img || "",
                     category: (videoObj && videoObj.category) || defaultPortfolioSettings.videos[idx]?.category || "reels"
                 }))
             };
@@ -2754,6 +2763,13 @@
 
         function applyPortfolioData(data) {
             const normalized = normalizePortfolioData(data);
+            // Автоматически восстанавливаем пустые обложки из URL видео
+            if (normalized.videos) {
+                normalized.videos = normalized.videos.map(v => ({
+                    ...v,
+                    img: (v.img && v.img.length > 5) ? v.img : getAutoThumbnail(v.video) || v.img || ""
+                }));
+            }
             window.portfolioLinks = normalized;
             portfolioDesktopExpanded = false;
             renderPortfolioGrid(normalized);
