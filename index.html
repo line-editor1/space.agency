@@ -2815,21 +2815,32 @@
 
             const merged = {
                 tg_portfolio_link: source.tg_portfolio_link || defaultPortfolioSettings.tg_portfolio_link,
-                videos: normalizedVideos.map((videoObj, idx) => ({
-                    video: (videoObj && videoObj.video) || defaultPortfolioSettings.videos[idx]?.video || defaultPortfolioSettings.videos[0].video,
-                    img: (videoObj && videoObj.img) || getAutoThumbnail((videoObj && videoObj.video) || defaultPortfolioSettings.videos[idx]?.video || "") || defaultPortfolioSettings.videos[idx]?.img || "",
-                    category: (videoObj && videoObj.category) || defaultPortfolioSettings.videos[idx]?.category || "reels",
-                    isHorizontal: (videoObj && videoObj.isHorizontal !== undefined) ? (videoObj.isHorizontal === true || videoObj.isHorizontal === 'true') : undefined,
-                    title: (videoObj && videoObj.title) || undefined,
-                    desc: (videoObj && videoObj.desc) || undefined
-                }))
+                videos: normalizedVideos.map((videoObj, idx) => {
+                    const def = defaultPortfolioSettings.videos[idx] || {};
+                    // Приводим isHorizontal к boolean явно (из Firebase/JSON может прийти строка)
+                    let isH = undefined;
+                    if (videoObj && videoObj.isHorizontal !== undefined && videoObj.isHorizontal !== null) {
+                        isH = (videoObj.isHorizontal === true || videoObj.isHorizontal === 'true');
+                    }
+                    return {
+                        video:       (videoObj && videoObj.video)    || def.video    || defaultPortfolioSettings.videos[0].video,
+                        img:         (videoObj && videoObj.img)      || getAutoThumbnail((videoObj && videoObj.video) || def.video || "") || def.img || "",
+                        category:    (videoObj && videoObj.category) || def.category || "reels",
+                        isHorizontal: isH,
+                        title:       (videoObj && videoObj.title != null) ? videoObj.title : (def.title || ""),
+                        desc:        (videoObj && videoObj.desc  != null) ? videoObj.desc  : (def.desc  || "")
+                    };
+                })
             };
 
             for (let i = 1; i <= merged.videos.length; i++) {
                 const videoObj = merged.videos[i - 1] || {};
-                merged[`case${i}_video`] = videoObj.video;
-                merged[`case${i}_img`] = videoObj.img;
-                merged[`case${i}_category`] = videoObj.category;
+                merged[`case${i}_video`]       = videoObj.video;
+                merged[`case${i}_img`]         = videoObj.img;
+                merged[`case${i}_category`]    = videoObj.category;
+                merged[`case${i}_isHorizontal`] = videoObj.isHorizontal;
+                merged[`case${i}_title`]        = videoObj.title;
+                merged[`case${i}_desc`]         = videoObj.desc;
             }
 
             return merged;
@@ -2884,21 +2895,38 @@
 
         async function saveData(updatedPortfolioInput) {
             const normalized = normalizePortfolioData(updatedPortfolioInput);
+            // Сохраняем только нужные поля каждого видео, явно, без лишнего
+            const cleanVideos = normalized.videos.map(v => {
+                const obj = {
+                    video:    v.video    || "",
+                    img:      v.img      || "",
+                    category: v.category || "reels",
+                    title:    v.title    || "",
+                    desc:     v.desc     || ""
+                };
+                if (v.isHorizontal !== undefined && v.isHorizontal !== null) {
+                    obj.isHorizontal = v.isHorizontal === true || v.isHorizontal === 'true';
+                }
+                return obj;
+            });
             const payload = {
                 tg_portfolio_link: normalized.tg_portfolio_link,
-                videos: normalized.videos
+                videos: cleanVideos
             };
+
+            // Всегда сохраняем в localStorage как резерв
+            try { localStorage.setItem('space_portfolio_links', JSON.stringify(payload)); } catch(e) {}
 
             if (firebaseInitialized) {
                 try {
                     await ensureAuth();
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
-                    await setDoc(docRef, payload, { merge: true });
+                    // replace: true — полная перезапись документа, без merge, чтобы удалённые видео не остались
+                    await setDoc(docRef, payload);
                 } catch (e) {
                     console.error("Failed saving portfolio data:", e);
+                    showToast("Ошибка сохранения в облако. Данные сохранены локально.", "error");
                 }
-            } else {
-                localStorage.setItem('space_portfolio_links', JSON.stringify(payload));
             }
 
             applyPortfolioData(payload);
@@ -2913,12 +2941,27 @@
                 return normalizedLocal;
             }
 
-            const portfolioDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
-            const snap = await getDoc(portfolioDocRef);
-            if (snap.exists()) {
-                const normalizedCloud = normalizePortfolioData(snap.data());
-                applyPortfolioData(normalizedCloud);
-                return normalizedCloud;
+            try {
+                const portfolioDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio_links', 'main');
+                const snap = await getDoc(portfolioDocRef);
+                if (snap.exists()) {
+                    const cloudData = snap.data();
+                    // Если в облаке данные есть — сохраняем в localStorage как резерв
+                    try { localStorage.setItem('space_portfolio_links', JSON.stringify(cloudData)); } catch(e) {}
+                    const normalizedCloud = normalizePortfolioData(cloudData);
+                    applyPortfolioData(normalizedCloud);
+                    return normalizedCloud;
+                }
+            } catch(e) {
+                console.error("Firebase loadData error:", e);
+                // Firebase недоступен — используем localStorage
+                const localRaw = JSON.parse(localStorage.getItem('space_portfolio_links') || "null");
+                if (localRaw) {
+                    const normalizedLocal = normalizePortfolioData(localRaw);
+                    applyPortfolioData(normalizedLocal);
+                    showToast("Облако недоступно, загружены локальные данные.", "error");
+                    return normalizedLocal;
+                }
             }
 
             await saveData(defaultPortfolioSettings);
