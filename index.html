@@ -593,12 +593,7 @@
                     <div class="w-16 h-1 bg-gradient-to-r from-blue-500 to-cyan-400 mt-4 rounded-full"></div>
                 </div>
 
-                <div class="hidden md:flex flex-wrap gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/5" id="portfolio-tabs-container">
-                    <button onclick="filterPortfolio('all')" class="portfolio-tab active px-5 py-2 rounded-xl text-sm font-medium transition duration-300 edit-field" data-id="tab_all">Все</button>
-                    <button onclick="filterPortfolio('reels')" class="portfolio-tab px-5 py-2 rounded-xl text-sm font-medium transition duration-300 edit-field" data-id="tab_reels">Shorts / Reels</button>
-                    <button onclick="filterPortfolio('youtube')" class="portfolio-tab px-5 py-2 rounded-xl text-sm font-medium transition duration-300 edit-field" data-id="tab_youtube">YouTube</button>
-                    <button onclick="filterPortfolio('promo')" class="portfolio-tab px-5 py-2 rounded-xl text-sm font-medium transition duration-300 edit-field" data-id="tab_promo">Реклама</button>
-                </div>
+
             </div>
 
             <!-- МОБИЛЬНАЯ ПЛАШКА: кнопка "Смотреть работы" (только < 768px) -->
@@ -2866,6 +2861,15 @@
             portfolioDesktopExpanded = false;
             renderPortfolioGrid(normalized);
             applyDesktopPortfolioLimit();
+            // Если режим редактирования включён — навешиваем обработчики на новые элементы
+            if (typeof isVisualCmsMode !== 'undefined' && isVisualCmsMode) {
+                document.querySelectorAll('.edit-field').forEach(el => {
+                    el.classList.add('editable-active');
+                    el.removeEventListener('click', openEditor);
+                    el.addEventListener('click', openEditor);
+                });
+                document.querySelectorAll('.portfolio-edit-indicator').forEach(el => el.classList.remove('hidden'));
+            }
             const tgBtn = document.getElementById('tg-btn');
             if (tgBtn && normalized.tg_portfolio_link) tgBtn.href = normalized.tg_portfolio_link;
             const tgPortfolioBtn = document.getElementById('tg-portfolio-btn');
@@ -4809,6 +4813,15 @@
                         if (descMatch) vid.desc = newValue;
                         // Сохраняем обновлённый портфолио в базу
                         await saveData(window.portfolioLinks);
+                        // После перерисовки портфолио восстанавливаем режим редактирования
+                        if (isVisualCmsMode) {
+                            document.querySelectorAll('.edit-field').forEach(el => {
+                                el.classList.add('editable-active');
+                                el.removeEventListener('click', openEditor);
+                                el.addEventListener('click', openEditor);
+                            });
+                            document.querySelectorAll('.portfolio-edit-indicator').forEach(el => el.classList.remove('hidden'));
+                        }
                     }
                 }
 
