@@ -193,6 +193,82 @@
         #portfolio-grid:hover #custom-cursor { opacity: 0 !important; }
 
         .editable-active { outline: 1px dashed rgba(0, 198, 251, 0.7) !important; cursor: pointer !important; transition: outline 0.3s; }
+
+        /* ── Режим без анимаций ───────────────────────── */
+        body.no-anim *, body.no-anim *::before, body.no-anim *::after {
+            animation: none !important;
+            transition-duration: 0.001ms !important;
+        }
+        body.no-anim #stars-canvas { opacity: 0; pointer-events: none; }
+        body.no-anim .portfolio-item { transform: none !important; }
+        body.no-anim .portfolio-item:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+        }
+
+        /* ── Шестерёнка ──────────────────────────────── */
+        #gear-btn {
+            position: fixed; bottom: 24px; right: 20px; z-index: 9000;
+            width: 52px; height: 52px; border-radius: 50%;
+            background: rgba(8,8,24,0.92); border: 1px solid rgba(0,198,251,0.25);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 20px rgba(0,198,251,0.08);
+            backdrop-filter: blur(16px); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: #00c6fb; font-size: 18px;
+            transition: color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+        }
+        #gear-btn:hover {
+            border-color: rgba(0,198,251,0.5);
+            box-shadow: 0 4px 28px rgba(0,0,0,0.5), 0 0 28px rgba(0,198,251,0.2);
+            transform: scale(1.08);
+        }
+        #gear-btn.spinning i { animation: spin360 0.5s ease forwards; }
+        @keyframes spin360 { to { transform: rotate(360deg); } }
+
+        /* ── Панель настроек ─────────────────────────── */
+        #settings-overlay {
+            position: fixed; inset: 0; z-index: 9001;
+            background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        #settings-overlay.show { opacity: 1; pointer-events: all; }
+        #settings-panel {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 9002;
+            background: rgba(6,6,20,0.98); border-top: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px 24px 0 0; padding: 20px 20px 36px;
+            backdrop-filter: blur(30px); box-shadow: 0 -8px 40px rgba(0,0,0,0.6);
+            transform: translateY(100%); transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+        }
+        #settings-panel.open { transform: translateY(0); }
+        .sp-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .sp-row:last-of-type { border-bottom: none; }
+        .sp-label { font-size: 0.875rem; color: #e2e8f0; }
+        .sp-sub { font-size: 0.7rem; color: #475569; margin-top: 2px; }
+        .sw { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+        .sw input { opacity: 0; width: 0; height: 0; }
+        .sw-track {
+            position: absolute; inset: 0; border-radius: 999px; cursor: pointer;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+            transition: background 0.3s;
+        }
+        .sw-track::before {
+            content: ''; position: absolute; width: 20px; height: 20px;
+            left: 2px; top: 2px; border-radius: 50%;
+            background: #475569; transition: transform 0.3s, background 0.3s;
+        }
+        .sw input:checked + .sw-track { background: rgba(0,198,251,0.2); border-color: rgba(0,198,251,0.35); }
+        .sw input:checked + .sw-track::before { transform: translateX(20px); background: #00c6fb; }
+
+        /* ── Уведомление портфолио (мобиль) ─────────── */
+        #portfolio-perf-note {
+            display: none; margin: 0 0 12px; padding: 11px 14px;
+            background: rgba(0,198,251,0.06); border: 1px solid rgba(0,198,251,0.15);
+            border-radius: 16px; font-size: 0.72rem; color: #94a3b8;
+            line-height: 1.5; text-align: center;
+        }
+        #portfolio-perf-note span { color: #00c6fb; font-weight: 600; cursor: pointer; }
         .editable-active:hover::after { content: " ✎"; font-size: 0.8em; color: #00c6fb; vertical-align: super; font-weight: bold; }
         #about-drawer { max-height: 0; overflow: hidden; transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
         .portfolio-tab.active { background: rgba(0, 198, 251, 0.12); border-color: rgba(0, 198, 251, 0.4); color: #00c6fb; }
@@ -474,6 +550,66 @@
     <div id="toast-container" class="fixed top-6 right-6 z-[9999999] flex flex-col gap-3 pointer-events-none"></div>
     <div id="custom-cursor" class="hidden lg:block"></div>
     <canvas id="stars-canvas" class="fixed inset-0 w-full h-full -z-10 pointer-events-none"></canvas>
+
+    <!-- Уведомление производительности (снизу, мобиль) -->
+    <div id="perf-banner" style="
+        position:fixed; bottom:0; left:0; right:0; z-index:9003;
+        background:rgba(6,6,20,0.97); border-top:1px solid rgba(255,255,255,0.08);
+        border-radius:24px 24px 0 0; padding:20px 20px 32px;
+        backdrop-filter:blur(30px); box-shadow:0 -8px 40px rgba(0,0,0,0.5);
+        transform:translateY(100%); transition:transform 0.45s cubic-bezier(0.16,1,0.3,1);
+        display:none;
+    ">
+        <div style="text-align:center; margin-bottom:16px;">
+            <div style="font-size:1.5rem; margin-bottom:8px;">🐢</div>
+            <div style="font-size:0.95rem; font-weight:700; color:#fff; margin-bottom:6px;">Сайт работает медленно?</div>
+            <div style="font-size:0.78rem; color:#64748b; line-height:1.6;">Анимации и звёзды могут нагружать телефон.<br>Можно отключить — сайт останется полностью рабочим.<br><br>
+            <span style="color:#475569;">Если закроешь — настройки всегда доступны<br>через кнопку <span style="color:#00c6fb;">⚙️</span> в правом нижнем углу.</span></div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="perfBannerOptimize()" style="
+                flex:1; padding:13px; border-radius:16px;
+                background:rgba(0,198,251,0.15); border:1px solid rgba(0,198,251,0.3);
+                color:#00c6fb; font-size:0.85rem; font-weight:700; cursor:pointer;
+            ">⚡ Оптимизировать</button>
+            <button onclick="perfBannerDismiss()" style="
+                flex:1; padding:13px; border-radius:16px;
+                background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+                color:#94a3b8; font-size:0.85rem; font-weight:600; cursor:pointer;
+            ">✅ Всё работает</button>
+        </div>
+    </div>
+
+    <!-- Шестерёнка (fixed внизу справа) -->
+    <button id="gear-btn" onclick="toggleSettings()" title="Настройки отображения">
+        <i class="fas fa-cog"></i>
+    </button>
+
+    <!-- Overlay панели настроек -->
+    <div id="settings-overlay" onclick="closeSettings()"></div>
+
+    <!-- Панель настроек -->
+    <div id="settings-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div>
+                <div style="font-size:0.95rem;font-weight:700;color:#fff;">Настройки сайта</div>
+                <div style="font-size:0.7rem;color:#475569;margin-top:2px;">Сохраняются в браузере</div>
+            </div>
+            <button onclick="closeSettings()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#64748b;cursor:pointer;font-size:13px;">✕</button>
+        </div>
+        <div class="sp-row">
+            <div><div class="sp-label">✨ Анимации и звёзды</div><div class="sp-sub">Canvas-фон, кометы, плавные переходы</div></div>
+            <label class="sw"><input type="checkbox" id="sw-anim" checked onchange="applySettings()"><span class="sw-track"></span></label>
+        </div>
+        <div class="sp-row">
+            <div><div class="sp-label">💫 Свечение карточек</div><div class="sp-sub">Эффект при наведении на видео</div></div>
+            <label class="sw"><input type="checkbox" id="sw-glow" checked onchange="applySettings()"><span class="sw-track"></span></label>
+        </div>
+        <div class="sp-row">
+            <div><div class="sp-label">🖱 Кастомный курсор</div><div class="sp-sub">Курсор-прицел на десктопе</div></div>
+            <label class="sw"><input type="checkbox" id="sw-cursor" checked onchange="applySettings()"><span class="sw-track"></span></label>
+        </div>
+    </div>
 
     <!-- Навигация -->
     <nav class="fixed w-full z-50 bg-[#010008]/50 backdrop-blur-xl border-b border-white/5">
@@ -1756,12 +1892,39 @@
                 container.classList.add('mob-expanded');
                 if (btnText) btnText.textContent = 'Скрыть работы';
                 if (chevron) chevron.style.transform = 'rotate(180deg)';
+                // Показываем баннер производительности (мобиль, первый раз)
+                showPerfBannerIfNeeded();
             } else {
                 container.classList.remove('mob-expanded');
                 container.classList.add('mob-collapsed');
                 if (btnText) btnText.textContent = 'Смотреть работы';
                 if (chevron) chevron.style.transform = 'rotate(0deg)';
             }
+        };
+
+        function showPerfBannerIfNeeded() {
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (!isMobile) return;
+            try { if (localStorage.getItem('sp_perf_dismissed')) return; } catch(e) {}
+            const banner = document.getElementById('perf-banner');
+            if (!banner) return;
+            banner.style.display = 'block';
+            setTimeout(() => banner.style.transform = 'translateY(0)', 20);
+        }
+
+        window.perfBannerOptimize = function() {
+            const sw = document.getElementById('sw-anim');
+            if (sw) { sw.checked = false; applySettings(); }
+            perfBannerDismiss();
+        };
+
+        window.perfBannerDismiss = function() {
+            const banner = document.getElementById('perf-banner');
+            if (banner) {
+                banner.style.transform = 'translateY(100%)';
+                setTimeout(() => banner.style.display = 'none', 450);
+            }
+            try { localStorage.setItem('sp_perf_dismissed', '1'); } catch(e) {}
         };
 
         // На десктопе всегда показываем портфолио без классов-аккордеона
@@ -1881,7 +2044,7 @@
                     }
                     
                     html += `
-                        <div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0 ${isToday ? 'px-1 bg-cyan-500/5 rounded-xl ring-1 ring-cyan-500/20 shadow-[0_0_10px_rgba(0,198,251,0.05)]' : 'px-1'}">
+                        <div class="flex justify-between items-center py-2.5 px-1 border-b border-white/5 last:border-0 ${isToday ? 'bg-cyan-500/5 rounded-xl' : ''}">
                             <span class="text-sm font-semibold text-slate-200 flex items-center">${d.name} ${todayBadge}</span>
                             <span class="text-sm font-semibold">${timeText}</span>
                         </div>
@@ -2138,16 +2301,16 @@
             setTimeout(() => { comet = new Comet(); planNextComet(); }, delay);
         }
 
+        let animRunning = true;
         function animateBg() {
+            if (!animRunning) return;
             bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
             stars.forEach(star => { star.update(); star.draw(); });
             if (comet && comet.active) { comet.update(); comet.draw(); }
-            
             window.extraComets.forEach((c, i) => {
-                if (c.active) { c.update(); c.draw(); } 
+                if (c.active) { c.update(); c.draw(); }
                 else window.extraComets.splice(i, 1);
             });
-
             requestAnimationFrame(animateBg);
         }
 
@@ -2238,6 +2401,70 @@
         }, { passive: true });
 
         window.addEventListener('resize', resizeCanvas);
+
+        // ── НАСТРОЙКИ ────────────────────────────────────
+        let noGlowStyle = null;
+
+        window.applySettings = function() {
+            const animOn   = document.getElementById('sw-anim')?.checked !== false;
+            const glowOn   = document.getElementById('sw-glow')?.checked !== false;
+            const cursorOn = document.getElementById('sw-cursor')?.checked !== false;
+
+            if (animOn) {
+                document.body.classList.remove('no-anim');
+                if (!animRunning) { animRunning = true; animateBg(); }
+                const canvas = document.getElementById('stars-canvas');
+                if (canvas) { canvas.style.opacity = ''; canvas.style.pointerEvents = ''; }
+            } else {
+                document.body.classList.add('no-anim');
+                animRunning = false;
+                const canvas = document.getElementById('stars-canvas');
+                if (canvas) { canvas.style.opacity = '0'; canvas.style.pointerEvents = 'none'; }
+            }
+
+            if (!glowOn) {
+                if (!noGlowStyle) {
+                    noGlowStyle = document.createElement('style');
+                    noGlowStyle.textContent = '.portfolio-item:hover{box-shadow:0 4px 20px rgba(0,0,0,0.4)!important;}';
+                    document.head.appendChild(noGlowStyle);
+                }
+            } else {
+                if (noGlowStyle) { noGlowStyle.remove(); noGlowStyle = null; }
+            }
+
+            const dot = document.getElementById('cursor-dot');
+            if (dot) dot.style.display = cursorOn ? '' : 'none';
+
+            try {
+                localStorage.setItem('sp_settings', JSON.stringify({ animOn, glowOn, cursorOn }));
+            } catch(e) {}
+        };
+
+        window.toggleSettings = function() {
+            const btn = document.getElementById('gear-btn');
+            btn.classList.add('spinning');
+            setTimeout(() => btn.classList.remove('spinning'), 500);
+            document.getElementById('settings-panel').classList.toggle('open');
+            document.getElementById('settings-overlay').classList.toggle('show');
+        };
+
+        window.closeSettings = function() {
+            document.getElementById('settings-panel').classList.remove('open');
+            document.getElementById('settings-overlay').classList.remove('show');
+        };
+
+        // Загружаем сохранённые настройки
+        (function() {
+            try {
+                const s = JSON.parse(localStorage.getItem('sp_settings') || 'null');
+                if (!s) return;
+                const set = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val; };
+                set('sw-anim',   s.animOn   !== false);
+                set('sw-glow',   s.glowOn   !== false);
+                set('sw-cursor', s.cursorOn !== false);
+                applySettings();
+            } catch(e) {}
+        })();
         
         // Оптимизация: throttle для mousemove
         let moveTicking = false;
