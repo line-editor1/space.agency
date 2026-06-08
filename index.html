@@ -194,6 +194,21 @@
 
         .editable-active { outline: 1px dashed rgba(0, 198, 251, 0.7) !important; cursor: pointer !important; transition: outline 0.3s; }
 
+        /* Калькулятор */
+        .calc-pkg-btn { cursor: pointer; }
+        .active-pkg { border-color: rgba(0,198,251,0.5) !important; background: rgba(0,198,251,0.12) !important; }
+        .calc-opt-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-radius:14px; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); cursor:pointer; transition:background 0.2s; }
+        .calc-opt-row:hover { background:rgba(255,255,255,0.04); }
+        .calc-opt-row input[type=checkbox] { accent-color:#00c6fb; width:16px; height:16px; cursor:pointer; }
+
+        /* Мобильная оптимизация */
+        @media (max-width: 768px) {
+            #cursor-dot { display: none !important; }
+            .apple-liquid-glass { backdrop-filter: blur(8px) !important; }
+            .portfolio-item:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important; transform: none !important; }
+            .neon-glow-text { text-shadow: 0 0 10px rgba(0,198,251,0.3) !important; }
+        }
+
         /* ── Режим без анимаций ───────────────────────── */
         body.no-anim *, body.no-anim *::before, body.no-anim *::after {
             animation: none !important;
@@ -278,12 +293,12 @@
         /* Фоновый космонавт — изящный, маленький, стильный */
         .bg-astronaut {
             position: fixed;
-            top: 25%;
-            right: 12%;
+            top: 22%;
+            right: 8%;
             font-size: 1.15rem;
-            color: rgba(0, 198, 251, 0.15);
-            filter: drop-shadow(0 0 8px rgba(0, 198, 251, 0.4));
-            z-index: -5;
+            color: rgba(0, 198, 251, 0.10);
+            filter: drop-shadow(0 0 6px rgba(0, 198, 251, 0.2));
+            z-index: -10;
             pointer-events: none;
             animation: floatSpace 24s ease-in-out infinite;
         }
@@ -551,34 +566,6 @@
     <div id="custom-cursor" class="hidden lg:block"></div>
     <canvas id="stars-canvas" class="fixed inset-0 w-full h-full -z-10 pointer-events-none"></canvas>
 
-    <!-- Уведомление производительности (снизу, мобиль) -->
-    <div id="perf-banner" style="
-        position:fixed; bottom:0; left:0; right:0; z-index:9003;
-        background:rgba(6,6,20,0.97); border-top:1px solid rgba(255,255,255,0.08);
-        border-radius:24px 24px 0 0; padding:20px 20px 32px;
-        backdrop-filter:blur(30px); box-shadow:0 -8px 40px rgba(0,0,0,0.5);
-        transform:translateY(100%); transition:transform 0.45s cubic-bezier(0.16,1,0.3,1);
-        display:none;
-    ">
-        <div style="text-align:center; margin-bottom:16px;">
-            <div style="font-size:1.5rem; margin-bottom:8px;">🐢</div>
-            <div style="font-size:0.95rem; font-weight:700; color:#fff; margin-bottom:6px;">Сайт работает медленно?</div>
-            <div style="font-size:0.78rem; color:#64748b; line-height:1.6;">Анимации и звёзды могут нагружать телефон.<br>Можно отключить — сайт останется полностью рабочим.<br><br>
-            <span style="color:#475569;">Если закроешь — настройки всегда доступны<br>через кнопку <span style="color:#00c6fb;">⚙️</span> в правом нижнем углу.</span></div>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button onclick="perfBannerOptimize()" style="
-                flex:1; padding:13px; border-radius:16px;
-                background:rgba(0,198,251,0.15); border:1px solid rgba(0,198,251,0.3);
-                color:#00c6fb; font-size:0.85rem; font-weight:700; cursor:pointer;
-            ">⚡ Оптимизировать</button>
-            <button onclick="perfBannerDismiss()" style="
-                flex:1; padding:13px; border-radius:16px;
-                background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
-                color:#94a3b8; font-size:0.85rem; font-weight:600; cursor:pointer;
-            ">✅ Всё работает</button>
-        </div>
-    </div>
 
     <!-- Шестерёнка (fixed внизу справа) -->
     <button id="gear-btn" onclick="toggleSettings()" title="Настройки отображения">
@@ -714,6 +701,12 @@
                 <div class="neon-btn-container">
                     <div class="neon-btn-glow"></div>
                     <a href="#contacts" class="px-8 py-4 bg-transparent text-slate-300 border border-white/10 font-semibold rounded-full block hover:bg-white/5 hover:border-cyan-400 transition duration-300 edit-field" data-id="hero_contact_btn">Обсудить проект</a>
+                </div>
+                <div class="neon-btn-container">
+                    <div class="neon-btn-glow" style="background: rgba(168,85,247,0.3);"></div>
+                    <button onclick="openCalcModal()" class="px-8 py-4 bg-transparent text-purple-300 border border-purple-500/30 font-semibold rounded-full block hover:bg-purple-500/10 hover:border-purple-400 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-calculator text-sm"></i> Рассчитать стоимость
+                    </button>
                 </div>
             </div>
         </div>
@@ -1326,23 +1319,6 @@
                 <!-- ===== ВКЛАДКА: ОБЗОР ===== -->
                 <div id="admin-tab-overview" class="admin-tab-content space-y-6">
                     
-                    <!-- Статус системы -->
-                    <div class="relative overflow-hidden rounded-3xl border border-cyan-500/20 p-6" style="background: linear-gradient(135deg, rgba(0,198,251,0.06) 0%, rgba(0,82,212,0.04) 100%);">
-                        <div class="absolute top-0 right-0 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                        <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div>
-                                <p class="text-[10px] text-cyan-400 uppercase tracking-[0.2em] font-space font-bold mb-1">Статус систем</p>
-                                <h3 class="text-2xl font-space font-black text-white">SPACE Control Panel</h3>
-                                <p class="text-slate-400 text-xs mt-1">Все системы работают в штатном режиме</p>
-                            </div>
-                            <div class="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
-                                <span class="flex h-2 w-2"><span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
-                                <span class="text-emerald-400 text-xs font-bold font-space uppercase tracking-widest">Онлайн</span>
-                                <span class="text-emerald-400 text-xs font-bold font-space" id="stat-online-systems">5</span>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Телеметрия — 4 карточки в стиле сайта -->
                     <div>
                         <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-4 flex items-center gap-2"><i class="fas fa-chart-bar text-cyan-400"></i> Телеметрия</p>
@@ -1767,6 +1743,93 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- КАЛЬКУЛЯТОР СТОИМОСТИ                      -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="calc-modal" class="fixed inset-0 z-[999999] hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4" onclick="if(event.target===this)closeCalcModal()">
+        <div class="w-full max-w-2xl apple-liquid-glass border border-white/8 rounded-[32px] overflow-hidden max-h-[92vh] flex flex-col">
+            <!-- Шапка -->
+            <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/5 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/25 flex items-center justify-center">
+                        <i class="fas fa-calculator text-purple-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <div class="text-base font-bold text-white font-space">Калькулятор стоимости</div>
+                        <div class="text-[10px] text-slate-500 uppercase tracking-widest">Монтаж видео</div>
+                    </div>
+                </div>
+                <button onclick="closeCalcModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white transition text-sm">✕</button>
+            </div>
+
+            <!-- Тело (скролл) -->
+            <div class="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+
+                <!-- Выбор пакета -->
+                <div>
+                    <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3">Пакет</div>
+                    <div class="grid grid-cols-3 gap-2" id="calc-packages">
+                        <button onclick="calcSelectPackage('base')" data-pkg="base" class="calc-pkg-btn active-pkg py-3 px-2 rounded-2xl border text-center transition-all duration-200 border-cyan-500/40 bg-cyan-500/10">
+                            <div class="text-xs font-black text-cyan-400 font-space">BASE</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">1000₽/мин</div>
+                        </button>
+                        <button onclick="calcSelectPackage('pro')" data-pkg="pro" class="calc-pkg-btn py-3 px-2 rounded-2xl border text-center transition-all duration-200 border-white/8 bg-white/3">
+                            <div class="text-xs font-black text-blue-400 font-space">PRO</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">2500₽/мин</div>
+                        </button>
+                        <button onclick="calcSelectPackage('premium')" data-pkg="premium" class="calc-pkg-btn py-3 px-2 rounded-2xl border text-center transition-all duration-200 border-white/8 bg-white/3">
+                            <div class="text-xs font-black text-purple-400 font-space">PREMIUM</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">4000₽/мин</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Длительность -->
+                <div>
+                    <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3">Длительность итогового видео</div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="calcChangeDuration(-30)" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition flex-shrink-0">−</button>
+                        <div class="flex-1 text-center">
+                            <span class="text-2xl font-black text-white font-space" id="calc-dur-display">60</span>
+                            <span class="text-slate-400 text-sm ml-1">сек</span>
+                        </div>
+                        <button onclick="calcChangeDuration(30)" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition flex-shrink-0">+</button>
+                    </div>
+                    <div class="h-1 rounded-full bg-white/5 mt-3 overflow-hidden">
+                        <div id="calc-dur-bar" class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300" style="width:16%"></div>
+                    </div>
+                </div>
+
+                <!-- Доп. услуги -->
+                <div>
+                    <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3">Дополнительные услуги</div>
+                    <div id="calc-options" class="space-y-2"></div>
+                </div>
+
+                <!-- Срочность -->
+                <div class="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/2">
+                    <div>
+                        <div class="text-sm font-semibold text-white">⚡ Срочный запуск</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" id="calc-urgent-label">+75% к стоимости</div>
+                    </div>
+                    <label class="sw"><input type="checkbox" id="calc-urgent" onchange="calcUpdate()"><span class="sw-track"></span></label>
+                </div>
+
+            </div>
+
+            <!-- Итог -->
+            <div class="flex-shrink-0 px-6 py-5 border-t border-white/5" style="background:rgba(0,0,0,0.3)">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-sm text-slate-400">Итоговая стоимость:</div>
+                    <div class="text-2xl font-black text-white font-space" id="calc-total">1 000 ₽</div>
+                </div>
+                <button onclick="calcSendTelegram()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 text-cyan-300 font-bold text-sm hover:from-cyan-500/30 hover:to-blue-500/30 transition duration-300 flex items-center justify-center gap-2">
+                    <i class="fab fa-telegram"></i> Получить расчёт в Telegram
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Модальное окно для видеоплеера -->
     <div id="video-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/95 backdrop-blur-md transition-all duration-300 p-4">
         <button onclick="closeVideoModal()" class="absolute top-6 right-6 text-white hover:text-cyan-400 text-3xl transition duration-300">
@@ -1892,8 +1955,6 @@
                 container.classList.add('mob-expanded');
                 if (btnText) btnText.textContent = 'Скрыть работы';
                 if (chevron) chevron.style.transform = 'rotate(180deg)';
-                // Показываем баннер производительности (мобиль, первый раз)
-                showPerfBannerIfNeeded();
             } else {
                 container.classList.remove('mob-expanded');
                 container.classList.add('mob-collapsed');
@@ -1902,30 +1963,7 @@
             }
         };
 
-        function showPerfBannerIfNeeded() {
-            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            if (!isMobile) return;
-            try { if (localStorage.getItem('sp_perf_dismissed')) return; } catch(e) {}
-            const banner = document.getElementById('perf-banner');
-            if (!banner) return;
-            banner.style.display = 'block';
-            setTimeout(() => banner.style.transform = 'translateY(0)', 20);
-        }
 
-        window.perfBannerOptimize = function() {
-            const sw = document.getElementById('sw-anim');
-            if (sw) { sw.checked = false; applySettings(); }
-            perfBannerDismiss();
-        };
-
-        window.perfBannerDismiss = function() {
-            const banner = document.getElementById('perf-banner');
-            if (banner) {
-                banner.style.transform = 'translateY(100%)';
-                setTimeout(() => banner.style.display = 'none', 450);
-            }
-            try { localStorage.setItem('sp_perf_dismissed', '1'); } catch(e) {}
-        };
 
         // На десктопе всегда показываем портфолио без классов-аккордеона
         window.addEventListener('resize', () => {
@@ -1975,6 +2013,8 @@
             if (modal) modal.classList.add('hidden');
         };
         window.openAdminModal = function() {
+            // Ленивая загрузка кода админки при первом открытии
+            if (!window._adminLoaded) window._loadAdminCode();
             const modal = document.getElementById('admin-modal');
             if (modal) {
                 modal.classList.remove('hidden');
@@ -2200,83 +2240,16 @@
             }
         }
 
-        window.playPreviewVideo = function(caseId) {
-            if (window.innerWidth < 768) return;
-            if (!window.portfolioLinks) return;
-            const baseVideoUrl = window.portfolioLinks[`case${caseId}_video`];
-            if (!baseVideoUrl) return;
-            const iframe = document.getElementById(`case-iframe-${caseId}`);
-            const thumb = document.getElementById(`case-thumb-${caseId}`);
-            const isKs = getKinescopeId(baseVideoUrl);
-            if (isKs) {
-                if (iframe) iframe.classList.remove('opacity-0');
-                if (thumb) thumb.classList.add('opacity-0');
-            } else {
-                stopAllPreviewVideos();
-                if (iframe) {
-                    iframe.src = getEmbedUrl(baseVideoUrl, true);
-                    iframe.classList.remove('opacity-0');
-                    if (thumb) thumb.classList.add('opacity-0');
-                }
-            }
-        };
-
-        window.stopPreviewVideo = function(caseId) {
-            if (window.innerWidth < 768) return;
-            const baseVideoUrl = window.portfolioLinks && window.portfolioLinks[`case${caseId}_video`];
-            const iframe = document.getElementById(`case-iframe-${caseId}`);
-            const thumb = document.getElementById(`case-thumb-${caseId}`);
-            const isKs = getKinescopeId(baseVideoUrl || "");
-            if (isKs) {
-                return;
-            }
-            if (iframe) { iframe.src = ""; iframe.classList.add('opacity-0'); }
-            if (thumb) thumb.classList.remove('opacity-0');
-        };
+        // Превью только в плеере — hover-автовоспроизведение отключено
+        window.playPreviewVideo = function(caseId) {};
+        window.stopPreviewVideo = function(caseId) {};
 
         // Состояния мобильных карточек (первый тап — играть, второй — открыть модалку)
         const mobileTapState = {};
 
         window.handlePortfolioCardClick = function(caseId, event) {
-            if (window.innerWidth >= 768) {
-                // Десктоп: просто открываем модалку
-                openVideoForCase(caseId);
-                return;
-            }
-            // Мобиль: первый тап — показать видео, второй — открыть модалку
-            if (!mobileTapState[caseId]) {
-                // Первый тап: запустить видео в карточке
-                event.preventDefault();
-                const iframe = document.getElementById(`case-iframe-${caseId}`);
-                const thumb = document.getElementById(`case-thumb-${caseId}`);
-                const playBtn = document.getElementById(`case-play-btn-${caseId}`);
-                const baseVideoUrl = window.portfolioLinks && window.portfolioLinks[`case${caseId}_video`];
-                if (iframe && baseVideoUrl) {
-                    // Останавливаем все остальные мобильные превью
-                    Object.keys(mobileTapState).forEach(id => {
-                        if (parseInt(id) !== caseId && mobileTapState[id]) {
-                            mobileTapState[id] = false;
-                            const otherIframe = document.getElementById(`case-iframe-${id}`);
-                            const otherThumb = document.getElementById(`case-thumb-${id}`);
-                            const otherBtn = document.getElementById(`case-play-btn-${id}`);
-                            if (otherIframe) { otherIframe.src = ""; otherIframe.classList.add('opacity-0'); }
-                            if (otherThumb) otherThumb.classList.remove('opacity-0');
-                            if (otherBtn) otherBtn.style.display = '';
-                        }
-                    });
-                    iframe.src = getEmbedUrl(baseVideoUrl, true);
-                    iframe.classList.remove('opacity-0');
-                    if (thumb) thumb.classList.add('opacity-0');
-                    if (playBtn) playBtn.style.display = 'none';
-                    mobileTapState[caseId] = true;
-                } else {
-                    openVideoForCase(caseId);
-                }
-            } else {
-                // Второй тап: открыть модалку с полным видео
-                mobileTapState[caseId] = false;
-                openVideoForCase(caseId);
-            }
+            // И на мобиле и на десктопе — сразу открываем плеер
+            openVideoForCase(caseId);
         };
 
         function stopAllPreviewVideos() {
@@ -2508,19 +2481,12 @@
                 }
             }, 300);
 
-            setInterval(() => {
-                const onlineEl = document.getElementById("stat-online-systems");
-                if (onlineEl) {
-                    const current = parseInt(onlineEl.textContent) || 5;
-                    const change = Math.random() > 0.5 ? 1 : -1;
-                    const next = Math.max(3, Math.min(12, current + change));
-                    onlineEl.textContent = next;
-                }
-            }, 4000);
+
         });
 
         // === ДВОЙНОЙ ПАРОЛЬ ДЛЯ ЭКРАНА ТЕХРАБОТ ===
         window.openAdminModalWith2FA = function() {
+            if (!window._adminLoaded) window._loadAdminCode();
             const p1 = document.getElementById("admin-2fa-pass1");
             const p2 = document.getElementById("admin-2fa-pass2");
             if (p1) p1.value = "";
@@ -2717,6 +2683,123 @@
                 });
             });
         })();
+
+        // ═══════════════════════════════════════
+        // КАЛЬКУЛЯТОР СТОИМОСТИ
+        // ═══════════════════════════════════════
+        const CALC_PACKAGES = {
+            base: {
+                name: 'BASE', basePrice: 1000, extraPer30: 350, urgentPct: 75,
+                options: [
+                    { id: 'subtitles', label: 'Ключевые слова в субтитрах', price: 300 },
+                    { id: 'sound',     label: 'Базовый Sound Design',       price: 400 },
+                    { id: 'sources',   label: 'Исходники более 15 минут',   price: 500 },
+                ]
+            },
+            pro: {
+                name: 'PRO', basePrice: 2500, extraPer30: 500, urgentPct: 70,
+                options: [
+                    { id: 'sound_deep', label: 'Глубокий Sound Design',     price: 600 },
+                    { id: 'footage',    label: 'Расширенные футажи',         price: 800 },
+                    { id: 'multicam',   label: 'Мультикамерный монтаж',      price: 1000 },
+                    { id: 'infograph',  label: 'Инфографика',                price: 700 },
+                ]
+            },
+            premium: {
+                name: 'PREMIUM', basePrice: 4000, extraPer30: 1200, urgentPct: 100,
+                options: [
+                    { id: 'motion',   label: 'Motion Design',               price: 2000 },
+                    { id: 'tracking', label: 'Tracking объектов',            price: 1000 },
+                    { id: 'script',   label: 'Написание сценария',           price: 2000 },
+                    { id: 'threed',   label: '3D-анимация',                  price: 2500 },
+                    { id: 'formats',  label: 'Адаптация форматов',           price: 1500 },
+                ]
+            }
+        };
+
+        let calcState = { pkg: 'base', duration: 60, options: {}, urgent: false };
+
+        window.openCalcModal = function() {
+            document.getElementById('calc-modal').classList.remove('hidden');
+            calcRenderOptions();
+            calcUpdate();
+        };
+        window.closeCalcModal = function() {
+            document.getElementById('calc-modal').classList.add('hidden');
+        };
+        window.calcSelectPackage = function(pkg) {
+            calcState.pkg = pkg;
+            calcState.options = {};
+            document.querySelectorAll('.calc-pkg-btn').forEach(b => b.classList.remove('active-pkg'));
+            const btn = document.querySelector(`[data-pkg="${pkg}"]`);
+            if (btn) btn.classList.add('active-pkg');
+            calcRenderOptions();
+            calcUpdate();
+        };
+        window.calcChangeDuration = function(delta) {
+            calcState.duration = Math.max(30, Math.min(600, calcState.duration + delta));
+            document.getElementById('calc-dur-display').textContent = calcState.duration;
+            const pct = Math.min(100, ((calcState.duration - 30) / 570) * 100);
+            document.getElementById('calc-dur-bar').style.width = pct + '%';
+            calcUpdate();
+        };
+        function calcRenderOptions() {
+            const pkg = CALC_PACKAGES[calcState.pkg];
+            const container = document.getElementById('calc-options');
+            if (!container) return;
+            const urgentLabel = document.getElementById('calc-urgent-label');
+            if (urgentLabel) urgentLabel.textContent = `+${pkg.urgentPct}% к стоимости`;
+            container.innerHTML = pkg.options.map(opt => `
+                <label class="calc-opt-row">
+                    <div>
+                        <div class="text-sm text-white">${opt.label}</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">+${opt.price.toLocaleString('ru')} ₽</div>
+                    </div>
+                    <input type="checkbox" id="calc-opt-${opt.id}" onchange="calcToggleOption('${opt.id}', ${opt.price})" ${calcState.options[opt.id] ? 'checked' : ''}>
+                </label>
+            `).join('');
+        }
+        window.calcToggleOption = function(id, price) {
+            if (calcState.options[id]) { delete calcState.options[id]; }
+            else { calcState.options[id] = price; }
+            calcUpdate();
+        };
+        window.calcUpdate = function() {
+            const pkg = CALC_PACKAGES[calcState.pkg];
+            calcState.urgent = document.getElementById('calc-urgent')?.checked || false;
+            let total = pkg.basePrice;
+            if (calcState.duration > 60) {
+                const extra30 = Math.ceil((calcState.duration - 60) / 30);
+                total += extra30 * pkg.extraPer30;
+            }
+            Object.values(calcState.options).forEach(p => total += p);
+            if (calcState.urgent) total = Math.round(total * (1 + pkg.urgentPct / 100));
+            const el = document.getElementById('calc-total');
+            if (el) el.textContent = total.toLocaleString('ru') + ' ₽';
+            return total;
+        };
+        window.calcSendTelegram = function() {
+            const pkg = CALC_PACKAGES[calcState.pkg];
+            const total = calcUpdate();
+            const optLines = Object.keys(calcState.options).map(id => {
+                const opt = pkg.options.find(o => o.id === id);
+                return opt ? `  • ${opt.label}: +${opt.price.toLocaleString('ru')} ₽` : '';
+            }).filter(Boolean);
+            const msgParts = [
+                `📋 Расчёт стоимости монтажа`,
+                ``,
+                `📦 Пакет: ${pkg.name}`,
+                `⏱ Длительность: ${calcState.duration} сек`,
+            ];
+            if (optLines.length) { msgParts.push(``, `🔧 Дополнительно:`, ...optLines); }
+            if (calcState.urgent) msgParts.push(`⚡ Срочный запуск: +${pkg.urgentPct}%`);
+            msgParts.push(``, `💰 Итого: ${total.toLocaleString('ru')} ₽`);
+            const msg = encodeURIComponent(msgParts.join('
+'));
+            const tgBtn = document.getElementById('tg-btn');
+            const tgBase = tgBtn?.href?.includes('t.me') ? tgBtn.href.split('?')[0] : 'https://t.me/spacevideoagency';
+            window.open(`${tgBase}?text=${msg}`, '_blank');
+        };
     </script>
 
     <!-- ИНТЕГРАЦИЯ С БАЗОЙ ДАННЫХ И CRM -->
@@ -2974,9 +3057,9 @@
                 const iframeSrc = isKinescope ? getEmbedUrl(videoObj.video, false) : "";
                 const iframeOpacity = isKinescope ? "opacity-100" : "opacity-0";
                 return `
-                    <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onmouseenter="playPreviewVideo(${caseId})" onmouseleave="stopPreviewVideo(${caseId})" onclick="handlePortfolioCardClick(${caseId}, event)">
+                    <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onclick="handlePortfolioCardClick(${caseId}, event)">
                         <button onclick="triggerPortfolioEdit(${caseId}, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                        <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 ${ratioClass}">
+                        <div class="relative overflow-hidden rounded-[24px] border border-white/8 shadow-2xl transition duration-500 group-hover:border-cyan-500/25 ${ratioClass}">
                             ${imgUrl
                                 ? `<img id="case-thumb-${caseId}" src="${imgUrl}" class="w-full h-full absolute inset-0 object-cover z-0 transition-opacity duration-300" alt="preview" loading="lazy" onerror="this.style.display='none'">`
                                 : `<div id="case-thumb-${caseId}" class="w-full h-full absolute inset-0 z-0 transition-opacity duration-300" style="background:linear-gradient(135deg,#0d0d1a,#0a1628)"></div>`
@@ -3927,6 +4010,31 @@
             return videoUrl;
         }
 
+        // ── ADMIN CODE (lazy) ──────────────────────────────
+        // Код админки загружается только после успешного входа
+        // Заглушки чтобы не было ошибок до загрузки
+        window.addPortfolioVideoFromAdmin = function() { console.warn('Admin not loaded'); };
+        window.renderPortfolioSortGrid   = function() {};
+        window.savePortfolioOrder        = function() {};
+        window.deletePortfolioVideo      = function() {};
+        window._adminLoaded = false;
+        window._loadAdminCode = function() {
+            if (window._adminLoaded) return;
+            window._adminLoaded = true;
+            const raw = document.getElementById('admin-lazy-code').textContent;
+            // Выполняем в контексте module через Blob + dynamic import
+            const blob = new Blob([raw], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            import(url).then(() => {
+                URL.revokeObjectURL(url);
+                console.log('✓ Admin code loaded');
+            }).catch(e => console.error('Admin load error:', e));
+        };
+
+    </script>
+
+    <!-- Ленивый код админки — загружается только при входе -->
+    <script type="text/plain" id="admin-lazy-code">
         window.addPortfolioVideoFromAdmin = async function() {
             const videoUrl = document.getElementById('portfolio-add-video-url')?.value.trim();
             const categoryRaw = document.getElementById('portfolio-add-category')?.value.trim().toLowerCase();
@@ -5140,6 +5248,7 @@
         };
 
     </script>
+
 </body>
 </html>
 
