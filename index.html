@@ -214,7 +214,7 @@
             font-size: 1.15rem;
             color: rgba(0, 198, 251, 0.10);
             filter: drop-shadow(0 0 6px rgba(0, 198, 251, 0.2));
-            z-index: -100;
+            z-index: -1;
             pointer-events: none;
             animation: floatSpace 24s ease-in-out infinite;
         }
@@ -1194,6 +1194,9 @@
                     <button onclick="switchAdminTab('content')" data-tab="content" class="admin-nav-tab flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-space transition-all duration-300 text-slate-400 hover:text-white">
                         <i class="fas fa-pencil-alt text-xs"></i> Контент
                     </button>
+                    <button onclick="switchAdminTab('calculator')" data-tab="calculator" class="admin-nav-tab flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-space transition-all duration-300 text-slate-400 hover:text-white">
+                        <i class="fas fa-calculator text-xs"></i> Калькулятор
+                    </button>
                     <button onclick="switchAdminTab('settings')" data-tab="settings" class="admin-nav-tab flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-space transition-all duration-300 text-slate-400 hover:text-white">
                         <i class="fas fa-cog text-xs"></i> Настройки
                     </button>
@@ -1582,8 +1585,6 @@
                             </div>
                         </div>
 
-                    </div>
-
                         <!-- БЛОК 5: Синхронизация Firebase -->
                         <div class="group relative overflow-hidden rounded-3xl border border-white/5 p-6 transition-all duration-300 hover:border-blue-500/25 hover:shadow-[0_10px_40px_rgba(59,130,246,0.06)]" style="background: rgba(255,255,255,0.025);">
                             <div class="absolute top-0 right-0 w-28 h-28 bg-blue-500/5 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -1612,7 +1613,7 @@
                             </div>
                         </div>
 
-                    </div>
+                    </div><!-- /grid настроек -->
 
                     <!-- Кнопки действий (Выйти + Сохранить) -->
                     <div class="flex gap-3 mt-6">
@@ -1627,11 +1628,78 @@
                     </div>
                 </div>
 
+                <!-- ===== ВКЛАДКА: КАЛЬКУЛЯТОР ===== -->
+                <div id="admin-tab-calculator" class="admin-tab-content hidden space-y-6">
+
+                    <div class="relative overflow-hidden rounded-3xl border border-purple-500/20 p-7" style="background: linear-gradient(135deg, rgba(168,85,247,0.07) 0%, rgba(0,82,212,0.04) 100%);">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-500/25 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-calculator text-purple-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-purple-400 uppercase tracking-[0.2em] font-space font-bold mb-0.5">Конфигурация</p>
+                                <h3 class="text-xl font-space font-black text-white">Редактор калькулятора</h3>
+                                <p class="text-slate-500 text-xs mt-0.5">Цены пакетов, срочность, доп. услуги по категориям и ссылка Telegram</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Пакеты -->
+                    <div class="rounded-3xl border border-white/5 p-6 space-y-4" style="background:rgba(255,255,255,0.025)">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold flex items-center gap-2"><i class="fas fa-boxes text-purple-400"></i> Пакеты (базовая цена и надбавка за доп. минуты)</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="calc-admin-packages"><!-- JS --></div>
+                    </div>
+
+                    <!-- Срочность -->
+                    <div class="rounded-3xl border border-white/5 p-6" style="background:rgba(255,255,255,0.025)">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-4 flex items-center gap-2"><i class="fas fa-bolt text-yellow-400"></i> Надбавка за срочность (%)</p>
+                        <div class="flex items-center gap-4">
+                            <input type="number" id="calc-admin-urgent-pct" min="0" max="500" step="5" class="w-32 bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-white font-mono text-lg font-black focus:outline-none focus:border-yellow-500/60 transition" placeholder="75">
+                            <span class="text-slate-400 text-sm">% к итоговой сумме</span>
+                        </div>
+                    </div>
+
+                    <!-- Доп. услуги по категориям -->
+                    <div class="rounded-3xl border border-white/5 p-6 space-y-5" style="background:rgba(255,255,255,0.025)">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold flex items-center gap-2"><i class="fas fa-layer-group text-cyan-400"></i> Дополнительные услуги по пакетам</p>
+
+                        <!-- Вкладки пакетов -->
+                        <div class="flex gap-1.5 p-1 bg-black/30 rounded-2xl border border-white/5" id="calc-opts-pkg-tabs">
+                            <button onclick="calcAdminSwitchOptPkg('base')" data-optpkg="base" class="calc-opt-pkg-tab flex-1 py-2 rounded-xl text-xs font-black font-space transition-all duration-200 text-slate-400 hover:text-white">BASE</button>
+                            <button onclick="calcAdminSwitchOptPkg('pro')" data-optpkg="pro" class="calc-opt-pkg-tab flex-1 py-2 rounded-xl text-xs font-black font-space transition-all duration-200 text-slate-400 hover:text-white">PRO</button>
+                            <button onclick="calcAdminSwitchOptPkg('premium')" data-optpkg="premium" class="calc-opt-pkg-tab flex-1 py-2 rounded-xl text-xs font-black font-space transition-all duration-200 text-slate-400 hover:text-white">PREMIUM</button>
+                        </div>
+
+                        <!-- Список услуг текущего пакета -->
+                        <div id="calc-admin-options-list" class="space-y-2 min-h-[40px]"></div>
+
+                        <!-- Добавить новую услугу -->
+                        <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-white/5">
+                            <input type="text" id="calc-admin-new-label" placeholder="Название услуги" class="flex-1 min-w-[160px] bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-500/60 transition placeholder:text-slate-700">
+                            <input type="number" id="calc-admin-new-price" placeholder="₽" class="w-28 bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/60 transition placeholder:text-slate-700">
+                            <button onclick="calcAdminAddOption()" class="px-5 py-3 rounded-2xl border border-cyan-500/25 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-bold text-sm font-space transition flex items-center gap-2 flex-shrink-0">
+                                <i class="fas fa-plus text-xs"></i> В текущий пакет
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Ссылка Telegram для кнопки расчёта -->
+                    <div class="rounded-3xl border border-white/5 p-6" style="background:rgba(255,255,255,0.025)">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-4 flex items-center gap-2"><i class="fab fa-telegram text-cyan-400"></i> Ссылка кнопки «Получить расчёт в Telegram»</p>
+                        <input type="text" id="calc-admin-tg-link" placeholder="https://t.me/your_telegram" class="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/60 transition placeholder:text-slate-700">
+                        <p class="text-[10px] text-slate-700 mt-2">Если пусто — используется основная ссылка Telegram из настроек</p>
+                    </div>
+
+                    <!-- Сохранить — всегда внизу -->
+                    <button onclick="saveCalcAdminSettings()" class="w-full py-4 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(168,85,247,0.25)] flex items-center justify-center gap-2.5" style="background: linear-gradient(135deg, rgba(168,85,247,0.45) 0%, rgba(79,172,254,0.2) 100%); border-top: 1px solid rgba(255,255,255,0.2); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(168,85,247,0.2); color: white;">
+                        <i class="fas fa-save"></i> Сохранить настройки калькулятора
+                    </button>
+
+                </div>
+
             </div>
         </div>
     </div>
-
-    <!-- Модальное окно редактора текстов -->
     <div id="editor-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
         <div class="w-full max-w-lg apple-liquid-glass p-8 border border-cyan-500/20">
             <h3 class="text-xl font-bold text-white mb-6">Редактировать текстовый блок</h3>
@@ -2572,7 +2640,7 @@
         })();
 
         // ── КАЛЬКУЛЯТОР ────────────────────────────────────
-        const _CP = {
+        const _CP_DEFAULT = {
             base:    { name:'BASE',    base:1000, per30:350,  urg:75,  opts:[
                 {id:'sub',  l:'Ключевые слова в субтитрах', p:300},
                 {id:'snd',  l:'Базовый Sound Design',       p:400},
@@ -2589,10 +2657,167 @@
                 {id:'trd',  l:'3D-анимация',                 p:2500},
                 {id:'fmt',  l:'Адаптация форматов',          p:1500}]}
         };
+
+        // Загрузка настроек калькулятора из localStorage
+        function _loadCalcConfig() {
+            try {
+                const saved = localStorage.getItem('space_calc_config');
+                if (saved) return JSON.parse(saved);
+            } catch(e) {}
+            return JSON.parse(JSON.stringify(_CP_DEFAULT));
+        }
+        let _CP = _loadCalcConfig();
+
         let _cs = {pkg:'base', dur:60, opts:{}, urg:false};
+
+        // ── ФУНКЦИИ РЕДАКТОРА КАЛЬКУЛЯТОРА В АДМИНКЕ ──────
+        let _calcAdminCurrentPkg = 'base'; // активная вкладка в редакторе
+
+        window.renderCalcAdminTab = function() {
+            const cfg = _CP;
+            // Пакеты
+            const pkgEl = document.getElementById('calc-admin-packages');
+            if (pkgEl) {
+                pkgEl.innerHTML = ['base','pro','premium'].map(pk => {
+                    const p = cfg[pk];
+                    const colors = {base:'cyan', pro:'blue', premium:'purple'};
+                    const c = colors[pk] || 'cyan';
+                    return `<div class="rounded-2xl border border-white/8 p-4 space-y-3" style="background:rgba(255,255,255,0.03)">
+                        <div class="text-xs font-black text-${c}-400 font-space uppercase tracking-widest">${p.name}</div>
+                        <div>
+                            <label class="block text-[9px] text-slate-600 uppercase tracking-widest mb-1.5 font-space">Базовая цена (₽)</label>
+                            <input type="number" id="calc-admin-${pk}-base" value="${p.base}" class="w-full bg-black/50 border border-white/8 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-${c}-500/60 transition">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-slate-600 uppercase tracking-widest mb-1.5 font-space">За каждые +30 сек (₽)</label>
+                            <input type="number" id="calc-admin-${pk}-per30" value="${p.per30}" class="w-full bg-black/50 border border-white/8 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-${c}-500/60 transition">
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            // Срочность
+            const urgEl = document.getElementById('calc-admin-urgent-pct');
+            if (urgEl) urgEl.value = cfg.base.urg;
+            // TG-ссылка
+            const tgEl = document.getElementById('calc-admin-tg-link');
+            if (tgEl) {
+                try { tgEl.value = JSON.parse(localStorage.getItem('space_calc_config') || '{}').calcTgLink || ''; } catch(e) {}
+            }
+            // Активируем первую вкладку услуг
+            calcAdminSwitchOptPkg(_calcAdminCurrentPkg);
+        };
+
+        window.calcAdminSwitchOptPkg = function(pkg) {
+            _calcAdminCurrentPkg = pkg;
+            // Подсветка вкладок
+            document.querySelectorAll('.calc-opt-pkg-tab').forEach(btn => {
+                const isActive = btn.getAttribute('data-optpkg') === pkg;
+                const colors = {base:'text-cyan-400 bg-cyan-500/15 border border-cyan-500/30', pro:'text-blue-400 bg-blue-500/15 border border-blue-500/30', premium:'text-purple-400 bg-purple-500/15 border border-purple-500/30'};
+                btn.className = 'calc-opt-pkg-tab flex-1 py-2 rounded-xl text-xs font-black font-space transition-all duration-200 ' +
+                    (isActive ? (colors[pkg] || 'text-cyan-400 bg-cyan-500/15') : 'text-slate-500 hover:text-white');
+            });
+            _renderCalcAdminOptions();
+        };
+
+        function _renderCalcAdminOptions() {
+            const pkg = _calcAdminCurrentPkg;
+            const opts = (_CP[pkg] && _CP[pkg].opts) ? _CP[pkg].opts : [];
+            const el = document.getElementById('calc-admin-options-list');
+            if (!el) return;
+            if (!opts.length) {
+                el.innerHTML = '<p class="text-xs text-slate-600 italic py-2">Нет услуг для этого пакета</p>';
+                return;
+            }
+            el.innerHTML = opts.map((o, i) => `
+                <div class="flex items-center gap-3 bg-black/30 border border-white/5 rounded-xl px-4 py-2.5">
+                    <span class="flex-1 text-sm text-slate-300">${o.l}</span>
+                    <input type="number" value="${o.p}" onchange="calcAdminUpdateOptPrice('${o.id}', '${pkg}', this.value)"
+                        class="w-24 bg-black/60 border border-white/8 rounded-xl px-3 py-1.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/60 transition text-right">
+                    <span class="text-slate-600 text-xs">₽</span>
+                    <button onclick="calcAdminDeleteOption('${o.id}', '${pkg}')" class="w-7 h-7 flex items-center justify-center rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-500 transition flex-shrink-0">
+                        <i class="fas fa-times text-[10px]"></i>
+                    </button>
+                </div>`).join('');
+        }
+
+        window.calcAdminUpdateOptPrice = function(id, pkg, val) {
+            const o = (_CP[pkg] && _CP[pkg].opts) ? _CP[pkg].opts.find(x => x.id === id) : null;
+            if (o) o.p = parseInt(val) || 0;
+        };
+
+        window.calcAdminDeleteOption = function(id, pkg) {
+            if (_CP[pkg] && _CP[pkg].opts) {
+                _CP[pkg].opts = _CP[pkg].opts.filter(x => x.id !== id);
+            }
+            _renderCalcAdminOptions();
+        };
+
+        window.calcAdminAddOption = function() {
+            const labelEl = document.getElementById('calc-admin-new-label');
+            const priceEl = document.getElementById('calc-admin-new-price');
+            const label = (labelEl && labelEl.value.trim()) || '';
+            const price = parseInt(priceEl && priceEl.value) || 0;
+            if (!label) { showToast('Введите название услуги!', 'error'); return; }
+            const pkg = _calcAdminCurrentPkg;
+            if (!_CP[pkg].opts) _CP[pkg].opts = [];
+            const newId = 'custom_' + Date.now();
+            _CP[pkg].opts.push({id: newId, l: label, p: price});
+            if (labelEl) labelEl.value = '';
+            if (priceEl) priceEl.value = '';
+            _renderCalcAdminOptions();
+            showToast('Услуга добавлена в пакет ' + _CP[pkg].name + '!', 'success');
+        };
+
+        window.saveCalcAdminSettings = function() {
+            // Цены пакетов
+            ['base','pro','premium'].forEach(pk => {
+                const baseVal = document.getElementById(`calc-admin-${pk}-base`);
+                const per30Val = document.getElementById(`calc-admin-${pk}-per30`);
+                if (baseVal) _CP[pk].base = parseInt(baseVal.value) || _CP[pk].base;
+                if (per30Val) _CP[pk].per30 = parseInt(per30Val.value) || _CP[pk].per30;
+            });
+            // Срочность
+            const urgEl = document.getElementById('calc-admin-urgent-pct');
+            if (urgEl) {
+                const urgPct = parseInt(urgEl.value) || 75;
+                _CP.base.urg = urgPct; _CP.pro.urg = urgPct; _CP.premium.urg = urgPct;
+            }
+            // TG-ссылка
+            const tgEl = document.getElementById('calc-admin-tg-link');
+            const calcTgLink = tgEl ? tgEl.value.trim() : '';
+            // Сохраняем всё
+            try { localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink})); } catch(e) {}
+            // Обновляем подписи кнопок пакетов в публичном калькуляторе
+            document.querySelectorAll('.calc-pkg-btn').forEach(btn => {
+                const pk = btn.getAttribute('data-pkg');
+                if (pk && _CP[pk]) {
+                    const sub = btn.querySelector('div:last-child');
+                    if (sub) sub.textContent = (_CP[pk].base).toLocaleString('ru') + '₽';
+                }
+            });
+            showToast('Настройки калькулятора сохранены!', 'success');
+        };
+
+        // Перехват переключения на вкладку calc для рендера
+        const _origSwitch = window.switchAdminTab;
+        window.switchAdminTab = function(tabName) {
+            _origSwitch(tabName);
+            if (tabName === 'calculator' && typeof window.renderCalcAdminTab === 'function') {
+                window.renderCalcAdminTab();
+            }
+        };
 
         window.openCalcModal = function() {
             document.getElementById('calc-modal').classList.remove('hidden');
+            // Обновляем цены на кнопках пакетов из _CP
+            const pkgBtns = document.querySelectorAll('.calc-pkg-btn');
+            pkgBtns.forEach(btn => {
+                const pk = btn.getAttribute('data-pkg');
+                if (pk && _CP[pk]) {
+                    const sub = btn.querySelector('div:last-child');
+                    if (sub) sub.textContent = (_CP[pk].base).toLocaleString('ru') + '₽/мин';
+                }
+            });
             _calcRenderOpts(); _calcUpdate();
         };
         window.closeCalcModal = function() {
@@ -2661,9 +2886,13 @@
             if (_cs.urg) lines.push('⚡ Срочный запуск: +' + pkg.urg + '%');
             lines.push('', '💰 Итого: ' + total.toLocaleString('ru') + ' ₽');
             const msg = encodeURIComponent(lines.join('\n'));
+            // Используем кастомную ссылку из настроек или fallback на основную TG-кнопку
+            let calcTgLink = '';
+            try { calcTgLink = (JSON.parse(localStorage.getItem('space_calc_config') || '{}')).calcTgLink || ''; } catch(e) {}
             const tgBtn = document.getElementById('tg-btn');
-            const base = (tgBtn && tgBtn.href && tgBtn.href.includes('t.me'))
+            const fallback = (tgBtn && tgBtn.href && tgBtn.href.includes('t.me'))
                 ? tgBtn.href.split('?')[0] : 'https://t.me/spacevideoagency';
+            const base = (calcTgLink || fallback).split('?')[0];
             window.open(base + '?text=' + msg, '_blank');
         };
         // CSS для калькулятора
@@ -3399,8 +3628,13 @@
                 document.getElementById('admin-dashboard-sec').classList.remove('hidden');
                 
                 window.populateAdminFields();
-
                 renderCrmProjects();
+
+                // Ленивая инициализация вкладки калькулятора после успешного входа
+                if (typeof window.renderCalcAdminTab === 'function') {
+                    window.renderCalcAdminTab();
+                }
+
                 showToast("Авторизация администратора успешна!", "success");
             } else {
                 showToast("Неверный ключ доступа администратора!", "error");
