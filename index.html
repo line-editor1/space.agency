@@ -192,98 +192,14 @@
         .portfolio-item:hover ~ #custom-cursor,
         #portfolio-grid:hover #custom-cursor { opacity: 0 !important; }
 
-        .editable-active { outline: 1px dashed rgba(0, 198, 251, 0.7) !important; cursor: pointer !important; transition: outline 0.3s; }
-
-        /* Калькулятор */
-        .calc-pkg-btn { cursor: pointer; }
-        .active-pkg { border-color: rgba(0,198,251,0.5) !important; background: rgba(0,198,251,0.12) !important; }
-        .calc-opt-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-radius:14px; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.02); cursor:pointer; transition:background 0.2s; }
-        .calc-opt-row:hover { background:rgba(255,255,255,0.04); }
-        .calc-opt-row input[type=checkbox] { accent-color:#00c6fb; width:16px; height:16px; cursor:pointer; }
-
         /* Мобильная оптимизация */
         @media (max-width: 768px) {
             #cursor-dot { display: none !important; }
             .apple-liquid-glass { backdrop-filter: blur(8px) !important; }
             .portfolio-item:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important; transform: none !important; }
-            .neon-glow-text { text-shadow: 0 0 10px rgba(0,198,251,0.3) !important; }
         }
 
-        /* ── Режим без анимаций ───────────────────────── */
-        body.no-anim *, body.no-anim *::before, body.no-anim *::after {
-            animation: none !important;
-            transition-duration: 0.001ms !important;
-        }
-        body.no-anim #stars-canvas { opacity: 0; pointer-events: none; }
-        body.no-anim .portfolio-item { transform: none !important; }
-        body.no-anim .portfolio-item:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
-        }
-
-        /* ── Шестерёнка ──────────────────────────────── */
-        #gear-btn {
-            position: fixed; bottom: 24px; right: 20px; z-index: 9000;
-            width: 52px; height: 52px; border-radius: 50%;
-            background: rgba(8,8,24,0.92); border: 1px solid rgba(0,198,251,0.25);
-            box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 20px rgba(0,198,251,0.08);
-            backdrop-filter: blur(16px); cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            color: #00c6fb; font-size: 18px;
-            transition: color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.2s;
-        }
-        #gear-btn:hover {
-            border-color: rgba(0,198,251,0.5);
-            box-shadow: 0 4px 28px rgba(0,0,0,0.5), 0 0 28px rgba(0,198,251,0.2);
-            transform: scale(1.08);
-        }
-        #gear-btn.spinning i { animation: spin360 0.5s ease forwards; }
-        @keyframes spin360 { to { transform: rotate(360deg); } }
-
-        /* ── Панель настроек ─────────────────────────── */
-        #settings-overlay {
-            position: fixed; inset: 0; z-index: 9001;
-            background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        }
-        #settings-overlay.show { opacity: 1; pointer-events: all; }
-        #settings-panel {
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 9002;
-            background: rgba(6,6,20,0.98); border-top: 1px solid rgba(255,255,255,0.08);
-            border-radius: 24px 24px 0 0; padding: 20px 20px 36px;
-            backdrop-filter: blur(30px); box-shadow: 0 -8px 40px rgba(0,0,0,0.6);
-            transform: translateY(100%); transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
-        }
-        #settings-panel.open { transform: translateY(0); }
-        .sp-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .sp-row:last-of-type { border-bottom: none; }
-        .sp-label { font-size: 0.875rem; color: #e2e8f0; }
-        .sp-sub { font-size: 0.7rem; color: #475569; margin-top: 2px; }
-        .sw { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
-        .sw input { opacity: 0; width: 0; height: 0; }
-        .sw-track {
-            position: absolute; inset: 0; border-radius: 999px; cursor: pointer;
-            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
-            transition: background 0.3s;
-        }
-        .sw-track::before {
-            content: ''; position: absolute; width: 20px; height: 20px;
-            left: 2px; top: 2px; border-radius: 50%;
-            background: #475569; transition: transform 0.3s, background 0.3s;
-        }
-        .sw input:checked + .sw-track { background: rgba(0,198,251,0.2); border-color: rgba(0,198,251,0.35); }
-        .sw input:checked + .sw-track::before { transform: translateX(20px); background: #00c6fb; }
-
-        /* ── Уведомление портфолио (мобиль) ─────────── */
-        #portfolio-perf-note {
-            display: none; margin: 0 0 12px; padding: 11px 14px;
-            background: rgba(0,198,251,0.06); border: 1px solid rgba(0,198,251,0.15);
-            border-radius: 16px; font-size: 0.72rem; color: #94a3b8;
-            line-height: 1.5; text-align: center;
-        }
-        #portfolio-perf-note span { color: #00c6fb; font-weight: 600; cursor: pointer; }
+        .editable-active { outline: 1px dashed rgba(0, 198, 251, 0.7) !important; cursor: pointer !important; transition: outline 0.3s; }
         .editable-active:hover::after { content: " ✎"; font-size: 0.8em; color: #00c6fb; vertical-align: super; font-weight: bold; }
         #about-drawer { max-height: 0; overflow: hidden; transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
         .portfolio-tab.active { background: rgba(0, 198, 251, 0.12); border-color: rgba(0, 198, 251, 0.4); color: #00c6fb; }
@@ -298,7 +214,7 @@
             font-size: 1.15rem;
             color: rgba(0, 198, 251, 0.10);
             filter: drop-shadow(0 0 6px rgba(0, 198, 251, 0.2));
-            z-index: -10;
+            z-index: -100;
             pointer-events: none;
             animation: floatSpace 24s ease-in-out infinite;
         }
@@ -566,38 +482,6 @@
     <div id="custom-cursor" class="hidden lg:block"></div>
     <canvas id="stars-canvas" class="fixed inset-0 w-full h-full -z-10 pointer-events-none"></canvas>
 
-
-    <!-- Шестерёнка (fixed внизу справа) -->
-    <button id="gear-btn" onclick="toggleSettings()" title="Настройки отображения">
-        <i class="fas fa-cog"></i>
-    </button>
-
-    <!-- Overlay панели настроек -->
-    <div id="settings-overlay" onclick="closeSettings()"></div>
-
-    <!-- Панель настроек -->
-    <div id="settings-panel">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-            <div>
-                <div style="font-size:0.95rem;font-weight:700;color:#fff;">Настройки сайта</div>
-                <div style="font-size:0.7rem;color:#475569;margin-top:2px;">Сохраняются в браузере</div>
-            </div>
-            <button onclick="closeSettings()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#64748b;cursor:pointer;font-size:13px;">✕</button>
-        </div>
-        <div class="sp-row">
-            <div><div class="sp-label">✨ Анимации и звёзды</div><div class="sp-sub">Canvas-фон, кометы, плавные переходы</div></div>
-            <label class="sw"><input type="checkbox" id="sw-anim" checked onchange="applySettings()"><span class="sw-track"></span></label>
-        </div>
-        <div class="sp-row">
-            <div><div class="sp-label">💫 Свечение карточек</div><div class="sp-sub">Эффект при наведении на видео</div></div>
-            <label class="sw"><input type="checkbox" id="sw-glow" checked onchange="applySettings()"><span class="sw-track"></span></label>
-        </div>
-        <div class="sp-row">
-            <div><div class="sp-label">🖱 Кастомный курсор</div><div class="sp-sub">Курсор-прицел на десктопе</div></div>
-            <label class="sw"><input type="checkbox" id="sw-cursor" checked onchange="applySettings()"><span class="sw-track"></span></label>
-        </div>
-    </div>
-
     <!-- Навигация -->
     <nav class="fixed w-full z-50 bg-[#010008]/50 backdrop-blur-xl border-b border-white/5">
         <div class="max-w-7xl mx-auto px-6 sm:px-8">
@@ -703,8 +587,7 @@
                     <a href="#contacts" class="px-8 py-4 bg-transparent text-slate-300 border border-white/10 font-semibold rounded-full block hover:bg-white/5 hover:border-cyan-400 transition duration-300 edit-field" data-id="hero_contact_btn">Обсудить проект</a>
                 </div>
                 <div class="neon-btn-container">
-                    <div class="neon-btn-glow" style="background: rgba(168,85,247,0.3);"></div>
-                    <button onclick="openCalcModal()" class="px-8 py-4 bg-transparent text-purple-300 border border-purple-500/30 font-semibold rounded-full block hover:bg-purple-500/10 hover:border-purple-400 transition duration-300 flex items-center gap-2">
+                    <button onclick="openCalcModal()" class="px-8 py-4 bg-transparent text-purple-300 border border-purple-500/30 font-semibold rounded-full hover:bg-purple-500/10 hover:border-purple-400 transition duration-300 flex items-center gap-2">
                         <i class="fas fa-calculator text-sm"></i> Рассчитать стоимость
                     </button>
                 </div>
@@ -1319,6 +1202,23 @@
                 <!-- ===== ВКЛАДКА: ОБЗОР ===== -->
                 <div id="admin-tab-overview" class="admin-tab-content space-y-6">
                     
+                    <!-- Статус системы -->
+                    <div class="relative overflow-hidden rounded-3xl border border-cyan-500/20 p-6" style="background: linear-gradient(135deg, rgba(0,198,251,0.06) 0%, rgba(0,82,212,0.04) 100%);">
+                        <div class="absolute top-0 right-0 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div>
+                                <p class="text-[10px] text-cyan-400 uppercase tracking-[0.2em] font-space font-bold mb-1">Статус систем</p>
+                                <h3 class="text-2xl font-space font-black text-white">SPACE Control Panel</h3>
+                                <p class="text-slate-400 text-xs mt-1">Все системы работают в штатном режиме</p>
+                            </div>
+                            <div class="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
+                                <span class="flex h-2 w-2"><span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
+                                <span class="text-emerald-400 text-xs font-bold font-space uppercase tracking-widest">Онлайн</span>
+                                <span class="text-emerald-400 text-xs font-bold font-space" id="stat-online-systems">5</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Телеметрия — 4 карточки в стиле сайта -->
                     <div>
                         <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-4 flex items-center gap-2"><i class="fas fa-chart-bar text-cyan-400"></i> Телеметрия</p>
@@ -1743,12 +1643,9 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- КАЛЬКУЛЯТОР СТОИМОСТИ                      -->
-    <!-- ═══════════════════════════════════════════ -->
-    <div id="calc-modal" class="fixed inset-0 z-[999999] hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4" onclick="if(event.target===this)closeCalcModal()">
-        <div class="w-full max-w-2xl apple-liquid-glass border border-white/8 rounded-[32px] overflow-hidden max-h-[92vh] flex flex-col">
-            <!-- Шапка -->
+    <!-- КАЛЬКУЛЯТОР СТОИМОСТИ -->
+    <div id="calc-modal" class="fixed inset-0 z-[999998] hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4" onclick="if(event.target===this)closeCalcModal()">
+        <div class="w-full max-w-lg apple-liquid-glass border border-white/8 rounded-[32px] overflow-hidden max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/5 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/25 flex items-center justify-center">
@@ -1761,69 +1658,61 @@
                 </div>
                 <button onclick="closeCalcModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white transition text-sm">✕</button>
             </div>
-
-            <!-- Тело (скролл) -->
             <div class="overflow-y-auto flex-1 px-6 py-5 space-y-5">
-
-                <!-- Выбор пакета -->
+                <!-- Пакет -->
                 <div>
                     <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3">Пакет</div>
-                    <div class="grid grid-cols-3 gap-2" id="calc-packages">
-                        <button onclick="calcSelectPackage('base')" data-pkg="base" class="calc-pkg-btn active-pkg py-3 px-2 rounded-2xl border text-center transition-all duration-200 border-cyan-500/40 bg-cyan-500/10">
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="calcSelectPackage('base')" data-pkg="base" class="calc-pkg-btn calc-pkg-active py-3 px-2 rounded-2xl border border-cyan-500/40 bg-cyan-500/10 text-center transition-all duration-200">
                             <div class="text-xs font-black text-cyan-400 font-space">BASE</div>
                             <div class="text-[10px] text-slate-400 mt-0.5">1000₽/мин</div>
                         </button>
-                        <button onclick="calcSelectPackage('pro')" data-pkg="pro" class="calc-pkg-btn py-3 px-2 rounded-2xl border text-center transition-all duration-200 border-white/8 bg-white/3">
+                        <button onclick="calcSelectPackage('pro')" data-pkg="pro" class="calc-pkg-btn py-3 px-2 rounded-2xl border border-white/8 text-center transition-all duration-200" style="background:rgba(255,255,255,0.02)">
                             <div class="text-xs font-black text-blue-400 font-space">PRO</div>
                             <div class="text-[10px] text-slate-400 mt-0.5">2500₽/мин</div>
                         </button>
-                        <button onclick="calcSelectPackage('premium')" data-pkg="premium" class="calc-pkg-btn py-3 px-2 rounded-2xl border text-center transition-all duration-200 border-white/8 bg-white/3">
+                        <button onclick="calcSelectPackage('premium')" data-pkg="premium" class="calc-pkg-btn py-3 px-2 rounded-2xl border border-white/8 text-center transition-all duration-200" style="background:rgba(255,255,255,0.02)">
                             <div class="text-xs font-black text-purple-400 font-space">PREMIUM</div>
                             <div class="text-[10px] text-slate-400 mt-0.5">4000₽/мин</div>
                         </button>
                     </div>
                 </div>
-
                 <!-- Длительность -->
                 <div>
                     <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3">Длительность итогового видео</div>
                     <div class="flex items-center gap-3">
-                        <button onclick="calcChangeDuration(-30)" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition flex-shrink-0">−</button>
+                        <button onclick="calcChangeDuration(-30)" class="w-9 h-9 rounded-xl border border-white/10 text-white font-bold hover:bg-white/10 transition flex-shrink-0 flex items-center justify-center" style="background:rgba(255,255,255,0.05)">−</button>
                         <div class="flex-1 text-center">
                             <span class="text-2xl font-black text-white font-space" id="calc-dur-display">60</span>
                             <span class="text-slate-400 text-sm ml-1">сек</span>
                         </div>
-                        <button onclick="calcChangeDuration(30)" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition flex-shrink-0">+</button>
+                        <button onclick="calcChangeDuration(30)" class="w-9 h-9 rounded-xl border border-white/10 text-white font-bold hover:bg-white/10 transition flex-shrink-0 flex items-center justify-center" style="background:rgba(255,255,255,0.05)">+</button>
                     </div>
-                    <div class="h-1 rounded-full bg-white/5 mt-3 overflow-hidden">
-                        <div id="calc-dur-bar" class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300" style="width:16%"></div>
+                    <div class="h-1 rounded-full mt-3 overflow-hidden" style="background:rgba(255,255,255,0.05)">
+                        <div id="calc-dur-bar" class="h-full rounded-full transition-all duration-300" style="width:16%;background:linear-gradient(to right,#00c6fb,#3b82f6)"></div>
                     </div>
                 </div>
-
                 <!-- Доп. услуги -->
                 <div>
                     <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3">Дополнительные услуги</div>
                     <div id="calc-options" class="space-y-2"></div>
                 </div>
-
                 <!-- Срочность -->
-                <div class="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/2">
+                <div class="flex items-center justify-between p-4 rounded-2xl border border-white/5" style="background:rgba(255,255,255,0.02)">
                     <div>
                         <div class="text-sm font-semibold text-white">⚡ Срочный запуск</div>
                         <div class="text-[10px] text-slate-500 mt-0.5" id="calc-urgent-label">+75% к стоимости</div>
                     </div>
                     <label class="sw"><input type="checkbox" id="calc-urgent" onchange="calcUpdate()"><span class="sw-track"></span></label>
                 </div>
-
             </div>
-
             <!-- Итог -->
-            <div class="flex-shrink-0 px-6 py-5 border-t border-white/5" style="background:rgba(0,0,0,0.3)">
+            <div class="flex-shrink-0 px-6 py-5 border-t border-white/5" style="background:rgba(0,0,0,0.35)">
                 <div class="flex items-center justify-between mb-4">
                     <div class="text-sm text-slate-400">Итоговая стоимость:</div>
                     <div class="text-2xl font-black text-white font-space" id="calc-total">1 000 ₽</div>
                 </div>
-                <button onclick="calcSendTelegram()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 text-cyan-300 font-bold text-sm hover:from-cyan-500/30 hover:to-blue-500/30 transition duration-300 flex items-center justify-center gap-2">
+                <button onclick="calcSendTelegram()" class="w-full py-3.5 rounded-2xl border border-cyan-500/30 text-cyan-300 font-bold text-sm hover:bg-cyan-500/10 transition duration-300 flex items-center justify-center gap-2" style="background:rgba(0,198,251,0.08)">
                     <i class="fab fa-telegram"></i> Получить расчёт в Telegram
                 </button>
             </div>
@@ -1963,8 +1852,6 @@
             }
         };
 
-
-
         // На десктопе всегда показываем портфолио без классов-аккордеона
         window.addEventListener('resize', () => {
             const container = document.getElementById('portfolio-mobile-container');
@@ -2013,8 +1900,6 @@
             if (modal) modal.classList.add('hidden');
         };
         window.openAdminModal = function() {
-            // Ленивая загрузка кода админки при первом открытии
-            if (!window._adminLoaded) window._loadAdminCode();
             const modal = document.getElementById('admin-modal');
             if (modal) {
                 modal.classList.remove('hidden');
@@ -2084,7 +1969,7 @@
                     }
                     
                     html += `
-                        <div class="flex justify-between items-center py-2.5 px-1 border-b border-white/5 last:border-0 ${isToday ? 'bg-cyan-500/5 rounded-xl' : ''}">
+                        <div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0 ${isToday ? 'px-1 bg-cyan-500/5 rounded-xl ring-1 ring-cyan-500/20 shadow-[0_0_10px_rgba(0,198,251,0.05)]' : 'px-1'}">
                             <span class="text-sm font-semibold text-slate-200 flex items-center">${d.name} ${todayBadge}</span>
                             <span class="text-sm font-semibold">${timeText}</span>
                         </div>
@@ -2240,16 +2125,83 @@
             }
         }
 
-        // Превью только в плеере — hover-автовоспроизведение отключено
-        window.playPreviewVideo = function(caseId) {};
-        window.stopPreviewVideo = function(caseId) {};
+        window.playPreviewVideo = function(caseId) {
+            if (window.innerWidth < 768) return;
+            if (!window.portfolioLinks) return;
+            const baseVideoUrl = window.portfolioLinks[`case${caseId}_video`];
+            if (!baseVideoUrl) return;
+            const iframe = document.getElementById(`case-iframe-${caseId}`);
+            const thumb = document.getElementById(`case-thumb-${caseId}`);
+            const isKs = getKinescopeId(baseVideoUrl);
+            if (isKs) {
+                if (iframe) iframe.classList.remove('opacity-0');
+                if (thumb) thumb.classList.add('opacity-0');
+            } else {
+                stopAllPreviewVideos();
+                if (iframe) {
+                    iframe.src = getEmbedUrl(baseVideoUrl, true);
+                    iframe.classList.remove('opacity-0');
+                    if (thumb) thumb.classList.add('opacity-0');
+                }
+            }
+        };
+
+        window.stopPreviewVideo = function(caseId) {
+            if (window.innerWidth < 768) return;
+            const baseVideoUrl = window.portfolioLinks && window.portfolioLinks[`case${caseId}_video`];
+            const iframe = document.getElementById(`case-iframe-${caseId}`);
+            const thumb = document.getElementById(`case-thumb-${caseId}`);
+            const isKs = getKinescopeId(baseVideoUrl || "");
+            if (isKs) {
+                return;
+            }
+            if (iframe) { iframe.src = ""; iframe.classList.add('opacity-0'); }
+            if (thumb) thumb.classList.remove('opacity-0');
+        };
 
         // Состояния мобильных карточек (первый тап — играть, второй — открыть модалку)
         const mobileTapState = {};
 
         window.handlePortfolioCardClick = function(caseId, event) {
-            // И на мобиле и на десктопе — сразу открываем плеер
-            openVideoForCase(caseId);
+            if (window.innerWidth >= 768) {
+                // Десктоп: просто открываем модалку
+                openVideoForCase(caseId);
+                return;
+            }
+            // Мобиль: первый тап — показать видео, второй — открыть модалку
+            if (!mobileTapState[caseId]) {
+                // Первый тап: запустить видео в карточке
+                event.preventDefault();
+                const iframe = document.getElementById(`case-iframe-${caseId}`);
+                const thumb = document.getElementById(`case-thumb-${caseId}`);
+                const playBtn = document.getElementById(`case-play-btn-${caseId}`);
+                const baseVideoUrl = window.portfolioLinks && window.portfolioLinks[`case${caseId}_video`];
+                if (iframe && baseVideoUrl) {
+                    // Останавливаем все остальные мобильные превью
+                    Object.keys(mobileTapState).forEach(id => {
+                        if (parseInt(id) !== caseId && mobileTapState[id]) {
+                            mobileTapState[id] = false;
+                            const otherIframe = document.getElementById(`case-iframe-${id}`);
+                            const otherThumb = document.getElementById(`case-thumb-${id}`);
+                            const otherBtn = document.getElementById(`case-play-btn-${id}`);
+                            if (otherIframe) { otherIframe.src = ""; otherIframe.classList.add('opacity-0'); }
+                            if (otherThumb) otherThumb.classList.remove('opacity-0');
+                            if (otherBtn) otherBtn.style.display = '';
+                        }
+                    });
+                    iframe.src = getEmbedUrl(baseVideoUrl, true);
+                    iframe.classList.remove('opacity-0');
+                    if (thumb) thumb.classList.add('opacity-0');
+                    if (playBtn) playBtn.style.display = 'none';
+                    mobileTapState[caseId] = true;
+                } else {
+                    openVideoForCase(caseId);
+                }
+            } else {
+                // Второй тап: открыть модалку с полным видео
+                mobileTapState[caseId] = false;
+                openVideoForCase(caseId);
+            }
         };
 
         function stopAllPreviewVideos() {
@@ -2274,16 +2226,16 @@
             setTimeout(() => { comet = new Comet(); planNextComet(); }, delay);
         }
 
-        let animRunning = true;
         function animateBg() {
-            if (!animRunning) return;
             bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
             stars.forEach(star => { star.update(); star.draw(); });
             if (comet && comet.active) { comet.update(); comet.draw(); }
+            
             window.extraComets.forEach((c, i) => {
-                if (c.active) { c.update(); c.draw(); }
+                if (c.active) { c.update(); c.draw(); } 
                 else window.extraComets.splice(i, 1);
             });
+
             requestAnimationFrame(animateBg);
         }
 
@@ -2374,70 +2326,6 @@
         }, { passive: true });
 
         window.addEventListener('resize', resizeCanvas);
-
-        // ── НАСТРОЙКИ ────────────────────────────────────
-        let noGlowStyle = null;
-
-        window.applySettings = function() {
-            const animOn   = document.getElementById('sw-anim')?.checked !== false;
-            const glowOn   = document.getElementById('sw-glow')?.checked !== false;
-            const cursorOn = document.getElementById('sw-cursor')?.checked !== false;
-
-            if (animOn) {
-                document.body.classList.remove('no-anim');
-                if (!animRunning) { animRunning = true; animateBg(); }
-                const canvas = document.getElementById('stars-canvas');
-                if (canvas) { canvas.style.opacity = ''; canvas.style.pointerEvents = ''; }
-            } else {
-                document.body.classList.add('no-anim');
-                animRunning = false;
-                const canvas = document.getElementById('stars-canvas');
-                if (canvas) { canvas.style.opacity = '0'; canvas.style.pointerEvents = 'none'; }
-            }
-
-            if (!glowOn) {
-                if (!noGlowStyle) {
-                    noGlowStyle = document.createElement('style');
-                    noGlowStyle.textContent = '.portfolio-item:hover{box-shadow:0 4px 20px rgba(0,0,0,0.4)!important;}';
-                    document.head.appendChild(noGlowStyle);
-                }
-            } else {
-                if (noGlowStyle) { noGlowStyle.remove(); noGlowStyle = null; }
-            }
-
-            const dot = document.getElementById('cursor-dot');
-            if (dot) dot.style.display = cursorOn ? '' : 'none';
-
-            try {
-                localStorage.setItem('sp_settings', JSON.stringify({ animOn, glowOn, cursorOn }));
-            } catch(e) {}
-        };
-
-        window.toggleSettings = function() {
-            const btn = document.getElementById('gear-btn');
-            btn.classList.add('spinning');
-            setTimeout(() => btn.classList.remove('spinning'), 500);
-            document.getElementById('settings-panel').classList.toggle('open');
-            document.getElementById('settings-overlay').classList.toggle('show');
-        };
-
-        window.closeSettings = function() {
-            document.getElementById('settings-panel').classList.remove('open');
-            document.getElementById('settings-overlay').classList.remove('show');
-        };
-
-        // Загружаем сохранённые настройки
-        (function() {
-            try {
-                const s = JSON.parse(localStorage.getItem('sp_settings') || 'null');
-                if (!s) return;
-                const set = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val; };
-                set('sw-anim',   s.animOn   !== false);
-                set('sw-glow',   s.glowOn   !== false);
-                set('sw-cursor', s.cursorOn !== false);
-                applySettings();
-            } catch(e) {}
-        })();
         
         // Оптимизация: throttle для mousemove
         let moveTicking = false;
@@ -2486,7 +2374,6 @@
 
         // === ДВОЙНОЙ ПАРОЛЬ ДЛЯ ЭКРАНА ТЕХРАБОТ ===
         window.openAdminModalWith2FA = function() {
-            if (!window._adminLoaded) window._loadAdminCode();
             const p1 = document.getElementById("admin-2fa-pass1");
             const p2 = document.getElementById("admin-2fa-pass2");
             if (p1) p1.value = "";
@@ -2684,122 +2571,107 @@
             });
         })();
 
-        // ═══════════════════════════════════════
-        // КАЛЬКУЛЯТОР СТОИМОСТИ
-        // ═══════════════════════════════════════
-        const CALC_PACKAGES = {
-            base: {
-                name: 'BASE', basePrice: 1000, extraPer30: 350, urgentPct: 75,
-                options: [
-                    { id: 'subtitles', label: 'Ключевые слова в субтитрах', price: 300 },
-                    { id: 'sound',     label: 'Базовый Sound Design',       price: 400 },
-                    { id: 'sources',   label: 'Исходники более 15 минут',   price: 500 },
-                ]
-            },
-            pro: {
-                name: 'PRO', basePrice: 2500, extraPer30: 500, urgentPct: 70,
-                options: [
-                    { id: 'sound_deep', label: 'Глубокий Sound Design',     price: 600 },
-                    { id: 'footage',    label: 'Расширенные футажи',         price: 800 },
-                    { id: 'multicam',   label: 'Мультикамерный монтаж',      price: 1000 },
-                    { id: 'infograph',  label: 'Инфографика',                price: 700 },
-                ]
-            },
-            premium: {
-                name: 'PREMIUM', basePrice: 4000, extraPer30: 1200, urgentPct: 100,
-                options: [
-                    { id: 'motion',   label: 'Motion Design',               price: 2000 },
-                    { id: 'tracking', label: 'Tracking объектов',            price: 1000 },
-                    { id: 'script',   label: 'Написание сценария',           price: 2000 },
-                    { id: 'threed',   label: '3D-анимация',                  price: 2500 },
-                    { id: 'formats',  label: 'Адаптация форматов',           price: 1500 },
-                ]
-            }
+        // ── КАЛЬКУЛЯТОР ────────────────────────────────────
+        const _CP = {
+            base:    { name:'BASE',    base:1000, per30:350,  urg:75,  opts:[
+                {id:'sub',  l:'Ключевые слова в субтитрах', p:300},
+                {id:'snd',  l:'Базовый Sound Design',       p:400},
+                {id:'src',  l:'Исходники более 15 минут',   p:500}]},
+            pro:     { name:'PRO',     base:2500, per30:500,  urg:70,  opts:[
+                {id:'snd2', l:'Глубокий Sound Design',      p:600},
+                {id:'ftg',  l:'Расширенные футажи',          p:800},
+                {id:'mc',   l:'Мультикамерный монтаж',       p:1000},
+                {id:'inf',  l:'Инфографика',                 p:700}]},
+            premium: { name:'PREMIUM', base:4000, per30:1200, urg:100, opts:[
+                {id:'mot',  l:'Motion Design',               p:2000},
+                {id:'trk',  l:'Tracking объектов',           p:1000},
+                {id:'scr',  l:'Написание сценария',          p:2000},
+                {id:'trd',  l:'3D-анимация',                 p:2500},
+                {id:'fmt',  l:'Адаптация форматов',          p:1500}]}
         };
-
-        let calcState = { pkg: 'base', duration: 60, options: {}, urgent: false };
+        let _cs = {pkg:'base', dur:60, opts:{}, urg:false};
 
         window.openCalcModal = function() {
             document.getElementById('calc-modal').classList.remove('hidden');
-            calcRenderOptions();
-            calcUpdate();
+            _calcRenderOpts(); _calcUpdate();
         };
         window.closeCalcModal = function() {
             document.getElementById('calc-modal').classList.add('hidden');
         };
         window.calcSelectPackage = function(pkg) {
-            calcState.pkg = pkg;
-            calcState.options = {};
-            document.querySelectorAll('.calc-pkg-btn').forEach(b => b.classList.remove('active-pkg'));
-            const btn = document.querySelector(`[data-pkg="${pkg}"]`);
-            if (btn) btn.classList.add('active-pkg');
-            calcRenderOptions();
-            calcUpdate();
+            _cs.pkg = pkg; _cs.opts = {};
+            document.querySelectorAll('.calc-pkg-btn').forEach(b => {
+                b.classList.remove('calc-pkg-active');
+                b.style.borderColor = 'rgba(255,255,255,0.08)';
+                b.style.background  = 'rgba(255,255,255,0.02)';
+            });
+            const btn = document.querySelector('[data-pkg="'+pkg+'"]');
+            if (btn) { btn.classList.add('calc-pkg-active'); btn.style.borderColor=''; btn.style.background=''; }
+            _calcRenderOpts(); _calcUpdate();
         };
-        window.calcChangeDuration = function(delta) {
-            calcState.duration = Math.max(30, Math.min(600, calcState.duration + delta));
-            document.getElementById('calc-dur-display').textContent = calcState.duration;
-            const pct = Math.min(100, ((calcState.duration - 30) / 570) * 100);
+        window.calcChangeDuration = function(d) {
+            _cs.dur = Math.max(30, Math.min(600, _cs.dur + d));
+            document.getElementById('calc-dur-display').textContent = _cs.dur;
+            const pct = Math.min(100, ((_cs.dur - 30) / 570) * 100);
             document.getElementById('calc-dur-bar').style.width = pct + '%';
-            calcUpdate();
+            _calcUpdate();
         };
-        function calcRenderOptions() {
-            const pkg = CALC_PACKAGES[calcState.pkg];
-            const container = document.getElementById('calc-options');
-            if (!container) return;
-            const urgentLabel = document.getElementById('calc-urgent-label');
-            if (urgentLabel) urgentLabel.textContent = `+${pkg.urgentPct}% к стоимости`;
-            container.innerHTML = pkg.options.map(opt => `
-                <label class="calc-opt-row">
-                    <div>
-                        <div class="text-sm text-white">${opt.label}</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">+${opt.price.toLocaleString('ru')} ₽</div>
-                    </div>
-                    <input type="checkbox" id="calc-opt-${opt.id}" onchange="calcToggleOption('${opt.id}', ${opt.price})" ${calcState.options[opt.id] ? 'checked' : ''}>
-                </label>
-            `).join('');
+        window.calcToggleOpt = function(id, price) {
+            if (_cs.opts[id]) delete _cs.opts[id]; else _cs.opts[id] = price;
+            _calcUpdate();
+        };
+        function _calcRenderOpts() {
+            const pkg = _CP[_cs.pkg];
+            const el = document.getElementById('calc-urgent-label');
+            if (el) el.textContent = '+' + pkg.urg + '% к стоимости';
+            const c = document.getElementById('calc-options');
+            if (!c) return;
+            c.innerHTML = pkg.opts.map(o =>
+                '<label style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);cursor:pointer;margin-bottom:4px">'
+                + '<div><div style="font-size:0.875rem;color:#e2e8f0">'+o.l+'</div>'
+                + '<div style="font-size:10px;color:#475569;margin-top:2px">+'+o.p.toLocaleString('ru')+' ₽</div></div>'
+                + '<input type="checkbox" onchange="calcToggleOpt(\''+o.id+'\','+o.p+')" style="accent-color:#00c6fb;width:16px;height:16px;cursor:pointer" '+((_cs.opts[o.id])?'checked':'')+'>'
+                + '</label>'
+            ).join('');
         }
-        window.calcToggleOption = function(id, price) {
-            if (calcState.options[id]) { delete calcState.options[id]; }
-            else { calcState.options[id] = price; }
-            calcUpdate();
-        };
-        window.calcUpdate = function() {
-            const pkg = CALC_PACKAGES[calcState.pkg];
-            calcState.urgent = document.getElementById('calc-urgent')?.checked || false;
-            let total = pkg.basePrice;
-            if (calcState.duration > 60) {
-                const extra30 = Math.ceil((calcState.duration - 60) / 30);
-                total += extra30 * pkg.extraPer30;
-            }
-            Object.values(calcState.options).forEach(p => total += p);
-            if (calcState.urgent) total = Math.round(total * (1 + pkg.urgentPct / 100));
+        window._calcUpdate = _calcUpdate;
+        function _calcUpdate() {
+            const pkg = _CP[_cs.pkg];
+            _cs.urg = document.getElementById('calc-urgent')?.checked || false;
+            let total = pkg.base;
+            if (_cs.dur > 60) total += Math.ceil((_cs.dur - 60) / 30) * pkg.per30;
+            Object.values(_cs.opts).forEach(p => total += p);
+            if (_cs.urg) total = Math.round(total * (1 + pkg.urg / 100));
             const el = document.getElementById('calc-total');
             if (el) el.textContent = total.toLocaleString('ru') + ' ₽';
             return total;
-        };
+        }
+        window.calcUpdate = _calcUpdate;
         window.calcSendTelegram = function() {
-            const pkg = CALC_PACKAGES[calcState.pkg];
-            const total = calcUpdate();
-            const optLines = Object.keys(calcState.options).map(id => {
-                const opt = pkg.options.find(o => o.id === id);
-                return opt ? `  • ${opt.label}: +${opt.price.toLocaleString('ru')} ₽` : '';
+            const pkg = _CP[_cs.pkg];
+            const total = _calcUpdate();
+            const lines = ['📋 Расчёт стоимости монтажа', '',
+                '📦 Пакет: ' + pkg.name,
+                '⏱ Длительность: ' + _cs.dur + ' сек'];
+            const optLines = Object.keys(_cs.opts).map(id => {
+                const o = pkg.opts.find(x => x.id === id);
+                return o ? '  • ' + o.l + ': +' + o.p.toLocaleString('ru') + ' ₽' : '';
             }).filter(Boolean);
-            const msgParts = [
-                `📋 Расчёт стоимости монтажа`,
-                ``,
-                `📦 Пакет: ${pkg.name}`,
-                `⏱ Длительность: ${calcState.duration} сек`,
-            ];
-            if (optLines.length) { msgParts.push(``, `🔧 Дополнительно:`, ...optLines); }
-            if (calcState.urgent) msgParts.push(`⚡ Срочный запуск: +${pkg.urgentPct}%`);
-            msgParts.push(``, `💰 Итого: ${total.toLocaleString('ru')} ₽`);
-            const msg = encodeURIComponent(msgParts.join('
-'));
+            if (optLines.length) { lines.push('', '🔧 Дополнительно:', ...optLines); }
+            if (_cs.urg) lines.push('⚡ Срочный запуск: +' + pkg.urg + '%');
+            lines.push('', '💰 Итого: ' + total.toLocaleString('ru') + ' ₽');
+            const msg = encodeURIComponent(lines.join('\n'));
             const tgBtn = document.getElementById('tg-btn');
-            const tgBase = tgBtn?.href?.includes('t.me') ? tgBtn.href.split('?')[0] : 'https://t.me/spacevideoagency';
-            window.open(`${tgBase}?text=${msg}`, '_blank');
+            const base = (tgBtn && tgBtn.href && tgBtn.href.includes('t.me'))
+                ? tgBtn.href.split('?')[0] : 'https://t.me/spacevideoagency';
+            window.open(base + '?text=' + msg, '_blank');
         };
+        // CSS для калькулятора
+        (function(){
+            const s = document.createElement('style');
+            s.textContent = '.calc-pkg-active{border-color:rgba(0,198,251,0.5)!important;background:rgba(0,198,251,0.12)!important}';
+            document.head.appendChild(s);
+        })();
     </script>
 
     <!-- ИНТЕГРАЦИЯ С БАЗОЙ ДАННЫХ И CRM -->
@@ -3057,9 +2929,9 @@
                 const iframeSrc = isKinescope ? getEmbedUrl(videoObj.video, false) : "";
                 const iframeOpacity = isKinescope ? "opacity-100" : "opacity-0";
                 return `
-                    <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onclick="handlePortfolioCardClick(${caseId}, event)">
+                    <div class="${cardClass}" data-category="${category}" id="case-card-${caseId}" onmouseenter="playPreviewVideo(${caseId})" onmouseleave="stopPreviewVideo(${caseId})" onclick="handlePortfolioCardClick(${caseId}, event)">
                         <button onclick="triggerPortfolioEdit(${caseId}, event)" class="portfolio-edit-indicator hidden absolute top-4 left-4 z-40 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs py-2 px-4 rounded-full shadow-lg transition"><i class="fas fa-edit"></i> Изменить</button>
-                        <div class="relative overflow-hidden rounded-[24px] border border-white/8 shadow-2xl transition duration-500 group-hover:border-cyan-500/25 ${ratioClass}">
+                        <div class="relative overflow-hidden rounded-[24px] border border-white/5 shadow-2xl transition duration-500 group-hover:border-cyan-500/30 ${ratioClass}">
                             ${imgUrl
                                 ? `<img id="case-thumb-${caseId}" src="${imgUrl}" class="w-full h-full absolute inset-0 object-cover z-0 transition-opacity duration-300" alt="preview" loading="lazy" onerror="this.style.display='none'">`
                                 : `<div id="case-thumb-${caseId}" class="w-full h-full absolute inset-0 z-0 transition-opacity duration-300" style="background:linear-gradient(135deg,#0d0d1a,#0a1628)"></div>`
@@ -4010,31 +3882,6 @@
             return videoUrl;
         }
 
-        // ── ADMIN CODE (lazy) ──────────────────────────────
-        // Код админки загружается только после успешного входа
-        // Заглушки чтобы не было ошибок до загрузки
-        window.addPortfolioVideoFromAdmin = function() { console.warn('Admin not loaded'); };
-        window.renderPortfolioSortGrid   = function() {};
-        window.savePortfolioOrder        = function() {};
-        window.deletePortfolioVideo      = function() {};
-        window._adminLoaded = false;
-        window._loadAdminCode = function() {
-            if (window._adminLoaded) return;
-            window._adminLoaded = true;
-            const raw = document.getElementById('admin-lazy-code').textContent;
-            // Выполняем в контексте module через Blob + dynamic import
-            const blob = new Blob([raw], { type: 'text/javascript' });
-            const url = URL.createObjectURL(blob);
-            import(url).then(() => {
-                URL.revokeObjectURL(url);
-                console.log('✓ Admin code loaded');
-            }).catch(e => console.error('Admin load error:', e));
-        };
-
-    </script>
-
-    <!-- Ленивый код админки — загружается только при входе -->
-    <script type="text/plain" id="admin-lazy-code">
         window.addPortfolioVideoFromAdmin = async function() {
             const videoUrl = document.getElementById('portfolio-add-video-url')?.value.trim();
             const categoryRaw = document.getElementById('portfolio-add-category')?.value.trim().toLowerCase();
@@ -5248,7 +5095,6 @@
         };
 
     </script>
-
 </body>
 </html>
 
