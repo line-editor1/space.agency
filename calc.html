@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPACE — Калькулятор</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            font-family: 'Inter', sans-serif;
+            background: #010008;
+            color: #f8fafc;
+            height: 100%;
+            overflow-x: hidden;
+        }
+        .font-space { font-family: 'Space Grotesk', sans-serif; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #010008; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,198,251,0.25); border-radius: 8px; }
+
+        /* Glass */
+        .glass {
+            background: linear-gradient(135deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.01) 100%);
+            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border-top: 1px solid rgba(255,255,255,0.12);
+            border-left: 1px solid rgba(255,255,255,0.08);
+            border-right: 1px solid rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.01);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+        }
+
+        /* Ambient */
+        .ambient {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse 70% 50% at 20% 10%, rgba(139,92,246,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 60% at 80% 90%, rgba(0,198,251,0.05) 0%, transparent 70%);
+        }
+
+        /* Package buttons */
+        .pkg-btn {
+            padding: 12px 8px; border-radius: 16px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.02);
+            cursor: pointer; transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        .pkg-btn:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+        .pkg-btn.pkg-active-base { border-color: rgba(0,198,251,0.5)!important; background: rgba(0,198,251,0.1)!important; }
+        .pkg-btn.pkg-active-pro  { border-color: rgba(59,130,246,0.5)!important; background: rgba(59,130,246,0.1)!important; }
+        .pkg-btn.pkg-active-premium { border-color: rgba(168,85,247,0.5)!important; background: rgba(168,85,247,0.1)!important; }
+
+        /* Duration ctrl */
+        .dur-btn {
+            width: 36px; height: 36px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            color: white; font-size: 18px; font-weight: 700;
+            cursor: pointer; transition: background 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .dur-btn:hover { background: rgba(255,255,255,0.1); }
+
+        /* Checkbox option */
+        .opt-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 14px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.015);
+            cursor: pointer; transition: border-color 0.2s;
+            margin-bottom: 6px;
+        }
+        .opt-row:hover { border-color: rgba(255,255,255,0.1); }
+        .opt-row input[type=checkbox] { accent-color: #00c6fb; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+
+        /* Switch */
+        .sw { position:relative; display:inline-block; width:42px; height:22px; }
+        .sw input { opacity:0; width:0; height:0; }
+        .sw-track {
+            position:absolute; inset:0; border-radius:999px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+            cursor:pointer; transition:.3s;
+        }
+        .sw-track::before {
+            content:''; position:absolute; width:16px; height:16px; border-radius:50%;
+            background:#94a3b8; left:3px; top:2px; transition:.3s;
+        }
+        .sw input:checked + .sw-track { background:rgba(0,198,251,0.3); border-color:rgba(0,198,251,0.5); }
+        .sw input:checked + .sw-track::before { transform:translateX(20px); background:#00c6fb; }
+
+        /* Promo input */
+        .promo-row { display: flex; gap: 8px; align-items: stretch; }
+        .promo-input {
+            flex: 1; padding: 9px 14px; border-radius: 12px;
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.07);
+            color: white; font-size: 13px; outline: none;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+            transition: border-color 0.2s;
+        }
+        .promo-input:focus { border-color: rgba(0,198,251,0.4); }
+        .promo-input::placeholder { text-transform: none; letter-spacing: normal; font-weight: 400; color: #475569; }
+        .promo-apply {
+            padding: 9px 16px; border-radius: 12px; font-size: 12px; font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            background: rgba(0,198,251,0.12); border: 1px solid rgba(0,198,251,0.25);
+            color: #67e8f9; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .promo-apply:hover { background: rgba(0,198,251,0.2); border-color: rgba(0,198,251,0.4); }
+        .promo-apply:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Discount badge */
+        .discount-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+            background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25);
+            color: #34d399; font-family: 'Space Grotesk', sans-serif;
+        }
+        .discount-badge.error {
+            background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #f87171;
+        }
+
+        /* Total */
+        .total-original {
+            text-decoration: line-through; color: #475569; font-size: 16px;
+            font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+        }
+
+        /* Send button */
+        .btn-send {
+            width: 100%; padding: 14px; border-radius: 16px;
+            font-size: 14px; font-weight: 700; font-family: 'Space Grotesk', sans-serif;
+            border: 1px solid rgba(0,198,251,0.3);
+            background: rgba(0,198,251,0.08);
+            color: #67e8f9; cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-send:hover {
+            background: rgba(0,198,251,0.16); border-color: rgba(0,198,251,0.5);
+            transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,198,251,0.15);
+        }
+
+        /* Section label */
+        .sec-label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em;
+            font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+            color: #475569; margin-bottom: 10px;
+        }
+
+        /* Toast */
+        #toast { 
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            z-index: 999; padding: 10px 18px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; font-family: 'Space Grotesk', sans-serif;
+            backdrop-filter: blur(20px); transition: all 0.3s;
+            pointer-events: none; opacity: 0;
+        }
+        #toast.show { opacity: 1; }
+        #toast.success { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+        #toast.error   { background: rgba(239,68,68,0.2);  border: 1px solid rgba(239,68,68,0.3);  color: #fca5a5; }
+        #toast.info    { background: rgba(0,198,251,0.15); border: 1px solid rgba(0,198,251,0.3);  color: #7dd3fc; }
+
+        /* Progress bar */
+        #dur-bar-fill { transition: width 0.3s cubic-bezier(0.16,1,0.3,1); }
+
+        /* Bottom Sheet */
+        .bs-backdrop {
+            position: fixed; inset: 0; z-index: 900;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+        .bs-backdrop.bs-open { opacity: 1; pointer-events: all; }
+
+        .bs-sheet {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 901;
+            background: linear-gradient(135deg, rgba(15,15,30,0.97) 0%, rgba(5,5,15,0.99) 100%);
+            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border-top: 1px solid rgba(255,255,255,0.12);
+            border-left: 1px solid rgba(255,255,255,0.06);
+            border-right: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px 24px 0 0;
+            padding: 24px 20px 32px;
+            box-shadow: 0 -20px 60px rgba(0,0,0,0.6);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+        .bs-sheet.bs-open { transform: translateY(0); }
+
+        .bs-handle {
+            width: 36px; height: 4px; border-radius: 2px;
+            background: rgba(255,255,255,0.15);
+            margin: 0 auto 20px;
+        }
+        .bs-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px; font-weight: 700; color: white;
+            margin-bottom: 8px; line-height: 1.4;
+        }
+        .bs-sub {
+            font-size: 12px; color: #64748b; margin-bottom: 22px; line-height: 1.5;
+        }
+        .bs-btns { display: flex; flex-direction: column; gap: 10px; }
+        .bs-btn-primary {
+            width: 100%; padding: 13px; border-radius: 14px;
+            font-size: 13px; font-weight: 700; font-family: 'Space Grotesk', sans-serif;
+            background: rgba(0,198,251,0.12); border: 1px solid rgba(0,198,251,0.3);
+            color: #67e8f9; cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .bs-btn-primary:hover { background: rgba(0,198,251,0.22); border-color: rgba(0,198,251,0.5); transform: translateY(-1px); }
+        .bs-btn-secondary {
+            width: 100%; padding: 13px; border-radius: 14px;
+            font-size: 13px; font-weight: 600; font-family: 'Space Grotesk', sans-serif;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            color: #64748b; cursor: pointer;
+            transition: all 0.25s;
+        }
+        .bs-btn-secondary:hover { background: rgba(255,255,255,0.07); color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<div class="ambient"></div>
+<div id="toast"></div>
+
+<div style="position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;">
+
+    <!-- Header -->
+    <div style="padding:20px 20px 0;flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <div style="width:32px;height:32px;border-radius:10px;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-calculator" style="color:#c084fc;font-size:13px;"></i>
+            </div>
+            <div>
+                <div class="font-space" style="font-size:15px;font-weight:800;color:white;">Калькулятор стоимости</div>
+                <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:0.18em;font-family:'Space Grotesk',sans-serif;">Монтаж видео · SPACE</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div style="flex:1;overflow-y:auto;padding:16px 20px 20px;">
+
+        <!-- Пакет -->
+        <div style="margin-bottom:20px;">
+            <div class="sec-label">Пакет</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+                <button class="pkg-btn pkg-active-base" data-pkg="base" onclick="selectPkg('base')">
+                    <div class="font-space" style="font-size:11px;font-weight:900;color:#22d3ee;">BASE</div>
+                    <div id="pkg-price-base" style="font-size:10px;color:#64748b;margin-top:3px;">1 000₽</div>
+                </button>
+                <button class="pkg-btn" data-pkg="pro" onclick="selectPkg('pro')">
+                    <div class="font-space" style="font-size:11px;font-weight:900;color:#60a5fa;">PRO</div>
+                    <div id="pkg-price-pro" style="font-size:10px;color:#64748b;margin-top:3px;">2 500₽</div>
+                </button>
+                <button class="pkg-btn" data-pkg="premium" onclick="selectPkg('premium')">
+                    <div class="font-space" style="font-size:11px;font-weight:900;color:#c084fc;">PREMIUM</div>
+                    <div id="pkg-price-premium" style="font-size:10px;color:#64748b;margin-top:3px;">4 000₽</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Длительность -->
+        <div style="margin-bottom:20px;">
+            <div class="sec-label">Длительность итогового видео</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="dur-btn" onclick="changeDur(-30)">−</button>
+                <div style="flex:1;text-align:center;">
+                    <span class="font-space" id="dur-display" style="font-size:26px;font-weight:900;color:white;">60</span>
+                    <span style="color:#64748b;font-size:13px;margin-left:4px;">сек</span>
+                </div>
+                <button class="dur-btn" onclick="changeDur(30)">+</button>
+            </div>
+            <div style="height:4px;border-radius:4px;background:rgba(255,255,255,0.05);overflow:hidden;margin-top:10px;">
+                <div id="dur-bar-fill" style="height:100%;border-radius:4px;width:8%;background:linear-gradient(90deg,#00c6fb,#3b82f6);"></div>
+            </div>
+        </div>
+
+        <!-- Доп. услуги -->
+        <div style="margin-bottom:20px;">
+            <div class="sec-label">Дополнительные услуги</div>
+            <div id="opts-container"></div>
+        </div>
+
+        <!-- Срочность -->
+        <div style="margin-bottom:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);">
+                <div>
+                    <div style="font-size:13px;font-weight:600;color:white;">⚡ Срочный запуск</div>
+                    <div id="urgent-label" style="font-size:10px;color:#64748b;margin-top:2px;">+75% к стоимости</div>
+                </div>
+                <label class="sw"><input type="checkbox" id="urgent-check" onchange="calcUpdate()"><span class="sw-track"></span></label>
+            </div>
+        </div>
+
+        <!-- ПРОМОКОД -->
+        <div style="margin-bottom:20px;">
+            <div class="sec-label"><i class="fas fa-tag" style="color:#a78bfa;margin-right:5px;"></i>Промокод</div>
+            <div class="promo-row">
+                <input type="text" id="promo-input" class="promo-input" placeholder="Введите промокод"
+                       oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')applyPromo()">
+                <button id="promo-btn" class="promo-apply" onclick="applyPromo()">Применить</button>
+            </div>
+            <div id="promo-status" style="margin-top:8px;min-height:20px;"></div>
+        </div>
+
+    </div>
+
+    <!-- Footer: итог + кнопка -->
+    <div style="flex-shrink:0;padding:0 20px 20px;">
+        <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+                <div style="font-size:12px;color:#64748b;">Итоговая стоимость:</div>
+                <div style="text-align:right;">
+                    <div id="total-original" class="total-original" style="display:none;"></div>
+                    <div class="font-space" id="total-display" style="font-size:24px;font-weight:900;color:white;">1 000 ₽</div>
+                </div>
+            </div>
+            <button class="btn-send" onclick="sendToTelegram()">
+                <i class="fab fa-telegram"></i> Получить расчёт в Telegram
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══ FIREBASE + ЛОГИКА ══════════════════════════════════════════ -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, getDocs, collection,
+             query, where, updateDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // ─── CONFIG ───────────────────────────────────────────────────────
+    let FB_CONFIG = {
+        apiKey: "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s",
+        authDomain: "space-video-agency.firebaseapp.com",
+        projectId: "space-video-agency",
+        storageBucket: "space-video-agency.firebasestorage.app",
+        messagingSenderId: "591140214223",
+        appId: "1:591140214223:web:7bc45a81f66a7181f8eeba"
+    };
+    try { const s = localStorage.getItem('space_firebase_config'); if(s) FB_CONFIG = JSON.parse(s); } catch(e) {}
+
+    const APP_ID = 'space-video-agency';
+    const app  = initializeApp(FB_CONFIG);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    async function ensureAuth() {
+        if (!auth.currentUser) await signInAnonymously(auth);
+    }
+
+    // ─── CALC CONFIG (_CP) ────────────────────────────────────────────
+    const _CP_DEFAULT = {
+        base:    { name:'BASE',    base:1000, per30:350,  urg:75,  opts:[
+            {id:'sub',  l:'Ключевые слова в субтитрах', p:300},
+            {id:'snd',  l:'Базовый Sound Design',       p:400},
+            {id:'src',  l:'Исходники более 15 минут',   p:500}]},
+        pro:     { name:'PRO',     base:2500, per30:500,  urg:70,  opts:[
+            {id:'snd2', l:'Глубокий Sound Design',      p:600},
+            {id:'ftg',  l:'Расширенные футажи',          p:800},
+            {id:'mc',   l:'Мультикамерный монтаж',       p:1000},
+            {id:'inf',  l:'Инфографика',                 p:700}]},
+        premium: { name:'PREMIUM', base:4000, per30:1200, urg:100, opts:[
+            {id:'mot',  l:'Motion Design',               p:2000},
+            {id:'trk',  l:'Tracking объектов',           p:1000},
+            {id:'scr',  l:'Написание сценария',          p:2000},
+            {id:'trd',  l:'3D-анимация',                 p:2500},
+            {id:'fmt',  l:'Адаптация форматов',          p:1500}]}
+    };
+
+    let _CP = JSON.parse(JSON.stringify(_CP_DEFAULT));
+    let _calcTgLink = '';
+
+    // Загружаем конфиг: сначала localStorage, потом Firebase
+    async function loadCalcConfig() {
+        try {
+            const saved = localStorage.getItem('space_calc_config');
+            if (saved) { const p = JSON.parse(saved); Object.assign(_CP, p); _calcTgLink = p.calcTgLink || ''; }
+        } catch(e) {}
+        try {
+            await ensureAuth();
+            const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calc_config', 'main'));
+            if (snap.exists()) {
+                const data = snap.data();
+                ['base','pro','premium'].forEach(pk => { if (data[pk]) Object.assign(_CP[pk], data[pk]); });
+                if (data.calcTgLink) _calcTgLink = data.calcTgLink;
+            }
+        } catch(e) {}
+        // Обновляем цены на кнопках
+        ['base','pro','premium'].forEach(pk => {
+            const el = document.getElementById('pkg-price-' + pk);
+            if (el && _CP[pk]) el.textContent = _CP[pk].base.toLocaleString('ru') + '₽';
+        });
+        renderOpts();
+        calcUpdate();
+    }
+    loadCalcConfig();
+
+    // ─── CALC STATE ───────────────────────────────────────────────────
+    const _cs = { pkg:'base', dur:60, opts:{} };
+
+    // ─── PROMO STATE ──────────────────────────────────────────────────
+    let _promo = null; // { code, discountType, discountValue, docId }
+
+    // ─── RENDER OPTS ──────────────────────────────────────────────────
+    function renderOpts() {
+        const pkg = _CP[_cs.pkg];
+        const el = document.getElementById('opts-container');
+        const urgEl = document.getElementById('urgent-label');
+        if (urgEl) urgEl.textContent = '+' + pkg.urg + '% к стоимости';
+        if (!el) return;
+        if (!pkg.opts || !pkg.opts.length) {
+            el.innerHTML = '<p style="font-size:12px;color:#334155;padding:8px 0;">Нет дополнительных услуг для этого пакета</p>';
+            return;
+        }
+        el.innerHTML = pkg.opts.map(o => `
+            <label class="opt-row">
+                <div>
+                    <div style="font-size:13px;color:#e2e8f0;">${o.l}</div>
+                    <div style="font-size:10px;color:#475569;margin-top:2px;">+${o.p.toLocaleString('ru')} ₽</div>
+                </div>
+                <input type="checkbox" onchange="toggleOpt('${o.id}',${o.p})" ${_cs.opts[o.id]?'checked':''}>
+            </label>
+        `).join('');
+    }
+
+    // ─── CALC UPDATE ──────────────────────────────────────────────────
+    function calcUpdate() {
+        const pkg = _CP[_cs.pkg];
+        const urgent = document.getElementById('urgent-check')?.checked || false;
+        let total = pkg.base;
+        if (_cs.dur > 60) total += Math.ceil((_cs.dur - 60) / 30) * pkg.per30;
+        Object.values(_cs.opts).forEach(p => total += p);
+        if (urgent) total = Math.round(total * (1 + pkg.urg / 100));
+
+        const origEl = document.getElementById('total-original');
+        const totEl  = document.getElementById('total-display');
+
+        if (_promo) {
+            let disc = 0;
+            if (_promo.discountType === 'percent') disc = Math.round(total * _promo.discountValue / 100);
+            else disc = Math.min(_promo.discountValue, total);
+            const afterDisc = Math.max(0, total - disc);
+            if (origEl) { origEl.textContent = total.toLocaleString('ru') + ' ₽'; origEl.style.display = 'block'; }
+            if (totEl)  totEl.textContent = afterDisc.toLocaleString('ru') + ' ₽';
+            return { base: total, final: afterDisc, disc };
+        } else {
+            if (origEl) origEl.style.display = 'none';
+            if (totEl)  totEl.textContent = total.toLocaleString('ru') + ' ₽';
+            return { base: total, final: total, disc: 0 };
+        }
+    }
+
+    // ─── SELECT PKG ───────────────────────────────────────────────────
+    window.selectPkg = function(pkg) {
+        _cs.pkg = pkg; _cs.opts = {};
+        document.querySelectorAll('.pkg-btn').forEach(b => {
+            b.className = 'pkg-btn';
+            const bp = b.getAttribute('data-pkg');
+            if (bp === pkg) b.classList.add('pkg-active-' + pkg);
+        });
+        renderOpts(); calcUpdate();
+    };
+
+    // ─── CHANGE DUR ───────────────────────────────────────────────────
+    window.changeDur = function(d) {
+        _cs.dur = Math.max(30, Math.min(600, _cs.dur + d));
+        document.getElementById('dur-display').textContent = _cs.dur;
+        const pct = Math.min(100, ((_cs.dur - 30) / 570) * 100);
+        document.getElementById('dur-bar-fill').style.width = pct + '%';
+        calcUpdate();
+        // Уведомление при максимальной длительности
+        if (_cs.dur === 600 && !_maxDurNotified) {
+            _maxDurNotified = true;
+            setTimeout(() => bsOpen('bs-dur-sheet', 'bs-dur-backdrop'), 300);
+        }
+    };
+
+    // ─── TOGGLE OPT ───────────────────────────────────────────────────
+    window.toggleOpt = function(id, price) {
+        if (_cs.opts[id]) delete _cs.opts[id]; else _cs.opts[id] = price;
+        calcUpdate();
+    };
+
+    window.calcUpdate = calcUpdate;
+
+    // ─── APPLY PROMO ──────────────────────────────────────────────────
+    window.applyPromo = async function() {
+        const code = document.getElementById('promo-input').value.trim().toUpperCase();
+        const statusEl = document.getElementById('promo-status');
+        const btn = document.getElementById('promo-btn');
+
+        if (!code) { showToast('Введите промокод', 'error'); return; }
+
+        btn.disabled = true;
+        btn.textContent = '...';
+        _promo = null;
+        calcUpdate();
+
+        try {
+            await ensureAuth();
+            const q = query(
+                collection(db, 'artifacts', APP_ID, 'public', 'data', 'promo_codes'),
+                where('code', '==', code)
+            );
+            const snap = await getDocs(q);
+
+            if (snap.empty) {
+                statusEl.innerHTML = '<div class="discount-badge error"><i class="fas fa-times-circle"></i>Промокод не найден</div>';
+                btn.disabled = false; btn.textContent = 'Применить';
+                return;
+            }
+
+            const promoDoc = snap.docs[0];
+            const promo = promoDoc.data();
+            const now = new Date();
+
+            // Проверка лимита
+            let valid = true;
+            let reason = '';
+            if (promo.limitType === 'count') {
+                if (promo.usedCount >= promo.limitValue) { valid = false; reason = 'Промокод исчерпан'; }
+            } else if (promo.limitType === 'date') {
+                if (now > new Date(promo.limitValue)) { valid = false; reason = 'Срок действия истёк'; }
+            }
+
+            if (!valid) {
+                statusEl.innerHTML = `<div class="discount-badge error"><i class="fas fa-times-circle"></i>${reason}</div>`;
+                btn.disabled = false; btn.textContent = 'Применить';
+                return;
+            }
+
+            // Применяем
+            _promo = {
+                code: promo.code,
+                discountType: promo.discountType,
+                discountValue: promo.discountValue,
+                docId: promoDoc.id
+            };
+
+            const discLabel = promo.discountType === 'percent'
+                ? `−${promo.discountValue}%`
+                : `−${promo.discountValue.toLocaleString('ru')} ₽`;
+
+            statusEl.innerHTML = `<div class="discount-badge"><i class="fas fa-check-circle"></i>Промокод применён · <strong>${discLabel}</strong></div>`;
+            calcUpdate();
+            showToast('Промокод применён!', 'success');
+
+        } catch(e) {
+            statusEl.innerHTML = '<div class="discount-badge error"><i class="fas fa-exclamation-circle"></i>Ошибка проверки</div>';
+            console.error(e);
+        }
+
+        btn.disabled = false; btn.textContent = 'Применить';
+    };
+
+    // ─── SEND TO TELEGRAM ─────────────────────────────────────────────
+    window.sendToTelegram = async function() {
+        // Если активирован промокод — сначала показываем подтверждение
+        if (_promo && _promo.docId) {
+            // Обновляем текст bottom sheet
+            const textEl = document.getElementById('bs-promo-text');
+            if (textEl) textEl.innerHTML = `Промокод <strong style="color:#67e8f9;font-family:'Space Grotesk',sans-serif;">${_promo.code}</strong> считается использованным после перехода в Telegram. Это действие нельзя отменить.`;
+            // Сохраняем действие
+            _pendingTgAction = doSendToTelegram;
+            bsOpen('bs-promo-sheet', 'bs-promo-backdrop');
+            return;
+        }
+        await doSendToTelegram();
+    };
+
+    async function doSendToTelegram() {
+        const pkg = _CP[_cs.pkg];
+        const { base: totalBase, final: totalFinal, disc } = calcUpdate();
+        const urgent = document.getElementById('urgent-check')?.checked || false;
+
+        const lines = [
+            '📋 Расчёт стоимости монтажа', '',
+            '📦 Пакет: ' + pkg.name,
+            '⏱ Длительность: ' + _cs.dur + ' сек'
+        ];
+
+        const optLines = Object.keys(_cs.opts).map(id => {
+            const o = pkg.opts.find(x => x.id === id);
+            return o ? '  • ' + o.l + ': +' + o.p.toLocaleString('ru') + ' ₽' : '';
+        }).filter(Boolean);
+        if (optLines.length) { lines.push('', '🔧 Дополнительно:', ...optLines); }
+        if (urgent) lines.push('⚡ Срочный запуск: +' + pkg.urg + '%');
+
+        if (_promo) {
+            const discLabel = _promo.discountType === 'percent'
+                ? `−${_promo.discountValue}%`
+                : `−${_promo.discountValue.toLocaleString('ru')} ₽`;
+            lines.push('', `🏷 Промокод: ${_promo.code} (${discLabel})`);
+            lines.push('💰 Стоимость без скидки: ' + totalBase.toLocaleString('ru') + ' ₽');
+            lines.push('✅ Итого со скидкой: ' + totalFinal.toLocaleString('ru') + ' ₽');
+
+            // Инкрементируем счётчик активаций — только один раз
+            if (_promo.docId) {
+                try {
+                    await ensureAuth();
+                    await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'promo_codes', _promo.docId), {
+                        usedCount: increment(1)
+                    });
+                    _promo.docId = null; // сбрасываем — повторный клик не считается
+                } catch(e) { console.warn('Promo increment failed:', e); }
+            }
+
+        } else {
+            lines.push('', '💰 Итого: ' + totalFinal.toLocaleString('ru') + ' ₽');
+        }
+
+        const msg = encodeURIComponent(lines.join('\n'));
+        const base = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
+        window.open(base + '?text=' + msg, '_blank');
+    }
+
+    // ─── TOAST ────────────────────────────────────────────────────────
+    let _toastTimer;
+    function showToast(msg, type = 'info') {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = `show ${type}`;
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => { el.className = type; }, 3000);
+    }
+    window.showToast = showToast;
+
+    // ─── BOTTOM SHEET HELPERS ─────────────────────────────────────────
+    function bsOpen(sheetId, backdropId) {
+        document.getElementById(sheetId).classList.add('bs-open');
+        document.getElementById(backdropId).classList.add('bs-open');
+        document.body.style.overflow = 'hidden';
+    }
+    function bsClose(sheetId, backdropId) {
+        document.getElementById(sheetId).classList.remove('bs-open');
+        document.getElementById(backdropId).classList.remove('bs-open');
+        document.body.style.overflow = '';
+    }
+
+    // ─── BOTTOM SHEET: ПРОМОКОД ───────────────────────────────────────
+    let _pendingTgAction = null; // функция, которая реально откроет TG
+
+    window.bsPromoCancel = function() {
+        bsClose('bs-promo-sheet', 'bs-promo-backdrop');
+        _pendingTgAction = null;
+    };
+
+    window.bsPromoConfirm = async function() {
+        bsClose('bs-promo-sheet', 'bs-promo-backdrop');
+        if (_pendingTgAction) { await _pendingTgAction(); _pendingTgAction = null; }
+    };
+
+    // ─── BOTTOM SHEET: ДЛИТЕЛЬНОСТЬ ──────────────────────────────────
+    let _maxDurNotified = false;
+
+    window.bsDurClose = function(action) {
+        bsClose('bs-dur-sheet', 'bs-dur-backdrop');
+        if (action === 'tg') {
+            const base = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
+            window.open(base, '_blank');
+        }
+    };
+</script>
+
+<!-- ══ BOTTOM SHEET: промокод подтверждение ══════════════════════ -->
+<div id="bs-promo-backdrop" class="bs-backdrop" onclick="bsPromoCancel()"></div>
+<div id="bs-promo-sheet" class="bs-sheet">
+    <div class="bs-handle"></div>
+    <div class="bs-title">🏷 Промокод будет активирован</div>
+    <div class="bs-sub" id="bs-promo-text">Промокод <strong style="color:#67e8f9;font-family:'Space Grotesk',sans-serif;"></strong> считается использованным после перехода в Telegram. Это действие нельзя отменить.</div>
+    <div class="bs-btns">
+        <button class="bs-btn-primary" onclick="bsPromoConfirm()"><i class="fab fa-telegram"></i> Перейти в Telegram</button>
+        <button class="bs-btn-secondary" onclick="bsPromoCancel()">Отмена — остаться здесь</button>
+    </div>
+</div>
+
+<!-- ══ BOTTOM SHEET: максимальная длительность ══════════════════ -->
+<div id="bs-dur-backdrop" class="bs-backdrop" onclick="bsDurClose('stay')"></div>
+<div id="bs-dur-sheet" class="bs-sheet">
+    <div class="bs-handle"></div>
+    <div class="bs-title">⏱ Большая длительность видео</div>
+    <div class="bs-sub">Для видео такой длины стоимость лучше обсудить напрямую — учтём все детали и дадим точный расчёт.</div>
+    <div class="bs-btns">
+        <button class="bs-btn-primary" onclick="bsDurClose('tg')"><i class="fab fa-telegram"></i> Написать в Telegram</button>
+        <button class="bs-btn-secondary" onclick="bsDurClose('stay')">Продолжить здесь</button>
+    </div>
+</div>
+
+</body>
+</html>

@@ -398,6 +398,24 @@
             border: 2px solid #010008;
         }
     </style>
+    <style>
+        /* ── МОБИЛЬНАЯ ОПТИМИЗАЦИЯ ─────────────────────── */
+        @media (max-width: 767px) {
+            /* Убираем тяжёлые blur-тени на декоративных элементах */
+            .blur-3xl { filter: blur(20px) !important; }
+            .blur-2xl { filter: blur(12px) !important; }
+            .blur-xl  { filter: blur(8px)  !important; }
+            /* Отключаем декоративные круглые пятна с blur */
+            [class*="rounded-full"][class*="blur"] { display: none !important; }
+            /* Упрощаем backdrop-blur на модалках */
+            .backdrop-blur-xl  { --tw-backdrop-blur: blur(8px) !important; }
+            .backdrop-blur-md  { --tw-backdrop-blur: blur(4px) !important; }
+            /* Убираем hover-тени (на мобилках hover нет) */
+            [class*="hover:shadow"] { --tw-shadow: none; }
+            /* Астронавт — скрываем на маленьких экранах */
+            .bg-astronaut { display: none !important; }
+        }
+    </style>
 </head>
 <body class="relative">
 
@@ -1197,6 +1215,12 @@
                     <button onclick="switchAdminTab('calculator')" data-tab="calculator" class="admin-nav-tab flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-space transition-all duration-300 text-slate-400 hover:text-white">
                         <i class="fas fa-calculator text-xs"></i> Калькулятор
                     </button>
+                    <button onclick="switchAdminTab('promos')" data-tab="promos" class="admin-nav-tab flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-space transition-all duration-300 text-slate-400 hover:text-white">
+                        <i class="fas fa-tag text-xs"></i> Промокоды
+                    </button>
+                    <button onclick="window.open('montage.html','_blank')" class="admin-nav-tab flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-space transition-all duration-300 text-slate-400 hover:text-white">
+                        <i class="fas fa-cut text-xs"></i> Монтажёры
+                    </button>
                     <button onclick="switchAdminTab('settings')" data-tab="settings" class="admin-nav-tab flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold font-space transition-all duration-300 text-slate-400 hover:text-white">
                         <i class="fas fa-cog text-xs"></i> Настройки
                     </button>
@@ -1273,6 +1297,18 @@
                                 </div>
                                 <span class="text-white font-bold text-xs font-space text-center leading-tight">База<br>JSON</span>
                             </button>
+                            <button onclick="window.open('montage.html','_blank')" class="group flex flex-col items-center gap-3 p-5 rounded-2xl border border-violet-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(139,92,246,0.15)] hover:border-violet-500/40" style="background: rgba(255,255,255,0.03);">
+                                <div class="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center group-hover:bg-violet-500/20 transition">
+                                    <i class="fas fa-cut text-violet-400 text-sm"></i>
+                                </div>
+                                <span class="text-white font-bold text-xs font-space text-center leading-tight">Кабинет<br>Монтажёра</span>
+                            </button>
+                            <button onclick="window.open('chat.html','_blank')" class="group flex flex-col items-center gap-3 p-5 rounded-2xl border border-emerald-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(16,185,129,0.15)] hover:border-emerald-500/40" style="background: rgba(255,255,255,0.03);">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/20 transition">
+                                    <i class="fas fa-comments text-emerald-400 text-sm"></i>
+                                </div>
+                                <span class="text-white font-bold text-xs font-space text-center leading-tight">Мессен-<br>джер</span>
+                            </button>
                         </div>
                     </div>
 
@@ -1337,6 +1373,12 @@
                                 <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Стоимость (₽)</label>
                                 <input type="number" id="crm-new-price" placeholder="3000" class="w-full bg-white/5 border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 font-mono transition placeholder-slate-600">
                             </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space flex items-center gap-1.5"><i class="fas fa-cut text-violet-400"></i> Привязать к монтажёру</label>
+                            <select id="crm-new-editor" class="w-full bg-white/5 border border-violet-500/20 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-violet-500/60 transition appearance-none cursor-pointer" style="background-color: rgba(139,92,246,0.05);">
+                                <option value="" class="bg-slate-900 text-slate-400">— не назначен —</option>
+                            </select>
                         </div>
                         <button onclick="addClientProject()" class="w-full py-4 font-bold rounded-2xl text-sm font-space uppercase tracking-wider transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_25px_rgba(0,198,251,0.2)]" style="background: linear-gradient(135deg, rgba(0,198,251,0.3) 0%, rgba(79,172,254,0.1) 100%); border-top: 1px solid rgba(255,255,255,0.3); border-left: 1px solid rgba(255,255,255,0.15); color: white;">
                             <i class="fas fa-satellite-dish mr-2"></i> Создать кабинет & Ключ доступа
@@ -1697,10 +1739,87 @@
 
                 </div>
 
+                <!-- ===== ВКЛАДКА: ПРОМОКОДЫ ===== -->
+                <div id="admin-tab-promos" class="admin-tab-content hidden space-y-6">
+
+                    <!-- Заголовок -->
+                    <div class="relative overflow-hidden rounded-3xl border border-violet-500/20 p-7" style="background:linear-gradient(135deg,rgba(139,92,246,0.07) 0%,rgba(0,82,212,0.04) 100%);">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-violet-500/15 border border-violet-500/25 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-tag text-violet-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-violet-400 uppercase tracking-[0.2em] font-space font-bold mb-0.5">Управление</p>
+                                <h3 class="text-xl font-space font-black text-white">Промокоды</h3>
+                                <p class="text-slate-500 text-xs mt-0.5">Создавайте скидочные коды для клиентов</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Форма создания -->
+                    <div class="rounded-3xl border border-white/5 p-6 space-y-5" style="background:rgba(255,255,255,0.025)">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold flex items-center gap-2"><i class="fas fa-plus-circle text-violet-400"></i> Создать промокод</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[9px] text-slate-600 uppercase tracking-widest mb-1.5 font-space font-bold">Код</label>
+                                <input type="text" id="promo-admin-code" placeholder="SUMMER25"
+                                    oninput="this.value=this.value.toUpperCase()"
+                                    class="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-white font-mono font-bold tracking-widest text-sm focus:outline-none focus:border-violet-500/60 transition placeholder:text-slate-700 placeholder:font-normal placeholder:tracking-normal">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] text-slate-600 uppercase tracking-widest mb-1.5 font-space font-bold">Тип скидки</label>
+                                <select id="promo-admin-disc-type" onchange="updatePromoAdminUI()"
+                                    class="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-violet-500/60 transition">
+                                    <option value="percent">Процент (%)</option>
+                                    <option value="rub">Фиксированная сумма (₽)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[9px] text-slate-600 uppercase tracking-widest mb-1.5 font-space font-bold" id="promo-admin-disc-label">Размер скидки (%)</label>
+                                <input type="number" id="promo-admin-disc-value" placeholder="15" min="1"
+                                    class="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-violet-500/60 transition placeholder:text-slate-700">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] text-slate-600 uppercase tracking-widest mb-1.5 font-space font-bold">Ограничение</label>
+                                <select id="promo-admin-limit-type" onchange="updatePromoAdminUI()"
+                                    class="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-violet-500/60 transition">
+                                    <option value="count">По числу активаций</option>
+                                    <option value="date">По дате</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[9px] text-slate-600 uppercase tracking-widest mb-1.5 font-space font-bold" id="promo-admin-limit-label">Количество активаций</label>
+                                <input type="text" id="promo-admin-limit-value" placeholder="100"
+                                    class="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-violet-500/60 transition placeholder:text-slate-700">
+                            </div>
+                        </div>
+
+                        <button onclick="createPromoCode()"
+                            class="w-full py-3.5 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                            style="background:linear-gradient(135deg,rgba(139,92,246,0.4) 0%,rgba(79,70,229,0.2) 100%);border-top:1px solid rgba(255,255,255,0.18);border-left:1px solid rgba(255,255,255,0.1);color:white;">
+                            <i class="fas fa-plus text-xs"></i> Создать промокод
+                        </button>
+                    </div>
+
+                    <!-- Список активных промокодов -->
+                    <div class="rounded-3xl border border-white/5 p-6 space-y-4" style="background:rgba(255,255,255,0.025)">
+                        <div class="flex items-center justify-between">
+                            <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold flex items-center gap-2"><i class="fas fa-list text-violet-400"></i> Активные промокоды</p>
+                            <button onclick="loadPromoCodes()" class="text-[10px] text-slate-600 hover:text-cyan-400 transition font-space font-bold">
+                                <i class="fas fa-sync-alt mr-1"></i>Обновить
+                            </button>
+                        </div>
+                        <div id="promo-admin-list">
+                            <div class="text-center py-8"><i class="fas fa-spinner fa-spin text-violet-500/30 text-2xl"></i></div>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
         </div>
-    </div>
-    <div id="editor-modal" class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+    </div> class="fixed inset-0 z-[1000000] hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
         <div class="w-full max-w-lg apple-liquid-glass p-8 border border-cyan-500/20">
             <h3 class="text-xl font-bold text-white mb-6">Редактировать текстовый блок</h3>
             <textarea id="editor-text-input" rows="5" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-cyan-500 mb-6"></textarea>
@@ -1711,79 +1830,12 @@
         </div>
     </div>
 
-    <!-- КАЛЬКУЛЯТОР СТОИМОСТИ -->
+    <!-- КАЛЬКУЛЯТОР СТОИМОСТИ — iframe → calc.html -->
     <div id="calc-modal" class="fixed inset-0 z-[999998] hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4" onclick="if(event.target===this)closeCalcModal()">
-        <div class="w-full max-w-lg apple-liquid-glass border border-white/8 rounded-[32px] overflow-hidden max-h-[90vh] flex flex-col">
-            <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/5 flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/25 flex items-center justify-center">
-                        <i class="fas fa-calculator text-purple-400 text-sm"></i>
-                    </div>
-                    <div>
-                        <div class="text-base font-bold text-white font-space">Калькулятор стоимости</div>
-                        <div class="text-[10px] text-slate-500 uppercase tracking-widest">Монтаж видео</div>
-                    </div>
-                </div>
-                <button onclick="closeCalcModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white transition text-sm">✕</button>
-            </div>
-            <div class="overflow-y-auto flex-1 px-6 py-5 space-y-5">
-                <!-- Пакет -->
-                <div>
-                    <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3">Пакет</div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="calcSelectPackage('base')" data-pkg="base" class="calc-pkg-btn calc-pkg-active py-3 px-2 rounded-2xl border border-cyan-500/40 bg-cyan-500/10 text-center transition-all duration-200">
-                            <div class="text-xs font-black text-cyan-400 font-space">BASE</div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">1000₽/мин</div>
-                        </button>
-                        <button onclick="calcSelectPackage('pro')" data-pkg="pro" class="calc-pkg-btn py-3 px-2 rounded-2xl border border-white/8 text-center transition-all duration-200" style="background:rgba(255,255,255,0.02)">
-                            <div class="text-xs font-black text-blue-400 font-space">PRO</div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">2500₽/мин</div>
-                        </button>
-                        <button onclick="calcSelectPackage('premium')" data-pkg="premium" class="calc-pkg-btn py-3 px-2 rounded-2xl border border-white/8 text-center transition-all duration-200" style="background:rgba(255,255,255,0.02)">
-                            <div class="text-xs font-black text-purple-400 font-space">PREMIUM</div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">4000₽/мин</div>
-                        </button>
-                    </div>
-                </div>
-                <!-- Длительность -->
-                <div>
-                    <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3">Длительность итогового видео</div>
-                    <div class="flex items-center gap-3">
-                        <button onclick="calcChangeDuration(-30)" class="w-9 h-9 rounded-xl border border-white/10 text-white font-bold hover:bg-white/10 transition flex-shrink-0 flex items-center justify-center" style="background:rgba(255,255,255,0.05)">−</button>
-                        <div class="flex-1 text-center">
-                            <span class="text-2xl font-black text-white font-space" id="calc-dur-display">60</span>
-                            <span class="text-slate-400 text-sm ml-1">сек</span>
-                        </div>
-                        <button onclick="calcChangeDuration(30)" class="w-9 h-9 rounded-xl border border-white/10 text-white font-bold hover:bg-white/10 transition flex-shrink-0 flex items-center justify-center" style="background:rgba(255,255,255,0.05)">+</button>
-                    </div>
-                    <div class="h-1 rounded-full mt-3 overflow-hidden" style="background:rgba(255,255,255,0.05)">
-                        <div id="calc-dur-bar" class="h-full rounded-full transition-all duration-300" style="width:16%;background:linear-gradient(to right,#00c6fb,#3b82f6)"></div>
-                    </div>
-                </div>
-                <!-- Доп. услуги -->
-                <div>
-                    <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3">Дополнительные услуги</div>
-                    <div id="calc-options" class="space-y-2"></div>
-                </div>
-                <!-- Срочность -->
-                <div class="flex items-center justify-between p-4 rounded-2xl border border-white/5" style="background:rgba(255,255,255,0.02)">
-                    <div>
-                        <div class="text-sm font-semibold text-white">⚡ Срочный запуск</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5" id="calc-urgent-label">+75% к стоимости</div>
-                    </div>
-                    <label class="sw"><input type="checkbox" id="calc-urgent" onchange="calcUpdate()"><span class="sw-track"></span></label>
-                </div>
-            </div>
-            <!-- Итог -->
-            <div class="flex-shrink-0 px-6 py-5 border-t border-white/5" style="background:rgba(0,0,0,0.35)">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="text-sm text-slate-400">Итоговая стоимость:</div>
-                    <div class="text-2xl font-black text-white font-space" id="calc-total">1 000 ₽</div>
-                </div>
-                <button onclick="calcSendTelegram()" class="w-full py-3.5 rounded-2xl border border-cyan-500/30 text-cyan-300 font-bold text-sm hover:bg-cyan-500/10 transition duration-300 flex items-center justify-center gap-2" style="background:rgba(0,198,251,0.08)">
-                    <i class="fab fa-telegram"></i> Получить расчёт в Telegram
-                </button>
-            </div>
+        <div class="w-full max-w-lg rounded-[32px] overflow-hidden relative" style="height:min(90vh,680px);background:#010008;border:1px solid rgba(255,255,255,0.08);box-shadow:0 30px 60px rgba(0,0,0,0.7);">
+            <button onclick="closeCalcModal()" class="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white transition text-sm">✕</button>
+            <iframe id="calc-iframe" src="calc.html" frameborder="0"
+                style="width:100%;height:100%;border:none;display:block;border-radius:32px;"></iframe>
         </div>
     </div>
 
@@ -1818,6 +1870,35 @@
             // При открытии настроек — рендерим сетку портфолио
             if (tabName === 'settings' && typeof window.renderPortfolioSortGrid === 'function') {
                 window.renderPortfolioSortGrid();
+            }
+            // При открытии клиентов — загружаем список монтажёров в селект
+            if (tabName === 'clients') {
+                window.loadEditorsDropdown();
+            }
+        };
+
+        // Загрузка монтажёров из коллекции editors в селект формы создания проекта
+        window.loadEditorsDropdown = async function() {
+            const sel = document.getElementById('crm-new-editor');
+            if (!sel) return;
+            const db = window._spaceDb;
+            const fns = window._spaceDocs;
+            if (!db || !fns) return;
+            try {
+                const snap = await fns.getDocs(fns.collection(db, 'artifacts', 'space-video-agency', 'public', 'data', 'editors'));
+                const current = sel.value;
+                sel.innerHTML = '<option value="" class="bg-slate-900 text-slate-400">— не назначен —</option>';
+                snap.docs.forEach(d => {
+                    const e = d.data();
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.textContent = (e.name || e.login) + (e.login ? ' (' + e.login + ')' : '');
+                    opt.className = 'bg-slate-900 text-white';
+                    sel.appendChild(opt);
+                });
+                if (current) sel.value = current;
+            } catch(err) {
+                console.warn('loadEditorsDropdown:', err.message);
             }
         };
 
@@ -2282,14 +2363,15 @@
 
         function initStars() {
             stars = [];
-            // На мобильных уменьшаем количество звёзд для CPU
             const isMobile = window.innerWidth < 768;
-            let count = Math.floor((bgCanvas.width * bgCanvas.height) / (isMobile ? 8000 : 4500));
-            count = Math.min(count, isMobile ? 80 : 250);
+            // Мобильные: значительно меньше звёзд для CPU
+            let count = Math.floor((bgCanvas.width * bgCanvas.height) / (isMobile ? 18000 : 4500));
+            count = Math.min(count, isMobile ? 35 : 250);
             for (let i = 0; i < count; i++) stars.push(new Star());
         }
 
         function planNextComet() {
+            if (window.innerWidth < 768) return; // кометы только на десктопе
             const delay = 10000 + Math.random() * 10000;
             setTimeout(() => { comet = new Comet(); planNextComet(); }, delay);
         }
@@ -2768,7 +2850,7 @@
             showToast('Услуга добавлена в пакет ' + _CP[pkg].name + '!', 'success');
         };
 
-        window.saveCalcAdminSettings = function() {
+        window.saveCalcAdminSettings = async function() {
             // Цены пакетов
             ['base','pro','premium'].forEach(pk => {
                 const baseVal = document.getElementById(`calc-admin-${pk}-base`);
@@ -2785,8 +2867,18 @@
             // TG-ссылка
             const tgEl = document.getElementById('calc-admin-tg-link');
             const calcTgLink = tgEl ? tgEl.value.trim() : '';
-            // Сохраняем всё
+            // Сохраняем в localStorage
             try { localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink})); } catch(e) {}
+            // Сохраняем в Firebase если подключён
+            if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
+                try {
+                    await ensureAuth();
+                    const calcCfgRef = doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main');
+                    await setDoc(calcCfgRef, {..._CP, calcTgLink}, { merge: true });
+                } catch(e) {
+                    console.error("Calc config Firebase save failed:", e);
+                }
+            }
             // Обновляем подписи кнопок пакетов в публичном калькуляторе
             document.querySelectorAll('.calc-pkg-btn').forEach(btn => {
                 const pk = btn.getAttribute('data-pkg');
@@ -2901,6 +2993,31 @@
             s.textContent = '.calc-pkg-active{border-color:rgba(0,198,251,0.5)!important;background:rgba(0,198,251,0.12)!important}';
             document.head.appendChild(s);
         })();
+
+        // ── ПРОМОКОДЫ — UI HELPERS ────────────────────────────────────
+        window.updatePromoAdminUI = function() {
+            const discType  = document.getElementById('promo-admin-disc-type')?.value;
+            const limitType = document.getElementById('promo-admin-limit-type')?.value;
+            const discLabel  = document.getElementById('promo-admin-disc-label');
+            const limitLabel = document.getElementById('promo-admin-limit-label');
+            const limitInput = document.getElementById('promo-admin-limit-value');
+            if (discLabel)  discLabel.textContent  = discType === 'percent' ? 'Размер скидки (%)' : 'Размер скидки (₽)';
+            if (limitLabel) limitLabel.textContent = limitType === 'count'  ? 'Количество активаций' : 'Дата окончания';
+            if (limitInput) {
+                limitInput.type = limitType === 'date' ? 'date' : 'number';
+                limitInput.placeholder = limitType === 'date' ? '' : '100';
+            }
+        };
+
+        // Перехват переключения на вкладку promos
+        const _origSwitchForPromos = window.switchAdminTab;
+        window.switchAdminTab = function(tabName) {
+            _origSwitchForPromos(tabName);
+            if (tabName === 'promos') {
+                if (typeof window.loadPromoCodes === 'function') window.loadPromoCodes();
+                window.updatePromoAdminUI();
+            }
+        };
     </script>
 
     <!-- ИНТЕГРАЦИЯ С БАЗОЙ ДАННЫХ И CRM -->
@@ -2958,10 +3075,12 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
                 firebaseInitialized = true;
+                window._spaceDb = db;
             } catch (err) {
                 console.error("Firebase init error:", err);
             }
         }
+        window._spaceDocs = { getDocs, collection };
 
         let localDemoProjects = [];
         try {
@@ -3349,6 +3468,22 @@
         }
 
         async function loadData() {
+            // Загружаем calc config из Firebase если доступен
+            if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
+                try {
+                    const calcCfgRef = doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main');
+                    const calcSnap = await getDoc(calcCfgRef);
+                    if (calcSnap.exists()) {
+                        const data = calcSnap.data();
+                        ['base','pro','premium'].forEach(pk => {
+                            if (data[pk]) Object.assign(_CP[pk], data[pk]);
+                        });
+                        const calcTgLink = data.calcTgLink || '';
+                        try { localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink})); } catch(e) {}
+                    }
+                } catch(e) { console.error("Calc config load error:", e); }
+            }
+
             if (!firebaseInitialized) {
                 const localRaw = JSON.parse(localStorage.getItem('space_portfolio_links') || "null") || defaultPortfolioSettings;
                 const normalizedLocal = normalizePortfolioData(localRaw);
@@ -3444,6 +3579,26 @@
                     window.renderCrmProjects();
                 }
             }, (err) => console.error("CRM realtime sync error:", err));
+
+            // Real-time listener for calc config
+            const calcCfgRef = doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main');
+            onSnapshot(calcCfgRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    // Merge into _CP keeping default structure
+                    ['base','pro','premium'].forEach(pk => {
+                        if (data[pk]) Object.assign(_CP[pk], data[pk]);
+                    });
+                    if (data.calcTgLink !== undefined) {
+                        try { const s = JSON.parse(localStorage.getItem('space_calc_config') || '{}'); s.calcTgLink = data.calcTgLink; localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink: data.calcTgLink})); } catch(e) {}
+                    }
+                    try { localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink: data.calcTgLink || ''})); } catch(e) {}
+                    // Update admin tab if open
+                    if (window.currentAdminState && typeof window.renderCalcAdminTab === 'function') {
+                        window.renderCalcAdminTab();
+                    }
+                }
+            }, (err) => console.error("Calc config realtime sync error:", err));
         }
         window.setupRealtimeSync = setupRealtimeSync;
 
@@ -4698,6 +4853,9 @@
             const project = document.getElementById('crm-new-project').value.trim();
             const deadline = document.getElementById('crm-new-deadline').value;
             const basePrice = parseInt(document.getElementById('crm-new-price').value) || 0;
+            const editorSel = document.getElementById('crm-new-editor');
+            const editorId = editorSel ? editorSel.value : '';
+            const editorName = editorSel && editorSel.selectedIndex > 0 ? editorSel.options[editorSel.selectedIndex].text : '';
 
             if (!rawCode || !name || !project) {
                 showToast("Пожалуйста, заполните Код доступа, Имя и Проект!", "error");
@@ -4724,6 +4882,8 @@
                 s1: "ТЗ & Бриф", s2: "Черновик", s3: "Звук & FX", s4: "Цвет", s5: "Сдача",
                 stage: "brief", progress: 10,
                 basePrice: basePrice,
+                editorId: editorId,
+                editorName: editorName,
                 managerTg: defTgLink,
                 addons: [],
                 stats: { dynamics: 50, sound: 50, color: 50, vfx: 50 },
@@ -4755,6 +4915,7 @@
             document.getElementById('crm-new-project').value = "";
             document.getElementById('crm-new-deadline').value = "";
             document.getElementById('crm-new-price').value = "";
+            if (document.getElementById('crm-new-editor')) document.getElementById('crm-new-editor').value = "";
         };
 
         window.toggleCrmAccordion = function(id) {
@@ -5326,6 +5487,107 @@
 
         window.setAdminState = function(state) {
             window.currentAdminState = state;
+        };
+
+        // ── ПРОМОКОДЫ — FIREBASE CRUD ─────────────────────────────────
+        window.loadPromoCodes = async function() {
+            const cont = document.getElementById('promo-admin-list');
+            if (!cont) return;
+            cont.innerHTML = '<div class="text-center py-6"><i class="fas fa-spinner fa-spin text-violet-500/30 text-xl"></i></div>';
+            try {
+                await ensureAuth();
+                const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'promo_codes'));
+                if (snap.empty) {
+                    cont.innerHTML = '<p class="text-slate-600 text-sm text-center py-6">Промокодов пока нет</p>';
+                    return;
+                }
+                const promos = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+                cont.innerHTML = promos.map(p => {
+                    const discLabel = p.discountType === 'percent'
+                        ? `−${p.discountValue}%`
+                        : `−${(p.discountValue || 0).toLocaleString('ru')} ₽`;
+                    const limitLabel = p.limitType === 'count'
+                        ? `${p.usedCount || 0} / ${p.limitValue} активаций`
+                        : `до ${new Date(p.limitValue).toLocaleDateString('ru')}`;
+                    const isExpired = p.limitType === 'count'
+                        ? (p.usedCount || 0) >= p.limitValue
+                        : new Date() > new Date(p.limitValue);
+                    const statusColor = isExpired ? 'text-rose-400' : 'text-emerald-400';
+                    const statusDot   = isExpired ? 'bg-rose-400' : 'bg-emerald-400';
+
+                    return `
+                    <div class="flex items-center gap-4 p-4 rounded-2xl border border-white/5 hover:border-white/10 transition" style="background:rgba(0,0,0,0.35)">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-space font-black text-white tracking-widest text-sm">${p.code}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full border font-space font-bold"
+                                    style="background:rgba(139,92,246,0.12);border-color:rgba(139,92,246,0.25);color:#c4b5fd;">${discLabel}</span>
+                                <span class="flex items-center gap-1 text-[10px] font-space font-bold ${statusColor}">
+                                    <span class="w-1.5 h-1.5 rounded-full inline-block ${statusDot}"></span>
+                                    ${isExpired ? 'Исчерпан' : 'Активен'}
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 mt-1">${limitLabel}</p>
+                        </div>
+                        <button onclick="deletePromoCode('${p.id}')"
+                            class="w-8 h-8 flex items-center justify-center rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 transition flex-shrink-0">
+                            <i class="fas fa-trash text-[10px]"></i>
+                        </button>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                cont.innerHTML = `<p class="text-rose-400 text-sm text-center py-4">Ошибка: ${e.message}</p>`;
+            }
+        };
+
+        window.createPromoCode = async function() {
+            const code       = (document.getElementById('promo-admin-code')?.value || '').trim().toUpperCase();
+            const discType   = document.getElementById('promo-admin-disc-type')?.value || 'percent';
+            const discValue  = parseFloat(document.getElementById('promo-admin-disc-value')?.value || '0');
+            const limitType  = document.getElementById('promo-admin-limit-type')?.value || 'count';
+            const limitRaw   = document.getElementById('promo-admin-limit-value')?.value || '';
+
+            if (!code)        { showToast('Введите код промокода', 'error'); return; }
+            if (!discValue)   { showToast('Укажите размер скидки', 'error'); return; }
+            if (!limitRaw)    { showToast('Укажите ограничение', 'error'); return; }
+
+            const limitValue = limitType === 'count' ? parseInt(limitRaw) : limitRaw;
+            if (limitType === 'count' && (!limitValue || limitValue < 1)) {
+                showToast('Укажите корректное число активаций', 'error'); return;
+            }
+
+            try {
+                await ensureAuth();
+                // Проверка уникальности
+                const existing = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'promo_codes'));
+                if (existing.docs.some(d => d.data().code === code)) {
+                    showToast('Такой промокод уже существует', 'error'); return;
+                }
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'promo_codes'), {
+                    code, discountType: discType, discountValue: discValue,
+                    limitType, limitValue, usedCount: 0,
+                    createdAt: new Date().toISOString()
+                });
+                // Очищаем форму
+                ['promo-admin-code','promo-admin-disc-value','promo-admin-limit-value'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+                showToast('Промокод создан!', 'success');
+                window.loadPromoCodes();
+            } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
+        };
+
+        window.deletePromoCode = async function(docId) {
+            if (!confirm('Удалить этот промокод?')) return;
+            try {
+                await ensureAuth();
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'promo_codes', docId));
+                showToast('Промокод удалён', 'info');
+                window.loadPromoCodes();
+            } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
         };
 
     </script>
