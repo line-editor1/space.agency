@@ -224,6 +224,21 @@
         }
         .bs-btn-secondary:hover { background: rgba(255,255,255,0.07); color: #94a3b8; }
     </style>
+    <style>
+        /* ── УБИРАЕМ КАРЕТКУ НА КНОПКАХ И ИНТЕРАКТИВНЫХ ЭЛЕМЕНТАХ ── */
+        button, a, [role="button"], label, select,
+        .admin-nav-tab, .portfolio-tab, .tab-btn,
+        [onclick], [data-tab], [data-pkg] {
+            caret-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea, [contenteditable="true"] {
+            caret-color: #00c6fb;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+    </style>
 </head>
 <body>
 

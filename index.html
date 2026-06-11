@@ -416,6 +416,21 @@
             .bg-astronaut { display: none !important; }
         }
     </style>
+    <style>
+        /* ── УБИРАЕМ КАРЕТКУ НА КНОПКАХ И ИНТЕРАКТИВНЫХ ЭЛЕМЕНТАХ ── */
+        button, a, [role="button"], label, select,
+        .admin-nav-tab, .portfolio-tab, .tab-btn,
+        [onclick], [data-tab], [data-pkg] {
+            caret-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea, [contenteditable="true"] {
+            caret-color: #00c6fb;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+    </style>
 </head>
 <body class="relative">
 
@@ -515,7 +530,7 @@
                         style="background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
                         <i class="fas fa-arrow-right-to-bracket mr-2"></i>Войти в систему
                     </button>
-                    <p class="text-center text-[10px] text-slate-700 mt-4 font-space">SPACE Video Agency · Внутренняя система</p>
+                    <p class="text-center text-[10px] text-slate-700 mt-4 font-space">Экосистема Space 01</p>
                 </div>
             </div>
         </div>
@@ -548,23 +563,6 @@
                     
                     <button onclick="openPortalModal()" class="text-sm font-bold text-cyan-400 hover:text-cyan-300 transition flex items-center gap-2 px-4 py-2.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 shadow-[0_0_10px_rgba(0,198,251,0.15)]">
                         <i class="fas fa-user-astronaut"></i> Личный кабинет
-                    </button>
-
-                    <!-- Кнопки персонала (скрыты, показываются после 2FA) -->
-                    <div id="staff-nav-links" class="hidden items-center gap-2">
-                        <a href="montage.html" target="_blank" class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-violet-500/20 text-violet-400 hover:text-violet-300 hover:border-violet-500/40 transition-all duration-300 text-xs font-bold font-space" style="background:rgba(139,92,246,0.06)">
-                            <i class="fas fa-cut text-[10px]"></i> Монтажёры
-                        </a>
-                        <a href="chat.html" target="_blank" class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-emerald-500/20 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/40 transition-all duration-300 text-xs font-bold font-space" style="background:rgba(16,185,129,0.06)">
-                            <i class="fas fa-comments text-[10px]"></i> Чат
-                        </a>
-                        <a href="admin.html" target="_blank" class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-cyan-500/20 text-cyan-400 hover:text-cyan-300 hover:border-cyan-500/40 transition-all duration-300 text-xs font-bold font-space" style="background:rgba(0,198,251,0.06)">
-                            <i class="fas fa-shield-halved text-[10px]"></i> Админ
-                        </a>
-                    </div>
-
-                    <button onclick="openAdminModalWith2FA()" id="staff-login-btn" class="px-3 py-2.5 bg-white/3 border border-white/8 text-slate-600 rounded-xl hover:text-cyan-400 hover:border-cyan-500/20 transition-all duration-300" title="Вход для персонала">
-                        <i class="fas fa-lock text-xs"></i>
                     </button>
 
                     <div class="flex items-center gap-3">
@@ -1913,15 +1911,6 @@
                 }
             }, 300);
 
-            // Восстановить кнопки персонала если сессия активна
-            try {
-                if (sessionStorage.getItem('space_staff_auth') === '1') {
-                    const staffLinks = document.getElementById('staff-nav-links');
-                    const loginBtn = document.getElementById('staff-login-btn');
-                    if (staffLinks) { staffLinks.classList.remove('hidden'); staffLinks.classList.add('flex'); }
-                    if (loginBtn) loginBtn.classList.add('hidden');
-                }
-            } catch(e) {}
         });
 
         // === ДВОЙНОЙ ПАРОЛЬ ДЛЯ ЭКРАНА ТЕХРАБОТ ===
@@ -1941,27 +1930,37 @@
             if (modal) modal.classList.add('hidden');
         };
 
-        window.verifyAdmin2FACode = function() {
+        window.verifyAdmin2FACode = async function() {
             const pass1 = (document.getElementById("admin-2fa-pass1")?.value || "").trim();
             const pass2 = (document.getElementById("admin-2fa-pass2")?.value || "").trim();
             
             // Загружаем сохранённые пароли:
-            // 1. Сначала из window.configData (Firebase / актуальные данные)
-            // 2. Затем из localStorage как fallback
-            // 3. Дефолты spaceadmin / space1
+            // 1. Если Firebase инициализирован — принудительно грузим актуальный конфиг
+            // 2. Затем из window.configData
+            // 3. Затем из localStorage как fallback
+            // 4. Дефолты spaceadmin / space1
+
+            let cfgData = window.configData || {};
+
+            // Если configData не содержит паролей — грузим свежо из Firebase
+            if (!cfgData.maintenancePass1 && typeof window._spaceDb !== 'undefined' && window._spaceDb) {
+                try {
+                    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+                    const snap = await getDoc(doc(window._spaceDb, 'artifacts', 'space-video-agency', 'public', 'data', 'site_config', 'main'));
+                    if (snap.exists()) {
+                        cfgData = snap.data();
+                        window.configData = cfgData;
+                    }
+                } catch(e) { console.warn("2FA config load:", e); }
+            }
+
             let savedCfg = {};
             try { savedCfg = JSON.parse(localStorage.getItem('space_site_config')) || {}; } catch(e) {}
-            const cfgData = window.configData || {};
             const expectedPass1 = cfgData.maintenancePass1 || savedCfg.maintenancePass1 || "spaceadmin";
             const expectedPass2 = cfgData.maintenancePass2 || savedCfg.maintenancePass2 || "space1";
 
             if (pass1 === expectedPass1 && pass2 === expectedPass2) {
                 window.closeAdmin2FAModal();
-                // Показываем кнопки персонала в навбаре
-                const staffLinks = document.getElementById('staff-nav-links');
-                const loginBtn = document.getElementById('staff-login-btn');
-                if (staffLinks) { staffLinks.classList.remove('hidden'); staffLinks.classList.add('flex'); }
-                if (loginBtn) { loginBtn.classList.add('hidden'); }
                 // Сохраняем флаг сессии
                 try { sessionStorage.setItem('space_staff_auth', '1'); } catch(e) {}
                 showToast("Доступ персонала открыт", "success");
@@ -2445,7 +2444,15 @@
         // Конфиг не хранится в коде для безопасности.
         // Вставьте конфиг через вкладку Настройки → Синхронизация устройств.
         // =====================================================================
-        let MY_FIREBASE_CONFIG = null; // Конфиг удалён из кода
+        let MY_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s",
+  authDomain: "space-video-agency.firebaseapp.com",
+  projectId: "space-video-agency",
+  storageBucket: "space-video-agency.firebasestorage.app",
+  messagingSenderId: "591140214223",
+  appId: "1:591140214223:web:7bc45a81f66a7181f8eeba",
+  measurementId: "G-6QQ2RBJWMK"
+};
 
         try {
             const savedFbCfg = localStorage.getItem('space_firebase_config');

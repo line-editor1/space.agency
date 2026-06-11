@@ -204,6 +204,21 @@
             #sidebar-toggle{display:flex;}
         }
     </style>
+    <style>
+        /* ── УБИРАЕМ КАРЕТКУ НА КНОПКАХ И ИНТЕРАКТИВНЫХ ЭЛЕМЕНТАХ ── */
+        button, a, [role="button"], label, select,
+        .admin-nav-tab, .portfolio-tab, .tab-btn,
+        [onclick], [data-tab], [data-pkg] {
+            caret-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea, [contenteditable="true"] {
+            caret-color: #00c6fb;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+    </style>
 </head>
 <body>
 <div class="ambient"></div>
@@ -552,7 +567,7 @@ if (!myRole || !myId) {
                     <a href="montage.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;text-shadow:0 1px 3px rgba(0,0,0,0.3);transition:all 0.3s;box-shadow:0 8px 24px rgba(0,198,251,0.2);">
                         <i class="fas fa-arrow-right-to-bracket"></i>Перейти к входу
                     </a>
-                    <p style="text-align:center;font-size:10px;color:#1e293b;margin-top:16px;font-family:'Space Grotesk',sans-serif;">SPACE Video Agency · Внутренняя система</p>
+                    <p style="text-align:center;font-size:10px;color:#1e293b;margin-top:16px;font-family:'Space Grotesk',sans-serif;">Экосистема Space 01</p>
                 </div>
             </div>
         </div>

@@ -416,6 +416,21 @@
             .bg-astronaut { display: none !important; }
         }
     </style>
+    <style>
+        /* ── УБИРАЕМ КАРЕТКУ НА КНОПКАХ И ИНТЕРАКТИВНЫХ ЭЛЕМЕНТАХ ── */
+        button, a, [role="button"], label, select,
+        .admin-nav-tab, .portfolio-tab, .tab-btn,
+        [onclick], [data-tab], [data-pkg] {
+            caret-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input, textarea, [contenteditable="true"] {
+            caret-color: #00c6fb;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
+    </style>
 </head>
 <body class="relative">
 
@@ -470,7 +485,7 @@
                                 <i class="fas fa-arrow-right-to-bracket text-xs"></i> Авторизоваться
                             </button>
                         </div>
-                        <p class="text-center text-[10px] text-slate-700 mt-6 font-space">SPACE Video Agency · Внутренняя система</p>
+                        <p class="text-center text-[10px] text-slate-700 mt-6 font-space">Экосистема Space 01</p>
                     </div>
                 </div>
             </div>
@@ -2369,7 +2384,15 @@
         // Конфиг не хранится в коде для безопасности.
         // Вставьте конфиг через вкладку Настройки → Синхронизация устройств.
         // =====================================================================
-        let MY_FIREBASE_CONFIG = null; // Конфиг удалён из кода
+        let MY_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s",
+  authDomain: "space-video-agency.firebaseapp.com",
+  projectId: "space-video-agency",
+  storageBucket: "space-video-agency.firebasestorage.app",
+  messagingSenderId: "591140214223",
+  appId: "1:591140214223:web:7bc45a81f66a7181f8eeba",
+  measurementId: "G-6QQ2RBJWMK"
+};
 
         try {
             const savedFbCfg = localStorage.getItem('space_firebase_config');
