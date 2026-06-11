@@ -401,7 +401,13 @@
             const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calc_config', 'main'));
             if (snap.exists()) {
                 const data = snap.data();
-                ['base','pro','premium'].forEach(pk => { if (data[pk]) Object.assign(_CP[pk], data[pk]); });
+                ['base','pro','premium'].forEach(pk => {
+                    if (data[pk]) {
+                        Object.assign(_CP[pk], data[pk]);
+                        // Заменяем opts полностью, чтобы видеть актуальные услуги из админки
+                        if (Array.isArray(data[pk].opts)) _CP[pk].opts = data[pk].opts;
+                    }
+                });
                 if (data.calcTgLink) _calcTgLink = data.calcTgLink;
             }
         } catch(e) {}
