@@ -1073,14 +1073,15 @@
              collection, addDoc, getDocs, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ─── FIREBASE CONFIG ──────────────────────────────────────────────
-    let MY_FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s",
-        authDomain: "space-video-agency.firebaseapp.com",
-        projectId: "space-video-agency",
-        storageBucket: "space-video-agency.firebasestorage.app",
-        messagingSenderId: "591140214223",
-        appId: "1:591140214223:web:7bc45a81f66a7181f8eeba"
-    };
+    let MY_FIREBASE_CONFIG = { 
+  apiKey : "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s" , 
+  authDomain : "space-video-agency.firebaseapp.com" , 
+  projectId : "space-video-agency" , 
+  storageBucket : "space-video-agency.firebasestorage.app" , 
+  messagingSenderId : "591140214223" , 
+  appId : "1:591140214223:web:7bc45a81f66a7181f8eeba" , 
+  measurementId : "G-6QQ2RBJWMK" 
+};
     try {
         const saved = localStorage.getItem('space_firebase_config');
         if (saved) MY_FIREBASE_CONFIG = JSON.parse(saved);
