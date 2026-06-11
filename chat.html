@@ -297,39 +297,51 @@
 
 <!-- Профиль (мой) -->
 <div id="modal-profile" class="modal-bg hidden">
-    <div class="glass rounded-3xl p-7 w-full max-w-sm">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="font-space font-bold text-white">Мой профиль</h3>
-            <button onclick="closeModal('modal-profile')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-times text-xs"></i></button>
-        </div>
-        <!-- Аватар -->
-        <div class="flex flex-col items-center gap-3 mb-6">
-            <div id="profile-avatar-preview" class="avatar w-20 h-20 text-2xl rounded-3xl" style="background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.3);color:#00c6fb;">?</div>
-            <p id="profile-login-label" class="text-xs text-slate-600 font-mono"></p>
-        </div>
-        <div class="space-y-3">
-            <div>
-                <label class="sec-lbl">Отображаемое имя</label>
-                <input type="text" id="profile-name-input" class="input-dark" placeholder="Ваше имя">
-            </div>
-            <div>
-                <label class="sec-lbl">Статус</label>
-                <input type="text" id="profile-status-input" class="input-dark" placeholder="Работаю над проектами...">
-            </div>
-            <div>
-                <label class="sec-lbl">Цвет аватара</label>
-                <div class="flex gap-2 flex-wrap">
-                    <button onclick="selectAvatarColor('cyan')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(0,198,251,0.3);" data-color="cyan"></button>
-                    <button onclick="selectAvatarColor('violet')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(139,92,246,0.3);" data-color="violet"></button>
-                    <button onclick="selectAvatarColor('orange')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(249,115,22,0.3);" data-color="orange"></button>
-                    <button onclick="selectAvatarColor('green')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(16,185,129,0.3);" data-color="green"></button>
-                    <button onclick="selectAvatarColor('rose')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(244,63,94,0.3);" data-color="rose"></button>
-                    <button onclick="selectAvatarColor('amber')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(245,158,11,0.3);" data-color="amber"></button>
+    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
+        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
+        <div style="position:relative;z-index:2;">
+            <div class="flex items-center justify-between px-7 pt-7 pb-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);">
+                        <i class="fas fa-user text-cyan-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-cyan-400 uppercase tracking-[0.2em] font-space font-bold">SPACE Video Agency</p>
+                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Мой профиль</h3>
+                    </div>
                 </div>
+                <button onclick="closeModal('modal-profile')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
             </div>
-            <div class="flex gap-3 pt-2">
-                <button onclick="closeModal('modal-profile')" class="flex-1 py-2.5 rounded-xl border border-white/8 text-slate-500 text-sm hover:border-white/15 transition">Отмена</button>
-                <button onclick="saveProfile()" class="flex-1 py-2.5 rounded-xl text-sm font-bold font-space text-cyan-300 border border-cyan-500/30 transition" style="background:rgba(0,198,251,0.12);">Сохранить</button>
+            <div class="px-7 py-6">
+                <div class="flex flex-col items-center gap-3 mb-6">
+                    <div id="profile-avatar-preview" class="avatar w-20 h-20 text-2xl rounded-3xl" style="background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.3);color:#00c6fb;">?</div>
+                    <p id="profile-login-label" class="text-xs text-slate-600 font-mono"></p>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="sec-lbl">Отображаемое имя</label>
+                        <input type="text" id="profile-name-input" class="input-dark" placeholder="Ваше имя">
+                    </div>
+                    <div>
+                        <label class="sec-lbl">Статус</label>
+                        <input type="text" id="profile-status-input" class="input-dark" placeholder="Работаю над проектами...">
+                    </div>
+                    <div>
+                        <label class="sec-lbl">Цвет аватара</label>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="selectAvatarColor('cyan')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(0,198,251,0.3);" data-color="cyan"></button>
+                            <button onclick="selectAvatarColor('violet')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(139,92,246,0.3);" data-color="violet"></button>
+                            <button onclick="selectAvatarColor('orange')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(249,115,22,0.3);" data-color="orange"></button>
+                            <button onclick="selectAvatarColor('green')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(16,185,129,0.3);" data-color="green"></button>
+                            <button onclick="selectAvatarColor('rose')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(244,63,94,0.3);" data-color="rose"></button>
+                            <button onclick="selectAvatarColor('amber')" class="w-8 h-8 rounded-xl border-2 border-transparent hover:border-white/30 transition" style="background:rgba(245,158,11,0.3);" data-color="amber"></button>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="closeModal('modal-profile')" class="flex-1 py-3 rounded-2xl border border-white/8 text-slate-500 text-sm hover:border-white/15 transition font-space font-bold">Отмена</button>
+                        <button onclick="saveProfile()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Сохранить</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -337,67 +349,93 @@
 
 <!-- Профиль монтажёра (только для администратора) -->
 <div id="modal-editor-profile" class="modal-bg hidden">
-    <div class="glass rounded-3xl p-7 w-full max-w-sm">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="font-space font-bold text-white">Профиль монтажёра</h3>
-            <button onclick="closeModal('modal-editor-profile')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-times text-xs"></i></button>
-        </div>
-        <div class="flex flex-col items-center gap-3 mb-6">
-            <div id="ep-avatar" class="avatar w-16 h-16 text-xl rounded-3xl">?</div>
-            <div class="text-center">
-                <p id="ep-name" class="text-sm font-bold text-white font-space">—</p>
-                <p id="ep-login" class="text-xs text-slate-600 font-mono mt-0.5">—</p>
-                <p id="ep-status" class="text-xs text-slate-500 mt-1 italic">—</p>
+    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
+        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
+        <div style="position:relative;z-index:2;">
+            <div class="flex items-center justify-between px-7 pt-7 pb-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);">
+                        <i class="fas fa-user-pen text-violet-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-violet-400 uppercase tracking-[0.2em] font-space font-bold">Управление</p>
+                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Профиль монтажёра</h3>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-editor-profile')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
             </div>
-        </div>
-        <input type="hidden" id="ep-id">
-        <div class="space-y-3">
-            <div>
-                <label class="sec-lbl">Новый пароль</label>
-                <input type="password" id="ep-new-pass" class="input-dark" placeholder="Оставьте пустым чтобы не менять">
+            <div class="px-7 py-6">
+                <div class="flex flex-col items-center gap-3 mb-6">
+                    <div id="ep-avatar" class="avatar w-16 h-16 text-xl rounded-3xl">?</div>
+                    <div class="text-center">
+                        <p id="ep-name" class="text-sm font-bold text-white font-space">—</p>
+                        <p id="ep-login" class="text-xs text-slate-600 font-mono mt-0.5">—</p>
+                        <p id="ep-status" class="text-xs text-slate-500 mt-1 italic">—</p>
+                    </div>
+                </div>
+                <input type="hidden" id="ep-id">
+                <div class="space-y-3">
+                    <div>
+                        <label class="sec-lbl">Новый пароль</label>
+                        <input type="password" id="ep-new-pass" class="input-dark" placeholder="Оставьте пустым чтобы не менять">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="epToggleBlock()" id="ep-block-btn" class="flex-1 py-2.5 rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-400 text-xs font-bold font-space hover:bg-amber-500/20 transition">
+                            <i class="fas fa-ban mr-1"></i>Заблокировать
+                        </button>
+                        <button onclick="epDelete()" class="flex-1 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs font-bold font-space hover:bg-rose-500/20 transition">
+                            <i class="fas fa-trash mr-1"></i>Удалить
+                        </button>
+                    </div>
+                    <button onclick="epSavePass()" class="w-full py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                        <i class="fas fa-save mr-1.5"></i>Сохранить изменения
+                    </button>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="epToggleBlock()" id="ep-block-btn" class="flex-1 py-2.5 rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-400 text-xs font-bold font-space hover:bg-amber-500/20 transition">
-                    <i class="fas fa-ban mr-1"></i>Заблокировать
-                </button>
-                <button onclick="epDelete()" class="flex-1 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs font-bold font-space hover:bg-rose-500/20 transition">
-                    <i class="fas fa-trash mr-1"></i>Удалить
-                </button>
-            </div>
-            <button onclick="epSavePass()" class="w-full py-2.5 rounded-xl text-sm font-bold font-space text-cyan-300 border border-cyan-500/30 transition" style="background:rgba(0,198,251,0.12);">
-                <i class="fas fa-save mr-1.5"></i>Сохранить изменения
-            </button>
         </div>
     </div>
 </div>
 
 <!-- Создать канал (администратор) -->
 <div id="modal-create-channel" class="modal-bg hidden">
-    <div class="glass rounded-3xl p-7 w-full max-w-md">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="font-space font-bold text-white">Новый канал</h3>
-            <button onclick="closeModal('modal-create-channel')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-times text-xs"></i></button>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="sec-lbl">Название канала</label>
-                <input type="text" id="ch-name-input" class="input-dark" placeholder="📢 Объявления">
-            </div>
-            <div>
-                <label class="sec-lbl">Описание (необязательно)</label>
-                <input type="text" id="ch-desc-input" class="input-dark" placeholder="Официальные новости команды">
-            </div>
-            <div>
-                <label class="sec-lbl">Участники (монтажёры)</label>
-                <div id="ch-members-list" class="space-y-2 max-h-48 overflow-y-auto">
-                    <p class="text-slate-600 text-xs">Загрузка...</p>
+    <div class="glass w-full max-w-md overflow-hidden" style="border-radius:32px;position:relative;">
+        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
+        <div style="position:relative;z-index:2;">
+            <div class="flex items-center justify-between px-7 pt-7 pb-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);">
+                        <i class="fas fa-hashtag text-violet-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-violet-400 uppercase tracking-[0.2em] font-space font-bold">SPACE Video Agency</p>
+                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Новый канал</h3>
+                    </div>
                 </div>
+                <button onclick="closeModal('modal-create-channel')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
             </div>
-            <div class="flex gap-3 pt-2">
-                <button onclick="closeModal('modal-create-channel')" class="flex-1 py-2.5 rounded-xl border border-white/8 text-slate-500 text-sm hover:border-white/15 transition">Отмена</button>
-                <button onclick="createChannel()" class="flex-1 py-2.5 rounded-xl text-sm font-bold font-space text-violet-300 border border-violet-500/30 transition" style="background:rgba(139,92,246,0.12);">
-                    <i class="fas fa-plus mr-1.5"></i>Создать
-                </button>
+            <div class="px-7 py-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="sec-lbl">Название канала</label>
+                        <input type="text" id="ch-name-input" class="input-dark" placeholder="📢 Объявления">
+                    </div>
+                    <div>
+                        <label class="sec-lbl">Описание (необязательно)</label>
+                        <input type="text" id="ch-desc-input" class="input-dark" placeholder="Официальные новости команды">
+                    </div>
+                    <div>
+                        <label class="sec-lbl">Участники (монтажёры)</label>
+                        <div id="ch-members-list" class="space-y-2 max-h-48 overflow-y-auto">
+                            <p class="text-slate-600 text-xs">Загрузка...</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="closeModal('modal-create-channel')" class="flex-1 py-3 rounded-2xl border border-white/8 text-slate-500 text-sm hover:border-white/15 transition font-space font-bold">Отмена</button>
+                        <button onclick="createChannel()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#5b21b6 0%,#8b5cf6 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                            <i class="fas fa-plus mr-1.5"></i>Создать
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -405,32 +443,45 @@
 
 <!-- Настройки канала (администратор) -->
 <div id="modal-channel-settings" class="modal-bg hidden">
-    <div class="glass rounded-3xl p-7 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="font-space font-bold text-white">Настройки канала</h3>
-            <button onclick="closeModal('modal-channel-settings')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-times text-xs"></i></button>
-        </div>
-        <input type="hidden" id="chs-id">
-        <div class="space-y-4">
-            <div>
-                <label class="sec-lbl">Название</label>
-                <input type="text" id="chs-name" class="input-dark">
+    <div class="glass w-full max-w-md max-h-[90vh] overflow-y-auto" style="border-radius:32px;position:relative;">
+        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
+        <div style="position:relative;z-index:2;">
+            <div class="flex items-center justify-between px-7 pt-7 pb-0 sticky top-0" style="background:rgba(4,2,18,0.8);backdrop-filter:blur(20px);">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);">
+                        <i class="fas fa-gear text-violet-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-violet-400 uppercase tracking-[0.2em] font-space font-bold">Канал</p>
+                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Настройки канала</h3>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-channel-settings')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
             </div>
-            <div>
-                <label class="sec-lbl">Описание</label>
-                <input type="text" id="chs-desc" class="input-dark" placeholder="—">
-            </div>
-            <div>
-                <label class="sec-lbl">Участники</label>
-                <div id="chs-members-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
-            </div>
-            <div class="flex gap-3 pt-2">
-                <button onclick="deleteChannel()" class="flex-1 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs font-bold font-space hover:bg-rose-500/20 transition">
-                    <i class="fas fa-trash mr-1"></i>Удалить канал
-                </button>
-                <button onclick="saveChannelSettings()" class="flex-1 py-2.5 rounded-xl text-sm font-bold font-space text-violet-300 border border-violet-500/30 transition" style="background:rgba(139,92,246,0.12);">
-                    <i class="fas fa-save mr-1.5"></i>Сохранить
-                </button>
+            <div class="px-7 py-6">
+                <input type="hidden" id="chs-id">
+                <div class="space-y-4">
+                    <div>
+                        <label class="sec-lbl">Название</label>
+                        <input type="text" id="chs-name" class="input-dark">
+                    </div>
+                    <div>
+                        <label class="sec-lbl">Описание</label>
+                        <input type="text" id="chs-desc" class="input-dark" placeholder="—">
+                    </div>
+                    <div>
+                        <label class="sec-lbl">Участники</label>
+                        <div id="chs-members-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="deleteChannel()" class="flex-1 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs font-bold font-space hover:bg-rose-500/20 transition">
+                            <i class="fas fa-trash mr-1"></i>Удалить канал
+                        </button>
+                        <button onclick="saveChannelSettings()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#5b21b6 0%,#8b5cf6 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                            <i class="fas fa-save mr-1.5"></i>Сохранить
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -475,10 +526,36 @@ const myNameSaved = sessionStorage.getItem('chat_name');
 const openEditorId = sessionStorage.getItem('chat_open_editor');
 
 if (!myRole || !myId) {
-    document.body.innerHTML = `<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:'Space Grotesk',sans-serif;color:#334155;background:#010008;">
-        <i class="fas fa-lock" style="font-size:32px;"></i>
-        <p style="font-size:16px;font-weight:700;color:#64748b;">Нет активной сессии</p>
-        <p style="font-size:12px;">Войдите через <a href="montage.html" style="color:#00c6fb;">montage.html</a></p>
+    document.body.innerHTML = `
+    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;background:#010008;position:relative;overflow:hidden;">
+        <div style="position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 30% 20%,rgba(0,198,251,0.06) 0%,transparent 70%),radial-gradient(ellipse 50% 50% at 75% 80%,rgba(79,172,254,0.05) 0%,transparent 70%);"></div>
+        <div style="position:relative;z-index:1;width:100%;max-width:380px;">
+            <div style="background:linear-gradient(160deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.015) 100%);backdrop-filter:blur(50px);-webkit-backdrop-filter:blur(50px);border-top:1px solid rgba(255,255,255,0.13);border-left:1px solid rgba(255,255,255,0.09);border-right:1px solid rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.02);box-shadow:0 30px 60px rgba(0,0,0,0.6),inset 0 1px 1px rgba(255,255,255,0.1);border-radius:32px;overflow:hidden;position:relative;">
+                <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 60%);pointer-events:none;z-index:1;"></div>
+                <div style="position:relative;z-index:2;padding:28px;">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+                        <div style="width:36px;height:36px;border-radius:12px;background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-comments" style="color:#00c6fb;font-size:14px;"></i>
+                        </div>
+                        <div>
+                            <p style="font-size:9px;color:#00c6fb;text-transform:uppercase;letter-spacing:0.2em;font-family:'Space Grotesk',sans-serif;font-weight:700;">SPACE Video Agency</p>
+                            <p style="font-size:14px;font-family:'Space Grotesk',sans-serif;font-weight:900;color:white;margin-top:1px;">Внутренний чат</p>
+                        </div>
+                    </div>
+                    <div style="text-align:center;margin-bottom:24px;">
+                        <div style="width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,rgba(239,68,68,0.15) 0%,rgba(220,38,38,0.1) 100%);border:1px solid rgba(239,68,68,0.2);box-shadow:0 0 30px rgba(239,68,68,0.08);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <i class="fas fa-lock" style="color:#f87171;font-size:24px;"></i>
+                        </div>
+                        <h4 style="font-size:18px;font-family:'Space Grotesk',sans-serif;font-weight:900;color:white;margin-bottom:8px;">Нет активной сессии</h4>
+                        <p style="font-size:12px;color:#475569;line-height:1.6;">Для доступа к чату войдите через <span style="color:#00c6fb;font-weight:600;">montage.html</span></p>
+                    </div>
+                    <a href="montage.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;text-shadow:0 1px 3px rgba(0,0,0,0.3);transition:all 0.3s;box-shadow:0 8px 24px rgba(0,198,251,0.2);">
+                        <i class="fas fa-arrow-right-to-bracket"></i>Перейти к входу
+                    </a>
+                    <p style="text-align:center;font-size:10px;color:#1e293b;margin-top:16px;font-family:'Space Grotesk',sans-serif;">SPACE Video Agency · Внутренняя система</p>
+                </div>
+            </div>
+        </div>
     </div>`;
 }
 
