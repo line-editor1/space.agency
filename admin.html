@@ -488,18 +488,9 @@
                         </div>
                         <p class="text-center text-[10px] text-slate-700 mt-6 font-space">Экосистема Space 01</p>
                         <div class="text-center mt-3">
-                            <button onclick="document.getElementById('admin-reset-hint').classList.toggle('hidden')" class="text-[10px] text-slate-700 hover:text-slate-500 transition font-space">
+                            <button onclick="openAdminRecovery()" class="text-[10px] text-slate-700 hover:text-slate-500 transition font-space">
                                 <i class="fas fa-key mr-1 opacity-60"></i>Забыл пароль
                             </button>
-                            <div id="admin-reset-hint" class="hidden mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-left">
-                                <p class="text-[10px] text-amber-400 font-space font-bold mb-2">Стандартные пароли:</p>
-                                <p class="text-[10px] text-slate-400 font-mono mb-1">spaceadmin</p>
-                                <p class="text-[10px] text-slate-400 font-mono mb-3">Space2026!</p>
-                                <p class="text-[9px] text-slate-600 mb-2">Если стандартные пароли не подходят — сбросьте через Firebase:</p>
-                                <button onclick="adminResetPasswordToDefault()" class="w-full py-2 rounded-xl text-[10px] font-bold font-space text-amber-300 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 transition">
-                                    <i class="fas fa-sync-alt mr-1"></i>Сбросить пароль к стандартному
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -921,6 +912,13 @@
                                     <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Новый пароль админа</label>
                                     <input type="password" id="setting-new-pass" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-rose-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="Оставьте пустым — без изменений">
                                 </div>
+                                <div>
+                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">
+                                        Секретное слово для восстановления
+                                        <span class="ml-1 text-slate-700 normal-case">(если забудете пароль)</span>
+                                    </label>
+                                    <input type="text" id="setting-admin-recovery-word" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-amber-500/50 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="Например: SpaceAdmin или кличка питомца">
+                                </div>
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-[9px] text-slate-600 uppercase tracking-[0.15em] mb-2 font-space font-bold">Ключ №1</label>
@@ -991,12 +989,6 @@
                                 <p class="text-slate-500 text-xs mt-0.5">Цены пакетов, срочность, доп. услуги по категориям и ссылка Telegram</p>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Пакеты -->
-                    <div class="rounded-3xl border border-white/5 p-6 space-y-4" style="background:rgba(255,255,255,0.025)">
-                        <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold flex items-center gap-2"><i class="fas fa-boxes text-purple-400"></i> Пакеты (базовая цена и надбавка за доп. минуты)</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="calc-admin-packages"><!-- JS --></div>
                     </div>
 
                     <!-- Срочность -->
@@ -1243,9 +1235,31 @@
             if (tabName === 'clients') {
                 window.loadEditorsDropdown();
             }
-            // При открытии калькулятора — рендерим вкладку
+            // При открытии калькулятора — перезагружаем конфиг из Firebase, потом рендерим
             if (tabName === 'calculator') {
-                setTimeout(() => { if (typeof window.renderCalcAdminTab === 'function') window.renderCalcAdminTab(); }, 50);
+                setTimeout(async () => {
+                    try {
+                        const db = window._spaceDb;
+                        const fns = window._spaceDocs;
+                        const appId = window._spaceAppId || 'space-video-agency';
+                        if (db && fns) {
+                            const snap = await fns.getDoc(fns.doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main'));
+                            if (snap.exists()) {
+                                const data = snap.data();
+                                ['base','pro','premium'].forEach(pk => {
+                                    if (data[pk]) {
+                                        Object.assign(_CP[pk], data[pk]);
+                                        if (Array.isArray(data[pk].opts)) _CP[pk].opts = data[pk].opts;
+                                    }
+                                });
+                                if (data.calcTgLink !== undefined) {
+                                    try { localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink: data.calcTgLink || ''})); } catch(e) {}
+                                }
+                            }
+                        }
+                    } catch(e) { console.warn('Calc config reload:', e); }
+                    if (typeof window.renderCalcAdminTab === 'function') window.renderCalcAdminTab();
+                }, 50);
             }
             // При открытии промокодов
             if (tabName === 'promos') {
@@ -2357,7 +2371,9 @@
             const fallback = (tgBtn && tgBtn.href && tgBtn.href.includes('t.me'))
                 ? tgBtn.href.split('?')[0] : 'https://t.me/spacevideoagency';
             const base = (calcTgLink || fallback).split('?')[0];
-            window.open(base + '?text=' + msg, '_blank');
+            const tgUrl = base + '?text=' + msg;
+            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+            if (isMobile) { location.href = tgUrl; } else { window.open(tgUrl, '_blank'); }
         };
         // CSS для калькулятора
         (function(){
@@ -2446,7 +2462,7 @@
                 console.error("Firebase init error:", err);
             }
         }
-        window._spaceDocs = { getDocs, collection };
+        window._spaceDocs = { getDocs, collection, getDoc, doc };
 
         let localDemoProjects = [];
         try {
@@ -3203,10 +3219,9 @@
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'),
                         { adminPassHash: defaultHash }, { merge: true });
                     if (configData) configData.adminPassHash = defaultHash;
-                    showToast('Пароль сброшен! Используйте: spaceadmin', 'success');
-                    document.getElementById('admin-reset-hint').classList.add('hidden');
+                    showToast('Пароль сброшен к стандартному', 'success');
                 } else {
-                    showToast('Firebase не подключён. Используйте пароль: spaceadmin', 'info');
+                    showToast('Firebase не подключён', 'info');
                 }
             } catch(e) {
                 showToast('Ошибка сброса: ' + e.message, 'error');
@@ -5083,19 +5098,163 @@
             } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
         };
 
-    </script>
-</body>
-</html>
-
-    <script>
-        // Переопределяем открытие/закрытие для страничного режима
-        window.openAdminModal = function() {
-            // В admin.html уже открыто
+        // ── ADMIN RECOVERY: сохранение секретного слова ──────────────────
+        // Добавляем сохранение recovery word при saveAdminSettings
+        const _origSaveAdminSettings = window.saveAdminSettings;
+        window.saveAdminSettings = async function() {
+            await _origSaveAdminSettings();
+            const recoveryWord = document.getElementById('setting-admin-recovery-word')?.value.trim();
+            if (recoveryWord) {
+                try {
+                    await ensureAuth();
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'),
+                        { adminRecoveryWord: recoveryWord }, { merge: true });
+                    window._adminRecoveryWord = recoveryWord;
+                    document.getElementById('setting-admin-recovery-word').value = '';
+                } catch(e) { console.warn('Recovery word save failed:', e); }
+            }
         };
-        window.closeAdminModal = function() {
-            // Ничего не делаем — используем logoutAdmin
+
+        // ── ADMIN RECOVERY MODAL FUNCTIONS ───────────────────────────────
+        window.openAdminRecovery = function() {
+            const modal = document.getElementById('admin-recovery-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.getElementById('admin-recovery-step1').classList.remove('hidden');
+                document.getElementById('admin-recovery-step2').classList.add('hidden');
+                document.getElementById('admin-recovery-word-input').value = '';
+            }
         };
 
+        window.closeAdminRecovery = function() {
+            const modal = document.getElementById('admin-recovery-modal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.checkAdminRecoveryWord = async function() {
+            const word = document.getElementById('admin-recovery-word-input').value.trim();
+            if (!word) { showToast('Введите секретное слово', 'error'); return; }
+
+            if (!window._adminRecoveryWord) {
+                try {
+                    await ensureAuth();
+                    const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'));
+                    if (snap.exists() && snap.data().adminRecoveryWord) {
+                        window._adminRecoveryWord = snap.data().adminRecoveryWord;
+                    }
+                } catch(e) {}
+            }
+
+            if (!window._adminRecoveryWord) {
+                showToast('Секретное слово не задано. Обратитесь к администратору системы.', 'info'); return;
+            }
+            if (word.toLowerCase() === window._adminRecoveryWord.toLowerCase()) {
+                document.getElementById('admin-recovery-step1').classList.add('hidden');
+                document.getElementById('admin-recovery-step2').classList.remove('hidden');
+            } else {
+                showToast('Неверное секретное слово', 'error');
+            }
+        };
+
+        window.doAdminRecoveryReset = async function() {
+            const newPass     = document.getElementById('admin-recovery-new-pass').value;
+            const confirmPass = document.getElementById('admin-recovery-confirm-pass').value;
+            if (!newPass || !confirmPass) { showToast('Заполните оба поля', 'error'); return; }
+            if (newPass !== confirmPass)  { showToast('Пароли не совпадают', 'error'); return; }
+            if (newPass.length < 6)       { showToast('Минимум 6 символов', 'error'); return; }
+
+            const newHash = CryptoJS.SHA256(newPass).toString();
+            try {
+                await ensureAuth();
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'),
+                    { adminPassHash: newHash }, { merge: true });
+                if (configData) configData.adminPassHash = newHash;
+                closeAdminRecovery();
+                document.getElementById('admin-recovery-new-pass').value = '';
+                document.getElementById('admin-recovery-confirm-pass').value = '';
+                showToast('Пароль сброшен! Войдите с новым паролем.', 'success');
+            } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
+        };
+
+        // Загружаем adminRecoveryWord при старте
+        (async () => {
+            try {
+                if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
+                    await ensureAuth();
+                    const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'));
+                    if (snap.exists() && snap.data().adminRecoveryWord) {
+                        window._adminRecoveryWord = snap.data().adminRecoveryWord;
+                    }
+                }
+            } catch(e) {}
+        })();
+
     </script>
+
+<!-- ── МОДАЛЬНОЕ ОКНО ВОССТАНОВЛЕНИЯ ДОСТУПА АДМИНИСТРАТОРА ── -->
+<div id="admin-recovery-modal" class="hidden fixed inset-0 z-[1000030] flex items-center justify-center p-4" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);">
+    <div class="apple-liquid-glass rounded-3xl p-7 w-full max-w-sm">
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-3"
+                 style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)">
+                <i class="fas fa-key text-amber-400 text-lg"></i>
+            </div>
+            <h3 class="font-space font-bold text-white">Восстановление доступа</h3>
+            <p class="text-[11px] text-slate-600 mt-1">Введите секретное слово, которое задали в настройках</p>
+        </div>
+
+        <!-- Шаг 1: ввод слова -->
+        <div id="admin-recovery-step1">
+            <div class="space-y-3">
+                <div class="relative">
+                    <i class="fas fa-key absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 text-xs pointer-events-none"></i>
+                    <input type="text" id="admin-recovery-word-input"
+                        class="w-full bg-black/60 border border-white/8 rounded-2xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-amber-500/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700"
+                        placeholder="Секретное слово"
+                        onkeydown="if(event.key==='Enter') checkAdminRecoveryWord()">
+                </div>
+                <button onclick="checkAdminRecoveryWord()"
+                    class="w-full py-3 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
+                    style="background:linear-gradient(135deg,rgba(245,158,11,0.35) 0%,rgba(234,88,12,0.2) 100%);border-top:1px solid rgba(255,255,255,0.22);border-left:1px solid rgba(255,255,255,0.1);color:white;box-shadow:0 4px 20px rgba(245,158,11,0.15);">
+                    Проверить <i class="fas fa-arrow-right text-xs opacity-70"></i>
+                </button>
+            </div>
+            <p class="text-[11px] text-slate-700 text-center mt-4">
+                Секретное слово задаётся в разделе «Настройки» после входа
+            </p>
+        </div>
+
+        <!-- Шаг 2: новый пароль -->
+        <div id="admin-recovery-step2" class="hidden">
+            <p class="text-xs text-emerald-400 text-center mb-4"><i class="fas fa-check-circle mr-1"></i>Слово верное! Задайте новый пароль</p>
+            <div class="space-y-3">
+                <div class="relative">
+                    <i class="fas fa-lock-open absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 text-xs pointer-events-none"></i>
+                    <input type="password" id="admin-recovery-new-pass"
+                        class="w-full bg-black/60 border border-white/8 rounded-2xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700"
+                        placeholder="Новый пароль">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-check-circle absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 text-xs pointer-events-none"></i>
+                    <input type="password" id="admin-recovery-confirm-pass"
+                        class="w-full bg-black/60 border border-white/8 rounded-2xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700"
+                        placeholder="Повторите пароль">
+                </div>
+                <button onclick="doAdminRecoveryReset()"
+                    class="w-full py-3 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
+                    style="background:linear-gradient(135deg,rgba(16,185,129,0.35) 0%,rgba(5,150,105,0.2) 100%);border-top:1px solid rgba(255,255,255,0.22);border-left:1px solid rgba(255,255,255,0.1);color:white;box-shadow:0 4px 20px rgba(16,185,129,0.15);">
+                    Сохранить новый пароль <i class="fas fa-arrow-right text-xs opacity-70"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button onclick="closeAdminRecovery()" class="text-[11px] text-slate-700 hover:text-slate-500 transition font-space">
+                ← Назад к входу
+            </button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

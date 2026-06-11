@@ -637,7 +637,14 @@
 
         const msg = encodeURIComponent(lines.join('\n'));
         const base = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
-        window.open(base + '?text=' + msg, '_blank');
+        const tgUrl = base + '?text=' + msg;
+        // На мобильных устройствах window.open может не работать — используем location.href
+        const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+        if (isMobile) {
+            location.href = tgUrl;
+        } else {
+            window.open(tgUrl, '_blank');
+        }
     }
 
     // ─── TOAST ────────────────────────────────────────────────────────
@@ -683,7 +690,8 @@
         bsClose('bs-dur-sheet', 'bs-dur-backdrop');
         if (action === 'tg') {
             const base = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
-            window.open(base, '_blank');
+            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+            if (isMobile) { location.href = base; } else { window.open(base, '_blank'); }
         }
     };
 </script>
