@@ -417,16 +417,17 @@
         }
     </style>
     <style>
-        /* ── УБИРАЕМ КАРЕТКУ НА КНОПКАХ И ИНТЕРАКТИВНЫХ ЭЛЕМЕНТАХ ── */
-        button, a, [role="button"], label, select,
-        .admin-nav-tab, .portfolio-tab, .tab-btn,
-        [onclick], [data-tab], [data-pkg] {
-            caret-color: transparent;
+        /* ── УБИРАЕМ КАРЕТКУ ВЕЗДЕ КРОМЕ ПОЛЕЙ ВВОДА ── */
+        * { caret-color: transparent; }
+        input, textarea, [contenteditable="true"] {
+            caret-color: #00c6fb !important;
+        }
+        button, a, label, select, [onclick], [data-tab], [data-pkg],
+        div, span, p, h1, h2, h3, h4, h5 {
             -webkit-user-select: none;
             user-select: none;
         }
-        input, textarea, [contenteditable="true"] {
-            caret-color: #00c6fb;
+        input, textarea {
             -webkit-user-select: text !important;
             user-select: text !important;
         }
@@ -1227,6 +1228,17 @@
             // При открытии клиентов — загружаем список монтажёров в селект
             if (tabName === 'clients') {
                 window.loadEditorsDropdown();
+            }
+            // При открытии калькулятора — рендерим вкладку
+            if (tabName === 'calculator') {
+                setTimeout(() => { if (typeof window.renderCalcAdminTab === 'function') window.renderCalcAdminTab(); }, 50);
+            }
+            // При открытии промокодов
+            if (tabName === 'promos') {
+                setTimeout(() => {
+                    if (typeof window.loadPromoCodes === 'function') window.loadPromoCodes();
+                    if (typeof window.updatePromoAdminUI === 'function') window.updatePromoAdminUI();
+                }, 50);
             }
         };
 
@@ -2243,14 +2255,7 @@
             showToast('Настройки калькулятора сохранены!', 'success');
         };
 
-        // Перехват переключения на вкладку calc для рендера
-        const _origSwitch = window.switchAdminTab;
-        window.switchAdminTab = function(tabName) {
-            _origSwitch(tabName);
-            if (tabName === 'calculator' && typeof window.renderCalcAdminTab === 'function') {
-                window.renderCalcAdminTab();
-            }
-        };
+        // calc render: встроен в switchAdminTab
 
         window.openCalcModal = function() {
             document.getElementById('calc-modal').classList.remove('hidden');
@@ -2362,15 +2367,7 @@
             }
         };
 
-        // Перехват переключения на вкладку promos
-        const _origSwitchForPromos = window.switchAdminTab;
-        window.switchAdminTab = function(tabName) {
-            _origSwitchForPromos(tabName);
-            if (tabName === 'promos') {
-                if (typeof window.loadPromoCodes === 'function') window.loadPromoCodes();
-                window.updatePromoAdminUI();
-            }
-        };
+        // promos load: встроен в switchAdminTab
     </script>
 
     <!-- ИНТЕГРАЦИЯ С БАЗОЙ ДАННЫХ И CRM -->
@@ -3121,15 +3118,21 @@
             if (typeof window.populateVideoEditList === 'function') window.populateVideoEditList();
         };
 
-        window.loginAdmin = function() {
+        window.loginAdmin = async function() {
             const passwordInput = document.getElementById('admin-password');
             const password = passwordInput.value;
             const hash = CryptoJS.SHA256(password).toString();
-            
-            const expectedHash = (configData && configData.adminPassHash) 
-                ? configData.adminPassHash 
-                : CryptoJS.SHA256("spaceadmin").toString(); 
-            
+            // Принудительная загрузка конфига из Firebase если ещё не пришёл
+            if (firebaseInitialized && (!configData || !configData.adminPassHash)) {
+                try {
+                    await ensureAuth();
+                    const cfgSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'));
+                    if (cfgSnap.exists()) { configData = cfgSnap.data(); window.configData = configData; }
+                } catch(e) { console.warn('login config load:', e); }
+            }
+            const expectedHash = (configData && configData.adminPassHash)
+                ? configData.adminPassHash
+                : CryptoJS.SHA256("spaceadmin").toString();
             if (hash === expectedHash) {
                 window.setAdminState(true);
                 checkMaintenanceMode();
@@ -4338,26 +4341,26 @@
 
             const basePrice = parseInt(row.querySelector('.crm-price-input').value) || 0;
             const managerTg = row.querySelector('.crm-manager-tg').value.trim();
+            const editorBasePay = parseInt(document.getElementById('ep-base-'+id)?.value) || 0;
 
             const dynamics = parseInt(row.querySelector('.crm-range-dynamics').value) || 50;
             const sound = parseInt(row.querySelector('.crm-range-sound').value) || 50;
             const color = parseInt(row.querySelector('.crm-range-color').value) || 50;
             const vfx = parseInt(row.querySelector('.crm-range-vfx').value) || 50;
 
-            // УБРАН ТЕМПОРИТМ ИЗ СОХРАНЕНИЯ
             const stats = { dynamics, sound, color, vfx };
 
-            // Get current project to preserve addons and logs
             const currentProject = firebaseInitialized ? clientProjects.find(x => x.id === id) : localDemoProjects.find(x => x.id === id);
             const addons = currentProject?.addons || [];
             const logs = currentProject?.logs || [];
+            const editorAddons = currentProject?.editorAddons || [];
 
             if (firebaseInitialized) {
                 try {
                     await ensureAuth();
                     if (!auth.currentUser) throw new Error("Нет авторизации базы данных");
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'projects', id);
-                    await setDoc(docRef, { s1, s2, s3, s4, s5, stage, progress, notes, deadline, basePrice, managerTg, stats, addons, logs }, { merge: true });
+                    await setDoc(docRef, { s1, s2, s3, s4, s5, stage, progress, notes, deadline, basePrice, managerTg, stats, addons, logs, editorBasePay, editorAddons }, { merge: true });
                     showToast("Настройки кабинета успешно обновлены!", "success");
                 } catch (err) { showToast("Ошибка сохранения: " + err.message, "error"); }
             } else {
@@ -4365,15 +4368,54 @@
                 if (p) {
                     p.s1 = s1; p.s2 = s2; p.s3 = s3; p.s4 = s4; p.s5 = s5;
                     p.stage = stage; p.progress = progress; p.notes = notes; p.deadline = deadline;
-                    p.basePrice = basePrice;
-                    p.managerTg = managerTg;
-                    p.stats = stats;
-                    p.addons = addons;
-                    p.logs = logs;
+                    p.basePrice = basePrice; p.managerTg = managerTg; p.stats = stats;
+                    p.addons = addons; p.logs = logs;
+                    p.editorBasePay = editorBasePay; p.editorAddons = editorAddons;
                     saveLocalProjects();
                     showToast("Локальный кабинет обновлен!", "success");
                     renderCrmProjects();
                 }
+            }
+        };
+
+        // ── ВЫПЛАТЫ МОНТАЖЁРАМ ──────────────────────────────────────────
+        window.updateEditorPayTotal = function(id) {
+            const base = parseInt(document.getElementById('ep-base-'+id)?.value) || 0;
+            const proj = (firebaseInitialized ? clientProjects : localDemoProjects).find(x=>x.id===id);
+            const addonsSum = (proj?.editorAddons||[]).reduce((a,x)=>a+x.price,0);
+            const total = base + addonsSum;
+            const el = document.getElementById('ep-total-'+id);
+            const el2 = document.getElementById('ep-total-display-'+id);
+            if (el) el.textContent = total.toLocaleString('ru') + ' ₽';
+            if (el2) el2.textContent = total.toLocaleString('ru') + ' ₽';
+        };
+
+        window.addEditorAddon = async function(id) {
+            const labelEl = document.getElementById('ep-addon-label-'+id);
+            const priceEl = document.getElementById('ep-addon-price-'+id);
+            const label = (labelEl?.value||'').trim();
+            const price = parseInt(priceEl?.value)||0;
+            if (!label) { showToast('Введите название выплаты!','error'); return; }
+            const p = (firebaseInitialized ? clientProjects : localDemoProjects).find(x=>x.id===id);
+            if (!p) return;
+            const editorAddons = [...(p.editorAddons||[]), {label, price}];
+            const ok = await saveProjectToFirebaseOrLocal(id, {editorAddons});
+            if (ok) {
+                if (!firebaseInitialized) { p.editorAddons = editorAddons; saveLocalProjects(); renderCrmProjects(); }
+                if (labelEl) labelEl.value='';
+                if (priceEl) priceEl.value='';
+                showToast('Выплата добавлена!','success');
+            }
+        };
+
+        window.deleteEditorAddon = async function(id, idx) {
+            const p = (firebaseInitialized ? clientProjects : localDemoProjects).find(x=>x.id===id);
+            if (!p) return;
+            const editorAddons = (p.editorAddons||[]).filter((_,i)=>i!==idx);
+            const ok = await saveProjectToFirebaseOrLocal(id, {editorAddons});
+            if (ok) {
+                if (!firebaseInitialized) { p.editorAddons = editorAddons; saveLocalProjects(); renderCrmProjects(); }
+                showToast('Выплата удалена!','success');
             }
         };
 
@@ -4614,6 +4656,56 @@
                                         <button onclick="addProjectAddon('${p.id}')" class="w-full py-2.5 rounded-xl border border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/12 text-cyan-400 font-bold text-xs font-space uppercase tracking-wide transition-all duration-200 flex items-center justify-center gap-2">
                                             <i class="fas fa-plus text-[10px]"></i> Добавить услугу
                                         </button>
+                                    </div>
+                                </div>
+
+                                <!-- ══ БЛОК 4.5: Выплата монтажёру ══ -->
+                                <div class="rounded-2xl border border-violet-500/20 overflow-hidden" style="background: rgba(139,92,246,0.04);">
+                                    <div class="flex items-center gap-2 px-4 py-2.5 border-b border-violet-500/15" style="background: rgba(139,92,246,0.07);">
+                                        <i class="fas fa-cut text-violet-400 text-xs"></i>
+                                        <span class="text-[10px] text-violet-400 uppercase tracking-[0.15em] font-space font-bold">Выплата монтажёру</span>
+                                        <span class="ml-auto text-[10px] font-black font-mono text-violet-300" id="ep-total-display-${p.id}">${(
+                                            (p.editorBasePay || 0) + (p.editorAddons || []).reduce((a,x)=>a+x.price,0)
+                                        ).toLocaleString('ru')} ₽</span>
+                                    </div>
+                                    <div class="p-4 space-y-3">
+                                        <!-- Базовая ставка монтажёра -->
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-1">
+                                                <label class="block text-[9px] text-slate-600 uppercase tracking-wider mb-1.5 font-space font-bold">Базовая ставка монтажёра (₽)</label>
+                                                <input type="number" id="ep-base-${p.id}" value="${p.editorBasePay || 0}" placeholder="0"
+                                                    class="w-full bg-black/60 border border-violet-500/20 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-violet-500/50 font-mono transition-all duration-200 placeholder:text-slate-700"
+                                                    oninput="updateEditorPayTotal('${p.id}')">
+                                            </div>
+                                        </div>
+                                        <!-- Доп. услуги монтажёру -->
+                                        <div class="space-y-2" id="ep-addons-${p.id}">${
+                                            (p.editorAddons||[]).map((a,i)=> `
+                                            <div class="flex items-center justify-between bg-black/50 border border-violet-500/10 rounded-xl px-3 py-2 gap-2">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-violet-500/60 flex-shrink-0"></span>
+                                                <span class="text-xs text-slate-300 flex-1 truncate">${a.label}</span>
+                                                <span class="text-xs text-violet-300 font-mono font-bold flex-shrink-0">${a.price} ₽</span>
+                                                <button onclick="deleteEditorAddon('${p.id}',${i})" class="w-6 h-6 flex items-center justify-center rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-500 transition flex-shrink-0"><i class="fas fa-times text-[10px]"></i></button>
+                                            </div>`).join('')
+                                        }</div>
+                                        <!-- Добавить доп. услугу монтажёру -->
+                                        <div class="grid grid-cols-3 gap-2 pt-1">
+                                            <input type="text" id="ep-addon-label-${p.id}" placeholder="Название (напр. Срочность)"
+                                                class="col-span-2 bg-black/60 border border-violet-500/15 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-violet-500/40 transition-all duration-200 placeholder:text-slate-700">
+                                            <input type="number" id="ep-addon-price-${p.id}" placeholder="₽"
+                                                class="bg-black/60 border border-violet-500/15 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-violet-500/40 font-mono transition-all duration-200 placeholder:text-slate-700">
+                                        </div>
+                                        <button onclick="addEditorAddon('${p.id}')"
+                                            class="w-full py-2.5 rounded-xl border border-violet-500/25 bg-violet-500/6 hover:bg-violet-500/12 text-violet-400 font-bold text-xs font-space uppercase tracking-wide transition-all duration-200 flex items-center justify-center gap-2">
+                                            <i class="fas fa-plus text-[10px]"></i> Добавить выплату
+                                        </button>
+                                        <!-- Итог выплаты -->
+                                        <div class="flex items-center justify-between pt-1 border-t border-violet-500/10">
+                                            <span class="text-[10px] text-slate-500 font-space uppercase tracking-wider">Итого к выплате монтажёру</span>
+                                            <span class="text-sm font-black text-violet-300 font-mono" id="ep-total-${p.id}">${(
+                                                (p.editorBasePay || 0) + (p.editorAddons || []).reduce((a,x)=>a+x.price,0)
+                                            ).toLocaleString('ru')} ₽</span>
+                                        </div>
                                     </div>
                                 </div>
 
