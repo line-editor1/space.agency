@@ -628,10 +628,17 @@
         const tgUrl = base + '?text=' + msg;
 
         // Открываем Telegram СРАЗУ (в user-gesture), до любых async-операций.
-        // window.open на десктопе, location.href на мобильных (iOS/Android Safari блокирует window.open вне user-gesture).
+        // На мобильных: tg:// deep link открывает приложение напрямую.
+        // Fallback через 1.5с — открывает https://t.me/ если приложение не установлено.
         const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
         if (isMobile) {
-            window.location.href = tgUrl;
+            const tgBaseRaw = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
+            const tgUsername = tgBaseRaw.replace(/^https?:\/\/t\.me\//i, '').replace(/\/$/, '');
+            const tgDeepLink = 'tg://resolve?domain=' + encodeURIComponent(tgUsername) + '&text=' + msg;
+            window.location.href = tgDeepLink;
+            setTimeout(function() {
+                if (!document.hidden) { window.open(tgUrl, '_blank'); }
+            }, 1500);
         } else {
             window.open(tgUrl, '_blank');
         }

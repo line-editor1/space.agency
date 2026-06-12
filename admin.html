@@ -539,7 +539,6 @@
                             <div class="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
                                 <span class="flex h-2 w-2"><span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span>
                                 <span class="text-emerald-400 text-xs font-bold font-space uppercase tracking-widest">Онлайн</span>
-                                <span class="text-emerald-400 text-xs font-bold font-space" id="stat-online-systems">5</span>
                             </div>
                         </div>
                     </div>
@@ -989,12 +988,6 @@
                                 <p class="text-slate-500 text-xs mt-0.5">Цены пакетов, срочность, доп. услуги по категориям и ссылка Telegram</p>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Базовые цены пакетов -->
-                    <div class="rounded-3xl border border-white/5 p-6 space-y-4" style="background:rgba(255,255,255,0.025)">
-                        <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold flex items-center gap-2"><i class="fas fa-box-open text-cyan-400"></i> Базовые цены пакетов</p>
-                        <div id="calc-admin-packages" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
                     </div>
 
                     <!-- Срочность -->
@@ -2170,28 +2163,25 @@
         // ── ФУНКЦИИ РЕДАКТОРА КАЛЬКУЛЯТОРА В АДМИНКЕ ──────
         let _calcAdminCurrentPkg = 'base'; // активная вкладка в редакторе
 
-        window.renderCalcAdminTab = function() {
-            const cfg = _CP;
-            // Пакеты
-            const pkgEl = document.getElementById('calc-admin-packages');
-            if (pkgEl) {
-                pkgEl.innerHTML = ['base','pro','premium'].map(pk => {
-                    const p = cfg[pk];
-                    const colors = {base:'cyan', pro:'blue', premium:'purple'};
-                    const c = colors[pk] || 'cyan';
-                    return `<div class="rounded-2xl border border-white/8 p-4 space-y-3" style="background:rgba(255,255,255,0.03)">
-                        <div class="text-xs font-black text-${c}-400 font-space uppercase tracking-widest">${p.name}</div>
-                        <div>
-                            <label class="block text-[9px] text-slate-600 uppercase tracking-widest mb-1.5 font-space">Базовая цена (₽)</label>
-                            <input type="number" id="calc-admin-${pk}-base" value="${p.base}" class="w-full bg-black/50 border border-white/8 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-${c}-500/60 transition">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] text-slate-600 uppercase tracking-widest mb-1.5 font-space">За каждые +30 сек (₽)</label>
-                            <input type="number" id="calc-admin-${pk}-per30" value="${p.per30}" class="w-full bg-black/50 border border-white/8 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-${c}-500/60 transition">
-                        </div>
-                    </div>`;
-                }).join('');
+        window.renderCalcAdminTab = async function() {
+            // Принудительно грузим актуальные данные из Firebase перед рендером
+            if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
+                try {
+                    await ensureAuth();
+                    const calcCfgSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main'));
+                    if (calcCfgSnap.exists()) {
+                        const data = calcCfgSnap.data();
+                        ['base','pro','premium'].forEach(pk => {
+                            if (data[pk]) {
+                                Object.assign(_CP[pk], data[pk]);
+                                if (Array.isArray(data[pk].opts)) _CP[pk].opts = data[pk].opts;
+                            }
+                        });
+                        try { localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink: data.calcTgLink || ''})); } catch(e) {}
+                    }
+                } catch(e) { console.warn('renderCalcAdminTab Firebase fetch:', e); }
             }
+            const cfg = _CP;
             // Срочность
             const urgEl = document.getElementById('calc-admin-urgent-pct');
             if (urgEl) urgEl.value = cfg.base.urg;
@@ -3207,7 +3197,7 @@
             }
             // Резервные пароли: если в Firebase нет adminPassHash — принимаем оба варианта
             const firebaseHash = (configData && configData.adminPassHash) ? configData.adminPassHash : null;
-            const defaultHash1 = CryptoJS.SHA256("spaceadmin").toString();
+            const defaultHash1 = CryptoJS.SHA256("Space2026!").toString();
             const defaultHash2 = CryptoJS.SHA256("Space2026!").toString();
             const isValid = firebaseHash
                 ? (hash === firebaseHash || hash === defaultHash1 || hash === defaultHash2)
@@ -3253,7 +3243,7 @@
             try {
                 if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
                     await ensureAuth();
-                    const defaultHash = CryptoJS.SHA256("spaceadmin").toString();
+                    const defaultHash = CryptoJS.SHA256("Space2026!").toString();
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'),
                         { adminPassHash: defaultHash }, { merge: true });
                     if (configData) configData.adminPassHash = defaultHash;
@@ -3988,7 +3978,7 @@
                 siteContentData = savedContent ? { ...defaultContent, ...JSON.parse(savedContent) } : { ...defaultContent };
                 const savedConfig = localStorage.getItem('space_site_config');
                 configData = savedConfig ? { 
-                    adminPassHash: CryptoJS.SHA256("spaceadmin").toString(), 
+                    adminPassHash: CryptoJS.SHA256("Space2026!").toString(), 
                     telegramHandle: "your_telegram", 
                     schedule: defaultSchedule, 
                     isHoliday: false,
@@ -3998,7 +3988,7 @@
                     maintenancePass2: "space1",
                     ...JSON.parse(savedConfig) 
                 } : { 
-                    adminPassHash: CryptoJS.SHA256("spaceadmin").toString(), 
+                    adminPassHash: CryptoJS.SHA256("Space2026!").toString(), 
                     telegramHandle: "your_telegram", 
                     schedule: defaultSchedule, 
                     isHoliday: false,
@@ -4047,7 +4037,7 @@
                         configData = snap.data();
                     } else {
                         configData = { 
-                            adminPassHash: CryptoJS.SHA256("spaceadmin").toString(), 
+                            adminPassHash: CryptoJS.SHA256("Space2026!").toString(), 
                             telegramHandle: "your_telegram", 
                             schedule: defaultSchedule, 
                             isHoliday: false,
