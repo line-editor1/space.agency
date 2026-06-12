@@ -2144,37 +2144,23 @@
         // ── ФУНКЦИИ РЕДАКТОРА КАЛЬКУЛЯТОРА В АДМИНКЕ ──────
         let _calcAdminCurrentPkg = 'base'; // активная вкладка в редакторе
 
-        // Получить ссылку на документ конфига калькулятора в Firestore
-        function _calcCfgRef() {
-            return doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main');
-        }
-
         // Сохранить текущий _CP (включая calcTgLink) в localStorage и Firebase.
         // Возвращает true, если сохранение в Firebase прошло успешно (или Firebase не подключён).
         async function _persistCalcConfig() {
             try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
-            if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
-                try {
-                    await ensureAuth();
-                    await setDoc(_calcCfgRef(), _CP, { merge: true });
-                    return true;
-                } catch(e) {
-                    console.error('Calc config Firebase save failed:', e);
-                    showToast('Ошибка сохранения в Firebase: ' + (e.message || e), 'error');
-                    return false;
-                }
+            // Используем мост к Firebase из модульного скрипта
+            if (typeof window._firebaseSaveCalcConfig === 'function') {
+                return await window._firebaseSaveCalcConfig(_CP);
             }
             return true;
         }
 
         window.renderCalcAdminTab = async function() {
             // Принудительно грузим актуальные данные из Firebase перед рендером
-            if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
+            if (typeof window._firebaseLoadCalcConfig === 'function') {
                 try {
-                    await ensureAuth();
-                    const calcCfgSnap = await getDoc(_calcCfgRef());
-                    if (calcCfgSnap.exists()) {
-                        const data = calcCfgSnap.data();
+                    const data = await window._firebaseLoadCalcConfig();
+                    if (data) {
                         ['base','pro','premium'].forEach(pk => {
                             if (data[pk]) {
                                 Object.assign(_CP[pk], data[pk]);
@@ -2186,7 +2172,6 @@
                     }
                 } catch(e) {
                     console.warn('renderCalcAdminTab Firebase fetch:', e);
-                    showToast('Не удалось загрузить настройки из Firebase: ' + (e.message || e), 'error');
                 }
             }
             const cfg = _CP;
@@ -2640,6 +2625,33 @@
             if (auth.currentUser) return auth.currentUser;
             return await initAuth();
         }
+
+        // Экспортируем Firebase-сохранение конфига калькулятора для первого скрипта
+        window._firebaseSaveCalcConfig = async function(cpData) {
+            if (!firebaseInitialized || !db) return false;
+            try {
+                await ensureAuth();
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main'), cpData, { merge: true });
+                return true;
+            } catch(e) {
+                console.error('Calc config Firebase save failed:', e);
+                if (window.showToast) window.showToast('Ошибка сохранения в Firebase: ' + (e.message || e), 'error');
+                return false;
+            }
+        };
+
+        // Экспортируем чтение конфига калькулятора из Firebase
+        window._firebaseLoadCalcConfig = async function() {
+            if (!firebaseInitialized || !db) return null;
+            try {
+                await ensureAuth();
+                const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main'));
+                return snap.exists() ? snap.data() : null;
+            } catch(e) {
+                console.error('Calc config Firebase load failed:', e);
+                return null;
+            }
+        };
 
         function applySiteContent() {
             // Мержим с defaultContent чтобы никогда не отображались пустые поля
