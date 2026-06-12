@@ -1117,6 +1117,20 @@
     }
     loadOwnerConfig();
 
+    // ─── CALC CONFIG LOAD ─────────────────────────────────────────────
+    // Читаем настройки калькулятора из Firestore при каждом запуске,
+    // чтобы мобильные устройства не зависели от localStorage.
+    async function loadCalcConfig() {
+        try {
+            await ensureAuth();
+            const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calc_config', 'main'));
+            if (snap.exists()) {
+                window._calcConfig = snap.data();
+            }
+        } catch(e) { console.warn('Calc config load:', e); }
+    }
+    loadCalcConfig();
+
     // ─── OWNER DASHBOARD INIT ─────────────────────────────────────────
     window.initOwnerDashboard = async function() {
         await ensureAuth();
