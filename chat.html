@@ -14,180 +14,246 @@
         ::-webkit-scrollbar{width:4px;}
         ::-webkit-scrollbar-track{background:transparent;}
         ::-webkit-scrollbar-thumb{background:rgba(0,198,251,0.2);border-radius:4px;}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(0,198,251,0.35);}
 
-        /* Layout */
         #app{display:flex;height:100vh;position:relative;}
 
-        /* Sidebar */
+        /* ── SIDEBAR ── */
         #sidebar{
-            width:280px;flex-shrink:0;
+            width:300px;flex-shrink:0;
             background:rgba(4,2,18,0.98);
             border-right:1px solid rgba(255,255,255,0.06);
             display:flex;flex-direction:column;
             transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);
         }
-        #sidebar-header{
-            padding:16px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;
-        }
-        #sidebar-list{flex:1;overflow-y:auto;padding:8px;}
+        #sidebar-header{padding:16px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
+        #sidebar-list{flex:1;overflow-y:auto;padding:6px;}
 
-        /* Main */
+        /* ── MAIN ── */
         #main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;}
         #chat-header{
-            padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;
-            background:rgba(4,2,18,0.95);backdrop-filter:blur(20px);
+            padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;
+            background:rgba(4,2,18,0.96);backdrop-filter:blur(20px);
             display:flex;align-items:center;gap:12px;
+            cursor:pointer;
+            transition:background 0.2s;
         }
-        #messages-wrap{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;}
-        #input-area{
-            flex-shrink:0;padding:12px 16px;
-            border-top:1px solid rgba(255,255,255,0.06);
-            background:rgba(4,2,18,0.95);
-        }
+        #chat-header:hover{background:rgba(6,3,22,0.98);}
+        #messages-wrap{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:2px;}
+        #input-area{flex-shrink:0;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.06);background:rgba(4,2,18,0.96);}
 
-        /* Ambient */
-        .ambient{position:fixed;inset:0;pointer-events:none;z-0;
+        /* ── REPLY BAR ── */
+        #reply-bar{
+            display:none;padding:6px 12px;
+            border-top:1px solid rgba(0,198,251,0.12);
+            background:rgba(0,198,251,0.04);
+            align-items:center;gap:10px;
+        }
+        #reply-bar.show{display:flex;}
+        #reply-bar-line{width:3px;height:32px;border-radius:2px;background:#00c6fb;flex-shrink:0;}
+        #reply-bar-content{flex:1;min-width:0;}
+        #reply-bar-name{font-size:11px;font-weight:700;color:#00c6fb;font-family:'Space Grotesk',sans-serif;}
+        #reply-bar-text{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        #reply-bar-close{width:24px;height:24px;border-radius:8px;background:rgba(255,255,255,0.06);border:none;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+        #reply-bar-close:hover{background:rgba(255,255,255,0.1);color:white;}
+
+        /* ── AMBIENT ── */
+        .ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
             background:
                 radial-gradient(ellipse 60% 40% at 10% 20%,rgba(0,198,251,0.04) 0%,transparent 70%),
                 radial-gradient(ellipse 50% 50% at 85% 80%,rgba(139,92,246,0.03) 0%,transparent 70%);}
 
-        /* Glass card */
+        /* ── GLASS ── */
         .glass{
             background:linear-gradient(135deg,rgba(255,255,255,0.03) 0%,rgba(255,255,255,0.01) 100%);
             backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);
-            border-top:1px solid rgba(255,255,255,0.12);
-            border-left:1px solid rgba(255,255,255,0.08);
-            border-right:1px solid rgba(255,255,255,0.02);
-            border-bottom:1px solid rgba(255,255,255,0.01);
+            border-top:1px solid rgba(255,255,255,0.12);border-left:1px solid rgba(255,255,255,0.08);
+            border-right:1px solid rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.01);
             box-shadow:0 20px 40px rgba(0,0,0,0.5),inset 0 1px 1px rgba(255,255,255,0.1);
         }
 
-        /* Conversation item */
+        /* ── CONV ITEM ── */
         .conv-item{
-            padding:10px 12px;border-radius:14px;cursor:pointer;
-            transition:all 0.2s cubic-bezier(0.16,1,0.3,1);
+            padding:9px 10px;border-radius:12px;cursor:pointer;
+            transition:all 0.15s;
             display:flex;align-items:center;gap:10px;
-            border:1px solid transparent;
+            border:1px solid transparent;position:relative;
         }
-        .conv-item:hover{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.06);}
-        .conv-item.active{background:rgba(0,198,251,0.08);border-color:rgba(0,198,251,0.2);}
+        .conv-item:hover{background:rgba(255,255,255,0.04);}
+        .conv-item.active{background:rgba(0,198,251,0.08);border-color:rgba(0,198,251,0.18);}
+        .conv-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+        .conv-time{font-size:10px;color:#334155;font-family:'Space Grotesk',sans-serif;}
+        .conv-item.active .conv-time{color:rgba(0,198,251,0.5);}
+        .conv-lastmsg{font-size:11px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+        .conv-lastmsg-wrap{display:flex;align-items:center;gap:4px;min-width:0;}
+        .conv-checks{font-size:9px;color:#475569;flex-shrink:0;}
+        .conv-checks.read{color:#00c6fb;}
 
-        /* Avatar */
+        /* ── AVATAR ── */
         .avatar{
-            width:40px;height:40px;border-radius:14px;
+            width:42px;height:42px;border-radius:14px;
             display:flex;align-items:center;justify-content:center;
             font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:14px;
-            flex-shrink:0;
+            flex-shrink:0;position:relative;
+        }
+        .online-dot{
+            position:absolute;bottom:-1px;right:-1px;
+            width:11px;height:11px;border-radius:50%;
+            background:#22c55e;border:2px solid #010008;
         }
 
-        /* Badge */
+        /* ── BADGE ── */
         .badge{
-            width:18px;height:18px;border-radius:999px;
+            min-width:18px;height:18px;border-radius:999px;
             background:#ef4444;color:white;
             font-size:9px;font-weight:900;font-family:'Space Grotesk',sans-serif;
             display:flex;align-items:center;justify-content:center;
-            flex-shrink:0;
+            padding:0 4px;flex-shrink:0;
         }
+        .badge.muted{background:rgba(255,255,255,0.12);color:#475569;}
 
-        /* Bubbles */
+        /* ── BUBBLES ── */
+        .msg-row{display:flex;flex-direction:column;margin-bottom:2px;}
+        .msg-row.mine{align-items:flex-end;}
+        .msg-row.theirs{align-items:flex-start;}
+
         .bubble{
-            max-width:72%;padding:10px 14px;border-radius:18px;
-            font-size:13px;line-height:1.5;position:relative;
-            animation:bubbleIn 0.25s cubic-bezier(0.16,1,0.3,1);
+            max-width:68%;padding:8px 12px 6px;border-radius:18px;
+            font-size:13.5px;line-height:1.55;position:relative;
+            word-break:break-word;
         }
-        @keyframes bubbleIn{from{opacity:0;transform:translateY(8px) scale(0.97);}to{opacity:1;transform:none;}}
-        @keyframes bubbleOut{to{opacity:0;transform:translateY(-8px) scale(0.95);}}
+        /* Telegram-style tails */
         .bubble-mine{
-            background:linear-gradient(135deg,rgba(0,198,251,0.2),rgba(0,82,212,0.15));
-            border:1px solid rgba(0,198,251,0.25);
+            background:linear-gradient(145deg,rgba(0,198,251,0.22),rgba(0,82,212,0.18));
+            border:1px solid rgba(0,198,251,0.28);
             border-bottom-right-radius:4px;
             color:#e2f8ff;
-            align-self:flex-end;
         }
         .bubble-theirs{
-            background:rgba(255,255,255,0.05);
+            background:rgba(255,255,255,0.055);
             border:1px solid rgba(255,255,255,0.08);
             border-bottom-left-radius:4px;
             color:#e2e8f0;
-            align-self:flex-start;
-        }
-        .bubble-admin{
-            background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(99,102,241,0.1));
-            border:1px solid rgba(139,92,246,0.3);
-            border-bottom-left-radius:4px;
-            color:#e9d5ff;
-            align-self:flex-start;
-            box-shadow:0 0 20px rgba(139,92,246,0.1);
         }
         .bubble-channel{
             background:rgba(139,92,246,0.1);
             border:1px solid rgba(139,92,246,0.2);
-            color:#e9d5ff;
-            align-self:stretch;max-width:100%;
-            border-radius:14px;
+            color:#e9d5ff;align-self:stretch;max-width:100%;border-radius:14px;
         }
-        .bubble-pinned{
-            border-color:rgba(245,158,11,0.3)!important;
-            background:rgba(245,158,11,0.06)!important;
-        }
-        .bubble-reply{
-            border-left:3px solid rgba(0,198,251,0.4);
-            padding-left:12px;
-        }
-        .bubble-deleted{
-            opacity:0.5;
-            font-style:italic;
-        }
-        .msg-time{font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;display:block;}
-        .msg-sender{font-size:10px;color:rgba(0,198,251,0.6);font-family:'Space Grotesk',sans-serif;font-weight:700;margin-bottom:2px;}
-        .msg-edited{font-size:9px;color:rgba(255,255,255,0.25);margin-left:4px;}
-        .msg-read-receipt{font-size:10px;margin-left:4px;}
-        .msg-read-receipt.sent{color:rgba(255,255,255,0.3);}
-        .msg-read-receipt.delivered{color:rgba(0,198,251,0.5);}
-        .msg-read-receipt.read{color:#00c6fb;}
-        .reply-preview{
-            background:rgba(0,0,0,0.3);
-            border-radius:8px;
-            padding:6px 10px;
-            margin-bottom:6px;
-            font-size:11px;
-            border-left:2px solid rgba(0,198,251,0.4);
-        }
-        .reply-preview-text{color:rgba(255,255,255,0.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .reply-preview-name{color:#00c6fb;font-weight:600;font-family:'Space Grotesk',sans-serif;font-size:10px;}
 
-        /* Input */
+        /* ── REPLY QUOTE (inside bubble) ── */
+        .reply-quote{
+            display:flex;gap:7px;padding:5px 8px;
+            border-radius:8px;margin-bottom:6px;
+            background:rgba(0,0,0,0.25);border-left:3px solid #00c6fb;
+            cursor:pointer;transition:background 0.15s;
+        }
+        .reply-quote:hover{background:rgba(0,0,0,0.35);}
+        .reply-quote-mine{border-left-color:rgba(255,255,255,0.4);}
+        .reply-quote-name{font-size:10px;font-weight:700;color:#00c6fb;font-family:'Space Grotesk',sans-serif;margin-bottom:1px;}
+        .reply-quote-mine .reply-quote-name{color:rgba(255,255,255,0.6);}
+        .reply-quote-text{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;}
+
+        /* ── MSG META ── */
+        .msg-meta{
+            display:flex;align-items:center;gap:3px;
+            font-size:10px;color:rgba(255,255,255,0.28);
+            float:right;margin-left:8px;margin-top:2px;
+            position:relative;bottom:-2px;
+        }
+        .msg-sender-name{font-size:10px;color:rgba(0,198,251,0.65);font-family:'Space Grotesk',sans-serif;font-weight:700;margin-bottom:2px;}
+
+        /* check icons */
+        .check-icon{font-size:9px;}
+        .check-sent{color:rgba(255,255,255,0.3);}
+        .check-read{color:#00c6fb;}
+
+        /* ── TYPING INDICATOR ── */
+        #typing-indicator{
+            display:none;padding:0 16px 6px;
+        }
+        #typing-indicator.show{display:block;}
+        .typing-bubble{
+            display:inline-flex;align-items:center;gap:8px;
+            padding:7px 12px;border-radius:14px;border-bottom-left-radius:4px;
+            background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.08);
+        }
+        .typing-name{font-size:11px;color:#64748b;}
+        .typing-dots{display:flex;gap:3px;align-items:center;}
+        .typing-dots span{
+            width:5px;height:5px;border-radius:50%;background:#00c6fb;opacity:0.5;
+            animation:typingBounce 1.4s infinite;
+        }
+        .typing-dots span:nth-child(2){animation-delay:0.2s;}
+        .typing-dots span:nth-child(3){animation-delay:0.4s;}
+        @keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:0.5;}30%{transform:translateY(-4px);opacity:1;}}
+
+        /* ── ANIMATIONS ── */
+        @keyframes bubbleIn{from{opacity:0;transform:translateY(6px) scale(0.97);}to{opacity:1;transform:none;}}
+        @keyframes bubbleOut{from{opacity:1;transform:scale(1);}to{opacity:0;transform:scale(0.92);max-height:0;padding:0;margin:0;}}
+        .bubble-entering{animation:bubbleIn 0.22s cubic-bezier(0.16,1,0.3,1) both;}
+        .bubble-leaving{animation:bubbleOut 0.18s ease-in forwards;}
+
+        /* ── DAY DIVIDER ── */
+        .day-divider{
+            text-align:center;font-size:10px;color:#334155;
+            font-family:'Space Grotesk',sans-serif;font-weight:700;
+            text-transform:uppercase;letter-spacing:0.12em;
+            margin:10px 0 6px;display:flex;align-items:center;gap:10px;
+        }
+        .day-divider::before,.day-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.05);}
+
+        /* ── CONTEXT MENU ── */
+        #ctx-menu{
+            position:fixed;z-index:500;
+            background:rgba(8,4,28,0.97);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:14px;padding:6px;
+            box-shadow:0 16px 40px rgba(0,0,0,0.7);
+            min-width:160px;
+            backdrop-filter:blur(30px);
+            transform-origin:top left;
+            animation:menuIn 0.15s cubic-bezier(0.16,1,0.3,1);
+        }
+        @keyframes menuIn{from{opacity:0;transform:scale(0.92);}to{opacity:1;transform:scale(1);}}
+        .ctx-item{
+            padding:8px 12px;border-radius:9px;cursor:pointer;
+            font-size:13px;color:#e2e8f0;display:flex;align-items:center;gap:9px;
+            transition:background 0.12s;white-space:nowrap;
+        }
+        .ctx-item:hover{background:rgba(255,255,255,0.07);}
+        .ctx-item.danger{color:#fb7185;}
+        .ctx-item.danger:hover{background:rgba(244,63,94,0.1);}
+        .ctx-item i{width:14px;text-align:center;font-size:12px;opacity:0.7;}
+
+        /* ── INPUT ── */
         .msg-input{
-            flex:1;background:rgba(0,0,0,0.5);
+            flex:1;background:rgba(0,0,0,0.45);
             border:1px solid rgba(255,255,255,0.08);
             border-radius:14px;padding:10px 14px;
-            color:white;font-size:13px;outline:none;
+            color:white;font-size:13.5px;outline:none;
             font-family:'Inter',sans-serif;
             transition:border-color 0.2s;resize:none;
             line-height:1.5;max-height:120px;overflow-y:auto;
         }
-        .msg-input:focus{border-color:rgba(0,198,251,0.4);}
+        .msg-input:focus{border-color:rgba(0,198,251,0.38);}
         .msg-input::placeholder{color:#334155;}
 
-        /* Send btn */
+        /* ── SEND BTN ── */
         .send-btn{
-            width:40px;height:40px;border-radius:12px;flex-shrink:0;
-            background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.3);
+            width:42px;height:42px;border-radius:13px;flex-shrink:0;
+            background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.28);
             color:#00c6fb;cursor:pointer;
             transition:all 0.2s;display:flex;align-items:center;justify-content:center;
         }
         .send-btn:hover{background:rgba(0,198,251,0.25);transform:scale(1.05);}
         .send-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
 
-        /* Day divider */
-        .day-divider{
-            text-align:center;font-size:10px;color:#334155;
-            font-family:'Space Grotesk',sans-serif;font-weight:700;
-            text-transform:uppercase;letter-spacing:0.15em;
-            margin:8px 0;
-        }
+        /* ── ONLINE STATUS ── */
+        .status-online{color:#22c55e;}
+        .status-recently{color:#94a3b8;}
 
-        /* Toast */
+        /* ── TOAST ── */
         #toast{
             position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
             z-index:9999;padding:10px 18px;border-radius:12px;
@@ -200,157 +266,43 @@
         #toast.error{background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;}
         #toast.info{background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.3);color:#7dd3fc;}
 
-        /* Modal */
+        /* ── MODAL ── */
         .modal-bg{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:16px;}
-
-        /* Input dark */
-        .input-dark{
-            background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.08);
-            border-radius:12px;padding:10px 14px;color:white;outline:none;
-            transition:border-color 0.2s;width:100%;font-size:13px;
-            font-family:'Inter',sans-serif;
-        }
+        .input-dark{background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;color:white;outline:none;transition:border-color 0.2s;width:100%;font-size:13px;font-family:'Inter',sans-serif;}
         .input-dark:focus{border-color:rgba(0,198,251,0.6);}
-
-        /* Section label */
         .sec-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#334155;margin-bottom:8px;}
-
-        /* Empty state */
         .empty-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#334155;gap:8px;}
 
-        /* Online indicator */
-        .online-indicator{
-            width:10px;height:10px;border-radius:50%;
-            background:#22c55e;border:2px solid #010008;
-            position:absolute;bottom:0;right:0;
+        /* ── UNREAD MARKER ── */
+        .unread-marker{
+            text-align:center;font-size:10px;color:#475569;
+            font-family:'Space Grotesk',sans-serif;font-weight:700;
+            text-transform:uppercase;letter-spacing:0.12em;
+            margin:10px 0 6px;display:flex;align-items:center;gap:8px;
         }
-        .online-indicator.recently{background:#f59e0b;}
-        .online-indicator.offline{background:#64748b;}
+        .unread-marker::before,.unread-marker::after{content:'';flex:1;height:1px;background:rgba(0,198,251,0.15);}
+        .unread-marker span{color:rgba(0,198,251,0.5);background:rgba(0,198,251,0.08);border:1px solid rgba(0,198,251,0.15);padding:1px 8px;border-radius:99px;font-size:9px;}
 
-        /* Typing indicator */
-        .typing-indicator{
-            font-size:10px;color:#00c6fb;
-            font-family:'Space Grotesk',sans-serif;
-            animation:typingPulse 1.5s infinite;
+        /* ── SCROLL TO BOTTOM ── */
+        #scroll-btn{
+            position:absolute;bottom:80px;right:20px;
+            width:36px;height:36px;border-radius:50%;
+            background:rgba(8,4,28,0.9);border:1px solid rgba(255,255,255,0.1);
+            color:#64748b;cursor:pointer;display:none;
+            align-items:center;justify-content:center;
+            box-shadow:0 4px 16px rgba(0,0,0,0.5);
+            transition:all 0.2s;z-index:10;
         }
-        @keyframes typingPulse{0%,100%{opacity:0.6;}50%{opacity:1;}}
-
-        /* Voice message */
-        .voice-msg{
-        display:flex;align-items:center;gap:10px;
-        padding:8px 12px;
-        }
-        .voice-play-btn{
-        width:36px;height:36px;border-radius:50%;
-        background:rgba(0,198,251,0.2);
-        border:1px solid rgba(0,198,251,0.3);
-        color:#00c6fb;
-        display:flex;align-items:center;justify-content:center;
-        cursor:pointer;transition:all 0.2s;
-        }
-        .voice-play-btn:hover{background:rgba(0,198,251,0.3);}
-        .voice-waveform{
-        flex:1;height:24px;display:flex;align-items:center;gap:2px;
-        }
-        .voice-bar{
-        width:3px;background:rgba(0,198,251,0.5);
-        border-radius:2px;transition:height 0.1s;
-        }
-        .voice-duration{
-        font-size:10px;color:rgba(255,255,255,0.4);
-        font-family:'Space Grotesk',sans-serif;
-        }
-        .voice-speed{
-        font-size:9px;color:rgba(0,198,251,0.6);
-        cursor:pointer;padding:2px 6px;
-        border-radius:4px;background:rgba(0,198,251,0.1);
+        #scroll-btn.show{display:flex;}
+        #scroll-btn:hover{color:white;border-color:rgba(255,255,255,0.2);}
+        #scroll-btn .scroll-badge{
+            position:absolute;top:-4px;right:-4px;
+            min-width:16px;height:16px;border-radius:99px;
+            background:#ef4444;color:white;font-size:8px;font-weight:900;
+            display:flex;align-items:center;justify-content:center;padding:0 3px;
         }
 
-        /* Search in chat */
-        #search-in-chat{
-        position:absolute;top:60px;left:16px;right:16px;
-        background:rgba(0,0,0,0.6);
-        border:1px solid rgba(255,255,255,0.08);
-        border-radius:12px;padding:8px 12px;
-        display:none;z-index:10;
-        }
-        #search-in-chat.show{display:flex;align-items:center;gap:8px;}
-        #search-in-chat input{
-        flex:1;background:transparent;border:none;
-        color:white;font-size:12px;outline:none;
-        }
-        #search-in-chat input::placeholder{color:#475569;}
-        .search-result-count{
-        font-size:10px;color:#00c6fb;font-family:'Space Grotesk',sans-serif;
-        }
-        .search-nav-btn{
-        width:24px;height:24px;border-radius:6px;
-        background:rgba(255,255,255,0.05);
-        border:1px solid rgba(255,255,255,0.08);
-        color:#64748b;cursor:pointer;
-        display:flex;align-items:center;justify-content:center;
-        }
-        .search-nav-btn:hover{background:rgba(255,255,255,0.1);color:#94a3b8;}
-
-        /* Draft indicator */
-        .draft-indicator{
-            font-size:10px;color:#f59e0b;
-            font-style:italic;
-            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-        }
-
-        /* System message */
-        .system-msg{
-            text-align:center;font-size:11px;color:#64748b;
-            font-family:'Space Grotesk',sans-serif;
-            padding:8px 16px;margin:8px 0;
-            background:rgba(255,255,255,0.02);
-            border-radius:12px;border:1px solid rgba(255,255,255,0.04);
-        }
-        .system-msg.task-created{color:#22c55e;border-color:rgba(34,197,94,0.2);background:rgba(34,197,94,0.05);}
-        .system-msg.task-changed{color:#f59e0b;border-color:rgba(245,158,11,0.2);background:rgba(245,158,11,0.05);}
-        .system-msg.task-completed{color:#00c6fb;border-color:rgba(0,198,251,0.2);background:rgba(0,198,251,0.05);}
-
-        /* Task block in chat */
-        #task-block{
-        background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(16,185,129,0.05));
-        border:1px solid rgba(34,197,94,0.2);
-        border-radius:12px;padding:12px 16px;
-        margin-bottom:8px;display:none;
-        }
-        #task-block.show{display:block;}
-        .task-block-header{
-        display:flex;align-items:center;gap:8px;margin-bottom:8px;
-        }
-        .task-block-title{
-        font-size:12px;font-weight:600;color:#22c55e;
-        font-family:'Space Grotesk',sans-serif;
-        }
-        .task-block-status{
-        font-size:9px;padding:2px 8px;border-radius:999px;
-        background:rgba(34,197,94,0.15);color:#22c55e;
-        }
-        .task-block-deadline{
-        font-size:10px;color:rgba(255,255,255,0.5);
-        margin-bottom:8px;
-        }
-        .task-block-btn{
-        font-size:10px;padding:6px 12px;border-radius:8px;
-        background:rgba(34,197,94,0.2);color:#22c55e;
-        border:1px solid rgba(34,197,94,0.3);
-        cursor:pointer;transition:all 0.2s;
-        }
-        .task-block-btn:hover{background:rgba(34,197,94,0.3);}
-
-        /* Channel pinned bar */
-        #pinned-bar{
-            padding:8px 16px;background:rgba(245,158,11,0.06);
-            border-bottom:1px solid rgba(245,158,11,0.15);
-            display:flex;align-items:center;gap:8px;
-            font-size:11px;color:#fbbf24;
-        }
-
-        /* Mobile toggle */
+        /* ── MOBILE ── */
         #sidebar-toggle{display:none;}
         @media(max-width:700px){
             #sidebar{position:absolute;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);}
@@ -360,121 +312,108 @@
             #sidebar-toggle{display:flex;}
         }
 
-        /* Theme: Nebula */
-        body.theme-nebula{
-            background:#0a0a1a;
-        }
-        body.theme-nebula .ambient{
-            background:radial-gradient(ellipse 60% 40% at 10% 20%,rgba(168,85,247,0.08) 0%,transparent 70%),
-                       radial-gradient(ellipse 50% 50% at 85% 80%,rgba(236,72,153,0.06) 0%,transparent 70%);
-        }
-        body.theme-nebula #sidebar{background:rgba(15,15,35,0.98);}
-        body.theme-nebula .bubble-mine{
-            background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(139,92,246,0.15));
-            border-color:rgba(168,85,247,0.3);
+        /* ── NO CARET / SELECT ── */
+        *{caret-color:transparent;}
+        input,textarea,[contenteditable="true"]{caret-color:#00c6fb !important;}
+        button,a,label,select,[onclick],[data-tab],[data-pkg],
+        div,span,p,h1,h2,h3,h4,h5{-webkit-user-select:none;user-select:none;}
+        input,textarea{-webkit-user-select:text !important;user-select:text !important;}
+
+        /* ── SECTION LABEL ── */
+        .sec-lbl-sidebar{
+            font-size:9px;text-transform:uppercase;letter-spacing:0.2em;
+            font-family:'Space Grotesk',sans-serif;font-weight:700;color:#334155;
+            padding:6px 12px 4px;
         }
 
-        /* Theme: Ocean */
-        body.theme-ocean{
-            background:#001020;
+        /* ── DELETED MESSAGE ── */
+        .bubble-deleted{
+            background:rgba(255,255,255,0.025) !important;
+            border-color:rgba(255,255,255,0.05) !important;
+            opacity:0.6;
         }
-        body.theme-ocean .ambient{
-            background:radial-gradient(ellipse 60% 40% at 10% 20%,rgba(6,182,212,0.08) 0%,transparent 70%),
-                       radial-gradient(ellipse 50% 50% at 85% 80%,rgba(14,165,233,0.06) 0%,transparent 70%);
+        .deleted-label{
+            display:flex;align-items:center;gap:6px;
+            font-size:12px;color:#475569;font-style:italic;
+            font-family:'Inter',sans-serif;
         }
-        body.theme-ocean #sidebar{background:rgba(0,20,40,0.98);}
-        body.theme-ocean .bubble-mine{
-            background:linear-gradient(135deg,rgba(6,182,212,0.2),rgba(14,165,233,0.15));
-            border-color:rgba(6,182,212,0.3);
-        }
+        .deleted-label i{font-size:10px;color:#334155;}
 
-        /* Theme: Carbon */
-        body.theme-carbon{
-            background:#0a0a0a;
+        /* ── EDITED MARK ── */
+        .edited-mark{
+            font-size:9px;color:rgba(255,255,255,0.22);
+            font-style:italic;margin-left:4px;cursor:default;
         }
-        body.theme-carbon .ambient{
-            background:radial-gradient(ellipse 60% 40% at 10% 20%,rgba(156,163,175,0.05) 0%,transparent 70%),
-                       radial-gradient(ellipse 50% 50% at 85% 80%,rgba(107,114,128,0.04) 0%,transparent 70%);
+        .edited-mark.admin-view{
+            color:rgba(0,198,251,0.4);cursor:pointer;
         }
-        body.theme-carbon #sidebar{background:rgba(20,20,20,0.98);}
-        body.theme-carbon .bubble-mine{
-            background:linear-gradient(135deg,rgba(156,163,175,0.15),rgba(107,114,128,0.1));
-            border-color:rgba(156,163,175,0.25);
-        }
+        .edited-mark.admin-view:hover{color:rgba(0,198,251,0.7);}
 
-        /* Theme: Ocean */
-        body.theme-ocean{
-        background:#001020;
+        /* ── INLINE EDIT ── */
+        .edit-textarea{
+            width:100%;background:rgba(0,0,0,0.5);
+            border:1px solid rgba(0,198,251,0.38);
+            border-radius:10px;padding:7px 10px;
+            color:white;font-size:13.5px;outline:none;
+            font-family:'Inter',sans-serif;
+            resize:none;line-height:1.5;
+            caret-color:#00c6fb !important;
+            -webkit-user-select:text !important;user-select:text !important;
         }
-        body.theme-ocean .ambient{
-        background:radial-gradient(ellipse 60% 40% at 10% 20%,rgba(6,182,212,0.08) 0%,transparent 70%),
-                   radial-gradient(ellipse 50% 50% at 85% 80%,rgba(14,165,233,0.06) 0%,transparent 70%);
+        .edit-actions{display:flex;gap:6px;margin-top:6px;justify-content:flex-end;}
+        .edit-btn{
+            padding:4px 12px;border-radius:8px;font-size:11px;font-weight:700;
+            font-family:'Space Grotesk',sans-serif;cursor:pointer;border:none;transition:all 0.15s;
         }
-        body.theme-ocean #sidebar{background:rgba(0,20,40,0.98);}
-        body.theme-ocean .bubble-mine{
-        background:linear-gradient(135deg,rgba(6,182,212,0.2),rgba(14,165,233,0.15));
-        border-color:rgba(6,182,212,0.3);
-        }
+        .edit-btn-save{background:rgba(0,198,251,0.2);border:1px solid rgba(0,198,251,0.35);color:#00c6fb;}
+        .edit-btn-save:hover{background:rgba(0,198,251,0.32);}
+        .edit-btn-cancel{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#64748b;}
+        .edit-btn-cancel:hover{background:rgba(255,255,255,0.1);color:white;}
 
-        /* Theme: Carbon */
-        body.theme-carbon{
-        background:#0a0a0a;
+        /* ── HISTORY MODAL ── */
+        .history-entry{
+            padding:10px 12px;border-radius:10px;
+            background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+            margin-bottom:8px;
         }
-        body.theme-carbon .ambient{
-        background:radial-gradient(ellipse 60% 40% at 10% 20%,rgba(156,163,175,0.05) 0%,transparent 70%),
-                   radial-gradient(ellipse 50% 50% at 85% 80%,rgba(107,114,128,0.04) 0%,transparent 70%);
-        }
-        body.theme-carbon #sidebar{background:rgba(20,20,20,0.98);}
-        body.theme-carbon .bubble-mine{
-        background:linear-gradient(135deg,rgba(156,163,175,0.15),rgba(107,114,128,0.1));
-        border-color:rgba(156,163,175,0.25);
-        }
-    </style>
-    <style>
-        /* ── УБИРАЕМ КАРЕТКУ ВЕЗДЕ КРОМЕ ПОЛЕЙ ВВОДА ── */
-        * { caret-color: transparent; }
-        input, textarea, [contenteditable="true"] { caret-color: #00c6fb !important; }
-        button, a, label, select, [onclick], [data-tab], [data-pkg],
-        div, span, p, h1, h2, h3, h4, h5 {
-            -webkit-user-select: none; user-select: none;
-        }
-        input, textarea { -webkit-user-select: text !important; user-select: text !important; }
+        .history-entry:last-child{margin-bottom:0;}
+        .history-entry-label{font-size:9px;color:#475569;font-family:'Space Grotesk',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;}
+        .history-entry-text{font-size:12.5px;color:#94a3b8;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+        .history-entry.current .history-entry-label{color:rgba(0,198,251,0.6);}
+        .history-entry.current .history-entry-text{color:#e2f8ff;}
     </style>
 </head>
 <body>
 <div class="ambient"></div>
 <div id="toast"></div>
+<div id="ctx-menu" style="display:none;"></div>
 
-<!-- ══ APP ══════════════════════════════════════════════════════════ -->
 <div id="app">
-
-    <!-- SIDEBAR OVERLAY (mobile) -->
     <div id="sidebar-overlay" onclick="closeSidebar()"></div>
 
-    <!-- ── SIDEBAR ────────────────────────────────────────────────── -->
+    <!-- ── SIDEBAR ── -->
     <div id="sidebar">
         <div id="sidebar-header">
-            <!-- Профиль текущего пользователя -->
-            <div class="flex items-center gap-3 mb-3 cursor-pointer hover:opacity-80 transition" onclick="openProfileModal()">
-                <div id="my-avatar" class="avatar" style="background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.3);color:#00c6fb;">?</div>
+            <!-- My profile row -->
+            <div class="flex items-center gap-3 mb-3 cursor-pointer hover:opacity-80 transition" onclick="openProfileModal()" style="padding:4px;border-radius:12px;">
+                <div style="position:relative;flex-shrink:0;">
+                    <div id="my-avatar" class="avatar" style="background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.3);color:#00c6fb;">?</div>
+                    <div class="online-dot"></div>
+                </div>
                 <div class="flex-1 min-w-0">
                     <p id="my-name" class="text-sm font-bold text-white font-space truncate">—</p>
-                    <p id="my-role-label" class="text-[10px] text-slate-600">—</p>
+                    <p id="my-role-label" class="text-[10px] text-emerald-500">● В сети</p>
                 </div>
                 <i class="fas fa-ellipsis-v text-slate-700 text-xs"></i>
             </div>
-            <!-- Поиск -->
+            <!-- Search -->
             <div class="relative">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 text-xs pointer-events-none"></i>
                 <input type="text" id="search-input" placeholder="Поиск..."
-                    class="w-full bg-black/40 border border-white/5 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-300 outline-none focus:border-white/15 font-inter transition">
+                    class="w-full bg-black/40 border border-white/5 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-300 outline-none focus:border-white/15 transition">
             </div>
         </div>
-
-        <!-- Список чатов/каналов -->
         <div id="sidebar-list"></div>
-
-        <!-- Для администратора: кнопка создать канал -->
         <div id="create-channel-btn-wrap" class="hidden p-3 border-t border-white/5">
             <button onclick="openCreateChannelModal()" class="w-full py-2.5 rounded-xl text-xs font-bold font-space text-violet-300 border border-violet-500/20 hover:border-violet-500/40 transition" style="background:rgba(139,92,246,0.08);">
                 <i class="fas fa-plus mr-1.5"></i>Создать канал
@@ -482,50 +421,24 @@
         </div>
     </div>
 
-    <!-- ── MAIN ───────────────────────────────────────────────────── -->
-    <div id="main">
-        <!-- Chat Header -->
-        <div id="chat-header">
-            <button id="sidebar-toggle" onclick="toggleSidebar()" class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 mr-1">
+    <!-- ── MAIN ── -->
+    <div id="main" style="position:relative;">
+        <!-- Header -->
+        <div id="chat-header" onclick="onHeaderClick()">
+            <button id="sidebar-toggle" onclick="event.stopPropagation();toggleSidebar()" class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 mr-1 flex-shrink-0">
                 <i class="fas fa-bars text-xs"></i>
             </button>
-            <div id="chat-avatar" class="avatar" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#64748b;font-size:18px;">
-                <i class="fas fa-comments"></i>
+            <div style="position:relative;flex-shrink:0;">
+                <div id="chat-avatar" class="avatar" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#64748b;font-size:18px;">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div id="chat-online-dot" class="online-dot" style="display:none;"></div>
             </div>
             <div class="flex-1 min-w-0">
                 <p id="chat-title" class="text-sm font-bold text-white font-space truncate">Выберите чат</p>
                 <p id="chat-sub" class="text-[10px] text-slate-600 truncate">—</p>
             </div>
-            <!-- Действия в заголовке (для каналов — настройки, для чатов — профиль) -->
-            <div id="chat-header-actions" class="flex items-center gap-2"></div>
-        </div>
-
-        <!-- Pinned message bar -->
-        <div id="pinned-bar" class="hidden">
-            <i class="fas fa-thumbtack text-amber-400 text-xs flex-shrink-0"></i>
-            <span id="pinned-text" class="flex-1 truncate text-[11px]"></span>
-            <button id="pinned-unpin-btn" class="hidden text-[10px] text-amber-600 hover:text-amber-400 font-space font-bold transition ml-2">Открепить</button>
-        </div>
-
-        <!-- Search in chat -->
-        <div id="search-in-chat">
-            <i class="fas fa-search text-slate-600 text-xs"></i>
-            <input type="text" id="chat-search-input" placeholder="Поиск в чате..." oninput="searchInChat(this.value)">
-            <span id="search-count" class="search-result-count"></span>
-            <button class="search-nav-btn" onclick="prevSearchResult()"><i class="fas fa-chevron-up text-xs"></i></button>
-            <button class="search-nav-btn" onclick="nextSearchResult()"><i class="fas fa-chevron-down text-xs"></i></button>
-            <button class="search-nav-btn" onclick="closeChatSearch()"><i class="fas fa-times text-xs"></i></button>
-        </div>
-
-        <!-- Task block -->
-        <div id="task-block">
-            <div class="task-block-header">
-                <i class="fas fa-tasks text-green-400 text-sm"></i>
-                <span class="task-block-title" id="task-title">Активная задача</span>
-                <span class="task-block-status" id="task-status">В работе</span>
-            </div>
-            <p class="task-block-deadline" id="task-deadline">Дедлайн: —</p>
-            <button class="task-block-btn" onclick="openTaskInCabinet()">Открыть в личном кабинете</button>
+            <div id="chat-header-actions" class="flex items-center gap-2" onclick="event.stopPropagation()"></div>
         </div>
 
         <!-- Messages -->
@@ -537,58 +450,44 @@
             </div>
         </div>
 
-        <!-- Input area -->
-        <div id="input-area">
-            <!-- Reply preview -->
-            <div id="reply-preview" class="reply-preview hidden">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <span class="reply-preview-name" id="reply-to-name">—</span>
-                        <p class="reply-preview-text" id="reply-to-text">—</p>
-                    </div>
-                    <button onclick="cancelReply()" class="text-slate-600 hover:text-rose-400 transition">
-                        <i class="fas fa-times text-xs"></i>
-                    </button>
-                </div>
+        <!-- Typing indicator -->
+        <div id="typing-indicator">
+            <div class="typing-bubble">
+                <span id="typing-name" class="typing-name">Печатает</span>
+                <div class="typing-dots"><span></span><span></span><span></span></div>
             </div>
-            <div class="flex items-end gap-2">
-                <button id="voice-btn" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition flex-shrink-0" onclick="toggleVoiceRecording()">
-                    <i class="fas fa-microphone text-sm"></i>
-                </button>
+        </div>
+
+        <!-- Scroll to bottom -->
+        <button id="scroll-btn" onclick="scrollToBottom(true)">
+            <i class="fas fa-chevron-down text-xs"></i>
+            <div id="scroll-badge" class="scroll-badge" style="display:none;"></div>
+        </button>
+
+        <!-- Reply bar + Input -->
+        <div id="input-area">
+            <div id="reply-bar">
+                <div id="reply-bar-line"></div>
+                <div id="reply-bar-content">
+                    <div id="reply-bar-name">—</div>
+                    <div id="reply-bar-text">—</div>
+                </div>
+                <button id="reply-bar-close" onclick="cancelReply()"><i class="fas fa-times" style="font-size:10px;"></i></button>
+            </div>
+            <div class="flex items-end gap-2" style="padding-top:8px;">
                 <textarea id="msg-input" class="msg-input" rows="1" placeholder="Сообщение..."
                     onkeydown="handleMsgKey(event)" oninput="autoResizeInput(this)"></textarea>
-                <button id="attach-btn" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition flex-shrink-0" onclick="toggleAttachMenu()">
-                    <i class="fas fa-paperclip text-sm"></i>
-                </button>
                 <button id="send-btn" class="send-btn" onclick="sendMessage()" disabled>
                     <i class="fas fa-paper-plane text-sm"></i>
                 </button>
-            </div>
-            <!-- Voice recording UI -->
-            <div id="voice-recording-ui" class="hidden mt-2">
-                <div class="flex items-center gap-3">
-                    <button onclick="cancelVoiceRecording()" class="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center">
-                        <i class="fas fa-trash text-xs"></i>
-                    </button>
-                    <div class="flex-1 h-8 bg-black/30 rounded-lg flex items-center px-3">
-                        <div class="voice-waveform" id="voice-waveform-live"></div>
-                    </div>
-                    <span id="voice-duration-live" class="text-xs text-slate-400 font-mono">0:00</span>
-                    <button onclick="pauseResumeVoiceRecording()" id="voice-pause-btn" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-slate-400 flex items-center justify-center">
-                        <i class="fas fa-pause text-xs"></i>
-                    </button>
-                    <button onclick="sendVoiceMessage()" class="w-8 h-8 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 flex items-center justify-center">
-                        <i class="fas fa-check text-xs"></i>
-                    </button>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ══ МОДАЛКИ ══════════════════════════════════════════════════════ -->
+<!-- ══ MODALS ══════════════════════════════════════════════════════════ -->
 
-<!-- Профиль (мой) -->
+<!-- My Profile -->
 <div id="modal-profile" class="modal-bg hidden">
     <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
         <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
@@ -640,7 +539,7 @@
     </div>
 </div>
 
-<!-- Профиль монтажёра (только для администратора) -->
+<!-- Editor Profile (admin) -->
 <div id="modal-editor-profile" class="modal-bg hidden">
     <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
         <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
@@ -664,6 +563,7 @@
                         <p id="ep-name" class="text-sm font-bold text-white font-space">—</p>
                         <p id="ep-login" class="text-xs text-slate-600 font-mono mt-0.5">—</p>
                         <p id="ep-status" class="text-xs text-slate-500 mt-1 italic">—</p>
+                        <p id="ep-last-seen" class="text-xs mt-1" style="color:#475569;"></p>
                     </div>
                 </div>
                 <input type="hidden" id="ep-id">
@@ -689,7 +589,7 @@
     </div>
 </div>
 
-<!-- Создать канал (администратор) -->
+<!-- Create channel -->
 <div id="modal-create-channel" class="modal-bg hidden">
     <div class="glass w-full max-w-md overflow-hidden" style="border-radius:32px;position:relative;">
         <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
@@ -717,10 +617,8 @@
                         <input type="text" id="ch-desc-input" class="input-dark" placeholder="Официальные новости команды">
                     </div>
                     <div>
-                        <label class="sec-lbl">Участники (монтажёры)</label>
-                        <div id="ch-members-list" class="space-y-2 max-h-48 overflow-y-auto">
-                            <p class="text-slate-600 text-xs">Загрузка...</p>
-                        </div>
+                        <label class="sec-lbl">Участники</label>
+                        <div id="ch-members-list" class="space-y-1 max-h-40 overflow-y-auto"></div>
                     </div>
                     <div class="flex gap-3 pt-2">
                         <button onclick="closeModal('modal-create-channel')" class="flex-1 py-3 rounded-2xl border border-white/8 text-slate-500 text-sm hover:border-white/15 transition font-space font-bold">Отмена</button>
@@ -734,7 +632,7 @@
     </div>
 </div>
 
-<!-- Настройки канала (администратор) -->
+<!-- Channel settings -->
 <div id="modal-channel-settings" class="modal-bg hidden">
     <div class="glass w-full max-w-md max-h-[90vh] overflow-y-auto" style="border-radius:32px;position:relative;">
         <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
@@ -780,179 +678,7 @@
     </div>
 </div>
 
-<!-- Настройки чата -->
-<div id="modal-chat-settings" class="modal-bg hidden">
-    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
-        <div style="position:relative;z-index:2;">
-            <div class="flex items-center justify-between px-7 pt-7 pb-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);">
-                        <i class="fas fa-cog text-cyan-400 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-[9px] text-cyan-400 uppercase tracking-[0.2em] font-space font-bold">Чат</p>
-                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Настройки чата</h3>
-                    </div>
-                </div>
-                <button onclick="closeModal('modal-chat-settings')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
-            </div>
-            <div class="px-7 py-6">
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-slate-300">Голосовые сообщения</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="chat-setting-voice" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
-                        </label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-slate-300">Уведомления</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="chat-setting-notifications" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
-                        </label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-slate-300">Показывать онлайн</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="chat-setting-online" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
-                        </label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-slate-300">Показывать «Печатает...»</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="chat-setting-typing" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
-                        </label>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-slate-300">Тихий режим</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="chat-setting-silent" class="sr-only peer">
-                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
-                        </label>
-                    </div>
-                    <button onclick="saveChatSettings()" class="w-full py-3 rounded-2xl text-sm font-bold font-space transition mt-4" style="background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
-                        Сохранить
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- История редактирования сообщения (администратор) -->
-<div id="modal-edit-history" class="modal-bg hidden">
-    <div class="glass w-full max-w-md max-h-[80vh] overflow-y-auto" style="border-radius:32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
-        <div style="position:relative;z-index:2;">
-            <div class="flex items-center justify-between px-7 pt-7 pb-0 sticky top-0" style="background:rgba(4,2,18,0.8);backdrop-filter:blur(20px);">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);">
-                        <i class="fas fa-history text-amber-400 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-[9px] text-amber-400 uppercase tracking-[0.2em] font-space font-bold">История</p>
-                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Редактирования</h3>
-                    </div>
-                </div>
-                <button onclick="closeModal('modal-edit-history')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
-            </div>
-            <div class="px-7 py-6" id="edit-history-content">
-                <p class="text-slate-600 text-xs">Загрузка...</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Просмотр канала (кто прочитал) -->
-<div id="modal-channel-viewers" class="modal-bg hidden">
-    <div class="glass w-full max-w-sm max-h-[80vh] overflow-y-auto" style="border-radius:32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
-        <div style="position:relative;z-index:2;">
-            <div class="flex items-center justify-between px-7 pt-7 pb-0 sticky top-0" style="background:rgba(4,2,18,0.8);backdrop-filter:blur(20px);">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);">
-                        <i class="fas fa-eye text-green-400 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-[9px] text-green-400 uppercase tracking-[0.2em] font-space font-bold">Канал</p>
-                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Кто прочитал</h3>
-                    </div>
-                </div>
-                <button onclick="closeModal('modal-channel-viewers')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
-            </div>
-            <div class="px-7 py-6" id="channel-viewers-content">
-                <p class="text-slate-600 text-xs">Загрузка...</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Выбор темы -->
-<div id="modal-theme-selector" class="modal-bg hidden">
-    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
-        <div style="position:relative;z-index:2;">
-            <div class="flex items-center justify-between px-7 pt-7 pb-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);">
-                        <i class="fas fa-palette text-violet-400 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-[9px] text-violet-400 uppercase tracking-[0.2em] font-space font-bold">Оформление</p>
-                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Тема</h3>
-                    </div>
-                </div>
-                <button onclick="closeModal('modal-theme-selector')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
-            </div>
-            <div class="px-7 py-6">
-                <div class="space-y-3">
-                    <button onclick="setTheme('original')" class="w-full p-4 rounded-xl border border-white/10 hover:border-white/20 transition text-left" style="background:rgba(0,198,251,0.05);">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg" style="background:linear-gradient(135deg,rgba(0,198,251,0.3),rgba(0,82,212,0.2));"></div>
-                            <div>
-                                <p class="text-sm font-bold text-white font-space">SPACE Original</p>
-                                <p class="text-xs text-slate-500">Классический дизайн</p>
-                            </div>
-                        </div>
-                    </button>
-                    <button onclick="setTheme('nebula')" class="w-full p-4 rounded-xl border border-white/10 hover:border-white/20 transition text-left" style="background:rgba(168,85,247,0.05);">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg" style="background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(139,92,246,0.2));"></div>
-                            <div>
-                                <p class="text-sm font-bold text-white font-space">Nebula</p>
-                                <p class="text-xs text-slate-500">Фиолетовые оттенки</p>
-                            </div>
-                        </div>
-                    </button>
-                    <button onclick="setTheme('ocean')" class="w-full p-4 rounded-xl border border-white/10 hover:border-white/20 transition text-left" style="background:rgba(6,182,212,0.05);">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg" style="background:linear-gradient(135deg,rgba(6,182,212,0.3),rgba(14,165,233,0.2));"></div>
-                            <div>
-                                <p class="text-sm font-bold text-white font-space">Ocean</p>
-                                <p class="text-xs text-slate-500">Голубые тона</p>
-                            </div>
-                        </div>
-                    </button>
-                    <button onclick="setTheme('carbon')" class="w-full p-4 rounded-xl border border-white/10 hover:border-white/20 transition text-left" style="background:rgba(156,163,175,0.05);">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg" style="background:linear-gradient(135deg,rgba(156,163,175,0.3),rgba(107,114,128,0.2));"></div>
-                            <div>
-                                <p class="text-sm font-bold text-white font-space">Carbon</p>
-                                <p class="text-xs text-slate-500">Серый минимализм</p>
-                            </div>
-                        </div>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ══ FIREBASE + ЛОГИКА ══════════════════════════════════════════════ -->
+<!-- ══ FIREBASE + LOGIC ══════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -961,7 +687,6 @@ import {
     collection, getDocs, query, where, orderBy, onSnapshot,
     serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
 // ─── CONFIG ───────────────────────────────────────────────────────
 let FB_CONFIG = {
@@ -980,15 +705,14 @@ const BASE   = (col) => ['artifacts', APP_ID, 'public', 'data', col];
 const app  = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-const storage = getStorage(app);
 
 async function ensureAuth() {
     if (!auth.currentUser) await signInAnonymously(auth);
 }
 
 // ─── SESSION ──────────────────────────────────────────────────────
-const myRole = sessionStorage.getItem('chat_role');   // 'owner' | 'editor'
-const myId   = sessionStorage.getItem('chat_id');     // 'owner' | editorDocId
+const myRole = sessionStorage.getItem('chat_role');
+const myId   = sessionStorage.getItem('chat_id');
 const myNameSaved = sessionStorage.getItem('chat_name');
 const openEditorId = sessionStorage.getItem('chat_open_editor');
 
@@ -1010,7 +734,7 @@ if (!myRole || !myId) {
                         </div>
                     </div>
                     <div style="text-align:center;margin-bottom:24px;">
-                        <div style="width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,rgba(239,68,68,0.15) 0%,rgba(220,38,38,0.1) 100%);border:1px solid rgba(239,68,68,0.2);box-shadow:0 0 30px rgba(239,68,68,0.08);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                        <div style="width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,rgba(239,68,68,0.15) 0%,rgba(220,38,38,0.1) 100%);border:1px solid rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="fas fa-lock" style="color:#f87171;font-size:24px;"></i>
                         </div>
                         <h4 style="font-size:18px;font-family:'Space Grotesk',sans-serif;font-weight:900;color:white;margin-bottom:8px;">Нет активной сессии</h4>
@@ -1019,14 +743,14 @@ if (!myRole || !myId) {
                     <a href="montage.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;text-shadow:0 1px 3px rgba(0,0,0,0.3);transition:all 0.3s;box-shadow:0 8px 24px rgba(0,198,251,0.2);">
                         <i class="fas fa-arrow-right-to-bracket"></i>Перейти к входу
                     </a>
-                    <p style="text-align:center;font-size:10px;color:#1e293b;margin-top:16px;font-family:'Space Grotesk',sans-serif;">Экосистема Space 01</p>
+                    <p style="text-align:center;font-size:10px;color:#1e293b;margin-top:16px;font-family:'Space Grotesk',sans-serif;">Экосистема Space 1.0</p>
                 </div>
             </div>
         </div>
     </div>`;
 }
 
-// ─── AVATAR COLORS ────────────────────────────────────────────────
+// ─── AVATAR COLORS ─────────────────────────────────────────────────
 const AVATAR_PRESETS = {
     cyan:   { bg:'rgba(0,198,251,0.18)',   border:'rgba(0,198,251,0.35)',   text:'#00c6fb' },
     violet: { bg:'rgba(139,92,246,0.18)',  border:'rgba(139,92,246,0.35)',  text:'#a78bfa' },
@@ -1041,14 +765,136 @@ function applyAvatarStyle(el, colorKey, initials) {
     el.textContent = initials || '?';
 }
 
+// ─── PRESENCE ──────────────────────────────────────────────────────
+// Tracks online status in Firestore: artifacts/{APP_ID}/public/data/presence/{userId}
+async function setMyPresence(online) {
+    try {
+        await ensureAuth();
+        await setDoc(doc(db, ...BASE('presence'), myId), {
+            online,
+            lastSeen: new Date().toISOString(),
+            name: myProfile.name || myNameSaved || '?'
+        }, { merge: true });
+    } catch(e){}
+}
+
+function formatLastSeen(isoStr) {
+    if (!isoStr) return 'давно';
+    const d = new Date(isoStr);
+    const now = new Date();
+    const diff = Math.floor((now - d) / 1000);
+    if (diff < 60) return 'только что';
+    if (diff < 3600) return `${Math.floor(diff/60)} мин назад`;
+    if (diff < 86400) return `сегодня в ${d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}`;
+    if (diff < 172800) return `вчера в ${d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}`;
+    return d.toLocaleDateString('ru',{day:'2-digit',month:'long'});
+}
+
+// Store presence data per editor
+let _presenceData = {}; // {editorId: {online, lastSeen}}
+let _presenceUnsub = null;
+
+function subscribePresence() {
+    if (_presenceUnsub) { _presenceUnsub(); _presenceUnsub = null; }
+    try {
+        _presenceUnsub = onSnapshot(collection(db, ...BASE('presence')), snap => {
+            snap.docs.forEach(d => {
+                _presenceData[d.id] = d.data();
+            });
+            updatePresenceUI();
+        }, ()=>{});
+    } catch(e){}
+}
+
+function updatePresenceUI() {
+    // Update sidebar items
+    document.querySelectorAll('.conv-item[data-editor-id]').forEach(el => {
+        const edId = el.getAttribute('data-editor-id');
+        const p = _presenceData[edId];
+        const dot = el.querySelector('.online-dot-conv');
+        const timeEl = el.querySelector('.conv-time');
+        if (dot) {
+            dot.style.display = p?.online ? 'block' : 'none';
+        }
+    });
+    // Update chat header
+    if (_activeConvType === 'dm') {
+        const conv = _conversations.find(c => c.id === _activeConvId);
+        if (conv) {
+            const edId = myRole === 'owner' ? conv.editorId : 'owner';
+            const p = _presenceData[edId];
+            const dot = document.getElementById('chat-online-dot');
+            const subEl = document.getElementById('chat-sub');
+            if (p?.online) {
+                dot.style.display = 'block';
+                subEl.textContent = 'в сети';
+                subEl.style.color = '#22c55e';
+            } else {
+                dot.style.display = 'none';
+                const ls = p?.lastSeen ? `был(а) ${formatLastSeen(p.lastSeen)}` : (conv.status || '');
+                subEl.textContent = ls;
+                subEl.style.color = '';
+            }
+        }
+    }
+}
+
+// ─── TYPING ────────────────────────────────────────────────────────
+let _typingUnsub = null;
+let _myTypingTimeout = null;
+let _typingShownFor = null;
+
+async function setTyping(val) {
+    if (!_activeConvId || _activeConvType !== 'dm') return;
+    try {
+        await ensureAuth();
+        await setDoc(doc(db, ...BASE('typing'), _activeConvId + '_' + myId), {
+            typing: val,
+            userId: myId,
+            name: myProfile.name || '?',
+            chatId: _activeConvId,
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+    } catch(e){}
+}
+
+function subscribeTyping(convId) {
+    if (_typingUnsub) { _typingUnsub(); _typingUnsub = null; }
+    if (!convId) return;
+    try {
+        _typingUnsub = onSnapshot(
+            query(collection(db, ...BASE('typing')), where('chatId','==',convId)),
+            snap => {
+                // Find someone else typing in this chat
+                let typingName = null;
+                snap.docs.forEach(d => {
+                    const data = d.data();
+                    if (data.userId !== myId && data.typing === true) {
+                        // Check freshness (< 6 seconds)
+                        const age = (new Date() - new Date(data.updatedAt || 0)) / 1000;
+                        if (age < 6) typingName = data.name || 'Кто-то';
+                    }
+                });
+                const ind = document.getElementById('typing-indicator');
+                if (typingName) {
+                    document.getElementById('typing-name').textContent = typingName;
+                    ind.classList.add('show');
+                    scrollToBottomIfNear();
+                } else {
+                    ind.classList.remove('show');
+                }
+            }, ()=>{}
+        );
+    } catch(e){}
+}
+
 // ─── MY PROFILE ───────────────────────────────────────────────────
 let myProfile = { name: myNameSaved || '?', color: 'cyan', status: '' };
-let _profileDocId = null; // для editors — doc id в Firestore
+let _profileDocId = null;
 let _tgToken = '', _tgChatId = '';
 
 async function loadMyProfile() {
     await ensureAuth();
-    // Загружаем TG конфиг
     try {
         const cfgSnap = await getDoc(doc(db, ...BASE('site_config'), 'main'));
         if (cfgSnap.exists()) {
@@ -1058,13 +904,8 @@ async function loadMyProfile() {
     } catch(e){}
 
     if (myRole === 'owner') {
-        // Профиль владельца в localStorage
-        try {
-            const s = localStorage.getItem('space_owner_chat_profile');
-            if (s) Object.assign(myProfile, JSON.parse(s));
-        } catch(e){}
+        try { const s = localStorage.getItem('space_owner_chat_profile'); if(s) Object.assign(myProfile, JSON.parse(s)); } catch(e){}
     } else {
-        // Профиль монтажёра из Firestore
         try {
             const snap = await getDoc(doc(db, ...BASE('editors'), myId));
             if (snap.exists()) {
@@ -1077,37 +918,28 @@ async function loadMyProfile() {
         } catch(e){}
     }
     renderMyHeader();
+    setMyPresence(true);
+
+    // Set presence offline on unload
+    window.addEventListener('beforeunload', () => setMyPresence(false));
+    // Heartbeat every 30s
+    setInterval(() => setMyPresence(true), 30000);
 }
 
 function renderMyHeader() {
     const initials = myProfile.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || '?';
     applyAvatarStyle(document.getElementById('my-avatar'), myProfile.color, initials);
     document.getElementById('my-name').textContent = myProfile.name;
-    document.getElementById('my-role-label').textContent = myRole === 'owner' ? 'Администратор' : 'Монтажёр';
+    document.getElementById('my-role-label').textContent = '● В сети';
 }
 
-// ─── CONVERSATIONS STATE ──────────────────────────────────────────
-let _conversations = []; // { type:'dm'|'channel', id, name, unread, lastMsg, data }
+// ─── CONVERSATIONS STATE ───────────────────────────────────────────
+let _conversations = [];
 let _activeConvId  = null;
 let _activeConvType = null;
-let _msgUnsub = null;  // текущий onSnapshot
-let _allEditors = []; // кэш всех монтажёров
-
-// ─── NEW STATE VARIABLES ───────────────────────────────────────────
-let _replyToMsg = null; // { id, text, senderName }
-let _editingMsgId = null; // ID редактируемого сообщения
-let _voiceRecorder = null;
-let _voiceChunks = [];
-let _voiceIsPaused = false;
-let _voiceStartTime = null;
-let _voiceTimerInterval = null;
-let _searchResults = [];
-let _searchIndex = 0;
-let _typingTimeout = null;
-let _onlineStatusUnsub = null;
-let _currentTheme = localStorage.getItem('space_theme') || 'original';
-let _chatSettings = {}; // { convId: { voice, notifications, online, typing, silent } }
-let _drafts = {}; // { convId: text }
+let _msgUnsub = null;
+let _allEditors = [];
+let _renderedMsgIds = new Set(); // track which messages are already in DOM
 
 async function loadAllEditors() {
     try {
@@ -1116,29 +948,16 @@ async function loadAllEditors() {
     } catch(e){ _allEditors = []; }
 }
 
-// ─── LOAD SIDEBAR ─────────────────────────────────────────────────
+// ─── LOAD SIDEBAR ──────────────────────────────────────────────────
 async function loadSidebar() {
     await loadAllEditors();
     _conversations = [];
-    // Load theme
-    applyTheme(_currentTheme);
-    // Load chat settings from localStorage
-    try {
-        const s = localStorage.getItem('space_chat_settings');
-        if (s) _chatSettings = JSON.parse(s);
-    } catch(e){}
-    // Load drafts from localStorage
-    try {
-        const s = localStorage.getItem('space_drafts');
-        if (s) _drafts = JSON.parse(s);
-    } catch(e){}
 
     if (myRole === 'owner') {
-        // Владелец видит все личные чаты с монтажёрами
         document.getElementById('create-channel-btn-wrap').classList.remove('hidden');
         for (const ed of _allEditors) {
             const chatId = 'owner__' + ed.id;
-            let unread = 0, lastMsg = '', lastAt = null;
+            let unread = 0, lastMsg = '', lastAt = null, lastSenderId = null;
             try {
                 const metaSnap = await getDoc(doc(db, ...BASE('chats'), chatId, 'meta', 'info'));
                 if (metaSnap.exists()) {
@@ -1146,11 +965,11 @@ async function loadSidebar() {
                     unread  = m.unreadOwner || 0;
                     lastMsg = m.lastMessage || '';
                     lastAt  = m.lastAt || null;
+                    lastSenderId = m.lastSenderId || null;
                 }
             } catch(e){}
-            _conversations.push({ type:'dm', id: chatId, editorId: ed.id, name: ed.chatName || ed.name || ed.login, color: ed.chatColor || 'cyan', status: ed.chatStatus || '', unread, lastMsg, lastAt });
+            _conversations.push({ type:'dm', id: chatId, editorId: ed.id, name: ed.chatName || ed.name || ed.login, color: ed.chatColor || 'cyan', status: ed.chatStatus || '', unread, lastMsg, lastAt, lastSenderId });
         }
-        // Каналы (все)
         try {
             const chSnap = await getDocs(collection(db, ...BASE('channels')));
             chSnap.docs.forEach(d => {
@@ -1159,18 +978,18 @@ async function loadSidebar() {
             });
         } catch(e){}
     } else {
-        // Монтажёр: один личный чат с владельцем
         const chatId = 'owner__' + myId;
-        let unread = 0, lastMsg = '';
+        let unread = 0, lastMsg = '', lastAt = null, lastSenderId = null;
         try {
             const metaSnap = await getDoc(doc(db, ...BASE('chats'), chatId, 'meta', 'info'));
             if (metaSnap.exists()) {
                 unread  = metaSnap.data().unreadEditor || 0;
                 lastMsg = metaSnap.data().lastMessage || '';
+                lastAt  = metaSnap.data().lastAt || null;
+                lastSenderId = metaSnap.data().lastSenderId || null;
             }
         } catch(e){}
-        _conversations.push({ type:'dm', id: chatId, editorId: myId, name: 'Богдан · SPACE', color: 'cyan', status: 'Администратор', unread, lastMsg });
-        // Каналы где монтажёр — участник
+        _conversations.push({ type:'dm', id: chatId, editorId: myId, name: 'Богдан · SPACE', color: 'cyan', status: 'Администратор', unread, lastMsg, lastAt, lastSenderId });
         try {
             const chSnap = await getDocs(collection(db, ...BASE('channels')));
             chSnap.docs.forEach(d => {
@@ -1183,12 +1002,23 @@ async function loadSidebar() {
     }
 
     renderSidebar();
+    subscribePresence();
 
-    // Открыть нужный чат если передан targetEditorId
     if (openEditorId) {
         const target = _conversations.find(c => c.type === 'dm' && c.editorId === openEditorId);
         if (target) openConversation(target.id, 'dm');
     }
+}
+
+function formatConvTime(isoOrTs) {
+    if (!isoOrTs) return '';
+    const d = typeof isoOrTs === 'string' ? new Date(isoOrTs) : isoOrTs;
+    if (isNaN(d)) return '';
+    const now = new Date();
+    const diff = now - d;
+    if (diff < 86400000) return d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
+    if (diff < 604800000) return ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][d.getDay()];
+    return d.toLocaleDateString('ru',{day:'2-digit',month:'2-digit'});
 }
 
 function renderSidebar(filter) {
@@ -1201,17 +1031,16 @@ function renderSidebar(filter) {
         return;
     }
 
-    // Группируем: сначала DM, потом каналы
     const dms = convs.filter(c=>c.type==='dm');
     const channels = convs.filter(c=>c.type==='channel');
 
     let html = '';
     if (dms.length) {
-        html += `<div class="sec-lbl px-3 pt-3">Личные чаты</div>`;
+        html += `<div class="sec-lbl-sidebar">Личные чаты</div>`;
         html += dms.map(c => renderConvItem(c)).join('');
     }
     if (channels.length) {
-        html += `<div class="sec-lbl px-3 pt-3 mt-1">Каналы</div>`;
+        html += `<div class="sec-lbl-sidebar mt-2">Каналы</div>`;
         html += channels.map(c => renderConvItem(c)).join('');
     }
     list.innerHTML = html;
@@ -1222,58 +1051,78 @@ function renderConvItem(c) {
     const initials = c.type === 'channel' ? (c.name[0]||'#') : (c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?');
     const color = c.type === 'channel' ? 'violet' : (c.color || 'cyan');
     const cp = AVATAR_PRESETS[color] || AVATAR_PRESETS.cyan;
+    const time = formatConvTime(c.lastAt);
+
+    // For DM: check sender's checks
+    let checksHtml = '';
+    if (c.type === 'dm' && c.lastMsg) {
+        const isMySend = c.lastSenderId === myId || (myRole === 'owner' && c.lastSenderId === 'owner');
+        if (isMySend) {
+            const isRead = c.unread === 0;
+            checksHtml = `<span class="check-icon ${isRead ? 'check-read' : 'check-sent'}"><i class="fas fa-check-double"></i></span>`;
+        }
+    }
+
     const badgeHtml = c.unread > 0
-        ? `<div class="badge">${c.unread > 9 ? '9+' : c.unread}</div>`
-        : '';
-    const lastMsgHtml = c.lastMsg
-        ? `<p class="text-[10px] text-slate-600 truncate mt-0.5">${c.lastMsg.slice(0,40)}${c.lastMsg.length>40?'…':''}</p>`
-        : '';
-    const channelIcon = c.type === 'channel' ? `<i class="fas fa-bullhorn" style="font-size:16px;"></i>` : '';
-    // Draft indicator
-    const draftHtml = _drafts[c.id]
-        ? `<p class="draft-indicator truncate">Черновик: ${_drafts[c.id].slice(0,30)}${_drafts[c.id].length>30?'…':''}</p>`
-        : '';
-    // Online indicator for DM
-    const onlineHtml = c.type === 'dm' && c.onlineStatus
-        ? `<div class="online-indicator ${c.onlineStatus}"></div>`
-        : '';
-    // Last message time
-    const timeHtml = c.lastAt
-        ? `<span class="text-[9px] text-slate-600 font-mono">${formatTimeAgo(c.lastAt)}</span>`
+        ? `<div class="badge">${c.unread > 99 ? '99+' : c.unread}</div>`
         : '';
 
-    return `<div class="conv-item ${isActive?'active':''}" onclick="openConversation('${c.id}','${c.type}')">
-        <div class="avatar relative" style="background:${cp.bg};border:1px solid ${cp.border};color:${cp.text};">
-            ${c.type==='channel' ? channelIcon : initials}
-            ${onlineHtml}
+    const editorId = c.type === 'dm' ? (myRole === 'owner' ? c.editorId : 'owner') : null;
+    const p = editorId ? _presenceData[editorId] : null;
+    const isOnline = p?.online === true;
+
+    const onlineDotHtml = c.type === 'dm'
+        ? `<div class="online-dot-conv" style="position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid #010008;display:${isOnline?'block':'none'};"></div>`
+        : '';
+
+    const lastMsgTrunc = c.lastMsg ? (c.lastMsg.slice(0,38) + (c.lastMsg.length > 38 ? '…' : '')) : '';
+
+    return `<div class="conv-item ${isActive?'active':''}" onclick="openConversation('${c.id}','${c.type}')" data-editor-id="${editorId||''}">
+        <div style="position:relative;flex-shrink:0;">
+            <div class="avatar" style="background:${cp.bg};border:1px solid ${cp.border};color:${cp.text};">
+                ${c.type==='channel' ? '<i class="fas fa-bullhorn" style="font-size:15px;"></i>' : initials}
+            </div>
+            ${onlineDotHtml}
         </div>
         <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between">
-                <p class="text-sm font-bold font-space text-white truncate">${c.name}</p>
-                ${timeHtml}
+            <div class="flex items-center justify-between gap-1">
+                <p class="text-[13px] font-bold font-space text-white truncate">${c.name}</p>
+                ${time ? `<span class="conv-time" style="flex-shrink:0;">${time}</span>` : ''}
             </div>
-            ${draftHtml || lastMsgHtml}
+            <div class="flex items-center justify-between gap-1 mt-0.5">
+                <div class="conv-lastmsg-wrap">
+                    ${checksHtml}
+                    <span class="conv-lastmsg">${escapeHtml(lastMsgTrunc)}</span>
+                </div>
+                ${badgeHtml}
+            </div>
         </div>
-        ${badgeHtml}
     </div>`;
 }
 
-// ─── OPEN CONVERSATION ────────────────────────────────────────────
+// ─── OPEN CONVERSATION ─────────────────────────────────────────────
 window.openConversation = async function(convId, type) {
+    // Stop typing for previous chat
+    if (_activeConvId && _activeConvId !== convId) {
+        clearTimeout(_myTypingTimeout);
+        await setTyping(false);
+    }
+
     _activeConvId   = convId;
     _activeConvType = type;
+    _renderedMsgIds = new Set();
 
-    // Остановить предыдущий listener
     if (_msgUnsub) { _msgUnsub(); _msgUnsub = null; }
+    if (_typingUnsub) { _typingUnsub(); _typingUnsub = null; }
 
     const conv = _conversations.find(c => c.id === convId);
     if (!conv) return;
 
-    // Обновляем заголовок
-    const titleEl  = document.getElementById('chat-title');
-    const subEl    = document.getElementById('chat-sub');
-    const avatarEl = document.getElementById('chat-avatar');
+    const titleEl   = document.getElementById('chat-title');
+    const subEl     = document.getElementById('chat-sub');
+    const avatarEl  = document.getElementById('chat-avatar');
     const actionsEl = document.getElementById('chat-header-actions');
+    const dotEl     = document.getElementById('chat-online-dot');
 
     const color = conv.type === 'channel' ? 'violet' : (conv.color || 'cyan');
     const cp = AVATAR_PRESETS[color] || AVATAR_PRESETS.cyan;
@@ -1282,29 +1131,37 @@ window.openConversation = async function(convId, type) {
     avatarEl.style.background = cp.bg; avatarEl.style.border = `1px solid ${cp.border}`; avatarEl.style.color = cp.text;
     avatarEl.innerHTML = conv.type === 'channel' ? '<i class="fas fa-bullhorn"></i>' : initials;
     titleEl.textContent = conv.name;
-    subEl.textContent = conv.type === 'channel' ? (conv.desc || 'Канал') : (conv.status || (conv.type==='dm' && myRole==='owner' ? 'Монтажёр' : ''));
 
-    // Кнопки в заголовке
+    // Online status in header
+    if (conv.type === 'dm') {
+        const edId = myRole === 'owner' ? conv.editorId : 'owner';
+        const p = _presenceData[edId];
+        if (p?.online) {
+            dotEl.style.display = 'block';
+            subEl.textContent = 'в сети';
+            subEl.style.color = '#22c55e';
+        } else {
+            dotEl.style.display = 'none';
+            const ls = p?.lastSeen ? `был(а) ${formatLastSeen(p.lastSeen)}` : (conv.status || '');
+            subEl.textContent = ls;
+            subEl.style.color = '';
+        }
+    } else {
+        dotEl.style.display = 'none';
+        subEl.textContent = conv.desc || 'Канал';
+        subEl.style.color = '';
+    }
+
+    // Header actions
     actionsEl.innerHTML = '';
     if (conv.type === 'channel' && myRole === 'owner') {
-        actionsEl.innerHTML = `
-            <button onclick="openChatSearch()" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-search text-xs"></i></button>
-            <button onclick="openChannelSettings('${conv.id}')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-cog text-xs"></i></button>
-        `;
+        actionsEl.innerHTML = `<button onclick="openChannelSettings('${conv.id}')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-cog text-xs"></i></button>`;
     }
-    if (conv.type === 'dm') {
-        actionsEl.innerHTML = `
-            <button onclick="openChatSearch()" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-search text-xs"></i></button>
-            <button onclick="openChatSettingsModal()" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-cog text-xs"></i></button>
-            <button onclick="openModal('modal-theme-selector')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-palette text-xs"></i></button>
-        `;
-        if (myRole === 'owner') {
-            const edId = conv.editorId;
-            actionsEl.innerHTML += `<button onclick="openEditorProfileModal('${edId}')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-user text-xs"></i></button>`;
-        }
+    if (conv.type === 'dm' && myRole === 'owner') {
+        actionsEl.innerHTML = `<button onclick="openEditorProfileModal('${conv.editorId}')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-user text-xs"></i></button>`;
     }
 
-    // Активация input
+    // Input
     const inputEl = document.getElementById('msg-input');
     const sendBtn = document.getElementById('send-btn');
     const canWrite = conv.type === 'dm' || myRole === 'owner';
@@ -1312,21 +1169,27 @@ window.openConversation = async function(convId, type) {
     sendBtn.disabled = !canWrite;
     inputEl.placeholder = canWrite ? 'Сообщение...' : 'Только администратор может писать в канал';
 
-    // Обновить sidebar (active state)
-    renderSidebar(document.getElementById('search-input').value);
-
-    // Сброс непрочитанных
-    await resetUnread(conv);
-
-    // Закрыть sidebar на мобильном
-    closeSidebar();
-    
-    // Clear editing state
-    _editingMsgId = null;
+    // Cancel any reply
     cancelReply();
 
-    // Подписка на сообщения
+    renderSidebar(document.getElementById('search-input').value);
+    await resetUnread(conv);
+    closeSidebar();
+
+    // Subscribe typing
+    if (conv.type === 'dm') subscribeTyping(convId);
+
     subscribeMessages(conv);
+};
+
+window.onHeaderClick = function() {
+    const conv = _conversations.find(c => c.id === _activeConvId);
+    if (!conv) return;
+    if (conv.type === 'dm' && myRole === 'owner') {
+        openEditorProfileModal(conv.editorId);
+    } else if (conv.type === 'channel' && myRole === 'owner') {
+        openChannelSettings(conv.id);
+    }
 };
 
 async function resetUnread(conv) {
@@ -1341,6 +1204,7 @@ async function resetUnread(conv) {
     } catch(e){}
 }
 
+// ─── SUBSCRIBE MESSAGES ────────────────────────────────────────────
 function subscribeMessages(conv) {
     let msgCol;
     if (conv.type === 'dm') {
@@ -1349,190 +1213,390 @@ function subscribeMessages(conv) {
         msgCol = collection(db, ...BASE('channels'), conv.id, 'messages');
     }
 
+    const wrap = document.getElementById('messages-wrap');
+    wrap.innerHTML = `<div class="empty-msg"><i class="fas fa-circle-notch fa-spin text-xl" style="color:#00c6fb;opacity:0.5;"></i></div>`;
+
     const q = query(msgCol, orderBy('createdAt', 'asc'));
+    let isFirst = true;
+
     _msgUnsub = onSnapshot(q, snap => {
-        const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderMessages(msgs, conv);
-        
-        // Mark channel messages as read for admin
-        if (conv.type === 'channel' && myRole === 'owner') {
-            msgs.forEach(msg => {
-                if (!msg.pinned) markMessageAsRead(conv.id, msg.id);
+        if (isFirst) {
+            // Full render on first snapshot
+            isFirst = false;
+            const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            msgs.forEach(m => _renderedMsgIds.add(m.id));
+            renderAllMessages(msgs, conv);
+            scrollToBottom(false);
+            // Mark messages as read if DM
+            if (conv.type === 'dm') markMessagesRead(conv, msgs);
+        } else {
+            // Incremental updates
+            snap.docChanges().forEach(change => {
+                if (change.type === 'added' && !_renderedMsgIds.has(change.doc.id)) {
+                    _renderedMsgIds.add(change.doc.id);
+                    const msg = { id: change.doc.id, ...change.doc.data() };
+                    appendMessage(msg, conv);
+                    scrollToBottomIfNear();
+                    if (conv.type === 'dm') markMessagesRead(conv, [msg]);
+                } else if (change.type === 'modified') {
+                    const msg = { id: change.doc.id, ...change.doc.data() };
+                    updateMessageInDOM(msg, conv);
+                } else if (change.type === 'removed') {
+                    removeMessageFromDOM(change.doc.id);
+                }
             });
         }
     }, e => console.warn('Messages error:', e));
-
-    // Listen for typing indicator (DM only)
-    if (conv.type === 'dm') {
-        const typingRef = collection(db, ...BASE('chats'), conv.id, 'typing');
-        onSnapshot(typingRef, snap => {
-            const typingUsers = snap.docs.map(d => d.data());
-            const otherTyping = typingUsers.find(t => t.userId !== myId);
-            const subEl = document.getElementById('chat-sub');
-            if (otherTyping) {
-                subEl.textContent = 'Печатает...';
-                subEl.classList.add('typing-indicator');
-            } else {
-                subEl.textContent = conv.type === 'channel' ? (conv.desc || 'Канал') : (conv.status || (conv.type==='dm' && myRole==='owner' ? 'Монтажёр' : ''));
-                subEl.classList.remove('typing-indicator');
-            }
-        });
-    }
-
-    // Pinned (для каналов)
-    if (conv.type === 'channel') {
-        updatePinnedBar(conv.id);
-    } else {
-        document.getElementById('pinned-bar').classList.add('hidden');
-    }
-    
-    // Load draft
-    loadDraft();
-    
-    // Update online status
-    updateOnlineStatus();
 }
 
-// ─── RENDER MESSAGES ──────────────────────────────────────────────
-function renderMessages(msgs, conv) {
+async function markMessagesRead(conv, msgs) {
+    // Mark unread messages from the other party as read
+    try {
+        await ensureAuth();
+        const unreadMsgs = msgs.filter(m => m.senderId !== myId && m.read === false);
+        for (const m of unreadMsgs) {
+            await updateDoc(doc(db, ...BASE('chats'), conv.id, 'messages', m.id), { read: true });
+        }
+        // Update check icons in sidebar
+        if (unreadMsgs.length > 0) {
+            conv.unread = 0;
+            renderSidebar(document.getElementById('search-input').value);
+        }
+    } catch(e){}
+}
+
+// ─── RENDER ALL MESSAGES ───────────────────────────────────────────
+function renderAllMessages(msgs, conv) {
     const wrap = document.getElementById('messages-wrap');
     if (!msgs.length) {
         wrap.innerHTML = `<div class="empty-msg"><i class="fas fa-comment-slash text-2xl"></i><p class="text-sm font-space">Нет сообщений</p><p class="text-xs">Будьте первым!</p></div>`;
         return;
     }
 
-    let html = '';
+    wrap.innerHTML = '';
     let lastDay = '';
-    msgs.forEach(msg => {
-        // Check if message is deleted for current user
-        if (msg.deletedFor && msg.deletedFor.includes(myId) && myRole !== 'owner') {
-            return;
-        }
+    let firstUnreadRendered = false;
 
+    // Find first unread index
+    let firstUnreadIdx = -1;
+    if (conv.type === 'dm') {
+        for (let i = 0; i < msgs.length; i++) {
+            if (msgs[i].senderId !== myId && msgs[i].read === false) {
+                firstUnreadIdx = i;
+                break;
+            }
+        }
+    }
+
+    msgs.forEach((msg, idx) => {
         const ts = msg.createdAt?.toDate ? msg.createdAt.toDate() : (msg.createdAt ? new Date(msg.createdAt) : new Date());
         const day = ts.toLocaleDateString('ru', {day:'2-digit', month:'long'});
+
         if (day !== lastDay) {
-            html += `<div class="day-divider">${day}</div>`;
+            const divEl = document.createElement('div');
+            divEl.className = 'day-divider';
+            divEl.textContent = day;
+            wrap.appendChild(divEl);
             lastDay = day;
         }
-        const time = ts.toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
-        const isMine = msg.senderId === myId;
-        const isChannel = conv.type === 'channel';
-        const isPinned = msg.pinned === true || msg.pinned === 'true';
-        const isAdmin = msg.senderId === 'owner' && myRole !== 'owner';
-        const isDeleted = msg.deletedFor && msg.deletedFor.includes(myId);
-        const isEdited = msg.editHistory && msg.editHistory.length > 0;
-        const hasReply = msg.replyTo;
 
-        // System message
-        if (msg.type === 'system') {
-            html += `<div class="system-msg ${msg.systemType || ''}">${escapeHtml(msg.text)}</div>`;
-            return;
+        // Unread marker
+        if (idx === firstUnreadIdx && !firstUnreadRendered) {
+            firstUnreadRendered = true;
+            const marker = document.createElement('div');
+            marker.className = 'unread-marker';
+            marker.innerHTML = '<span>Непрочитанные сообщения</span>';
+            wrap.appendChild(marker);
         }
 
-        if (isChannel) {
-            html += `<div class="bubble bubble-channel ${isPinned?'bubble-pinned':''}" data-msgid="${msg.id}">
-                <div class="flex items-start justify-between gap-2">
-                    <div class="flex-1">
-                        ${isPinned ? '<span style="font-size:10px;color:#f59e0b;font-family:Space Grotesk,sans-serif;font-weight:700;display:block;margin-bottom:2px;"><i class="fas fa-thumbtack mr-1"></i>Закреплено</span>' : ''}
-                        ${hasReply ? renderReplyPreview(msg.replyTo) : ''}
-                        ${msg.type === 'voice' ? renderVoiceMessage(msg) : `<p>${escapeHtml(msg.text)}</p>`}
-                        ${isEdited ? '<span class="msg-edited">(изменено)</span>' : ''}
-                    </div>
-                    ${myRole==='owner' ? `<div class="flex gap-1 flex-shrink-0">
-                        <button onclick="pinMessage('${conv.id}','${msg.id}',${!isPinned})" class="w-6 h-6 rounded-lg flex items-center justify-center transition hover:bg-white/10" style="color:${isPinned?'#f59e0b':'#475569'};" title="${isPinned?'Открепить':'Закрепить'}"><i class="fas fa-thumbtack text-[9px]"></i></button>
-                        <button onclick="openChannelViewers('${conv.id}','${msg.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center transition hover:bg-white/10 text-green-400" title="Кто прочитал"><i class="fas fa-eye text-[9px]"></i></button>
-                        <button onclick="deleteMessage('${conv.id}','${msg.id}','channel')" class="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-white/10 text-slate-700 hover:text-rose-400 transition"><i class="fas fa-trash text-[9px]"></i></button>
-                    </div>` : ''}
+        const el = buildMsgElement(msg, conv, false);
+        wrap.appendChild(el);
+    });
+}
+
+function buildMsgElement(msg, conv, isNew) {
+    const ts = msg.createdAt?.toDate ? msg.createdAt.toDate() : (msg.createdAt ? new Date(msg.createdAt) : new Date());
+    const time = ts.toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
+    const isMine = msg.senderId === myId || (myRole === 'owner' && msg.senderId === 'owner');
+    const isMineOwn = msg.senderId === myId;
+    const isChannel = conv.type === 'channel';
+    const isDeleted = msg.deleted === true;
+    const isEdited  = !isDeleted && msg.editedAt;
+
+    // Hide deleted messages from editors completely
+    if (isDeleted && myRole !== 'owner') {
+        const phantom = document.createElement('div');
+        phantom.setAttribute('data-msgid', msg.id);
+        phantom.style.display = 'none';
+        return phantom;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('data-msgid', msg.id);
+    // Store timestamp in ms for edit age check
+    wrapper.setAttribute('data-created-at', ts.getTime());
+    if (isNew && !isDeleted) wrapper.classList.add('bubble-entering');
+
+    if (isChannel) {
+        wrapper.className = `bubble bubble-channel${isNew&&!isDeleted?' bubble-entering':''}${isDeleted?' bubble-deleted':''}`;
+        wrapper.setAttribute('data-msgid', msg.id);
+
+        let channelContent = '';
+        if (isDeleted) {
+            channelContent = `<div class="deleted-label"><i class="fas fa-ban"></i>Удалено автором</div>`;
+        } else {
+            channelContent = `<p>${escapeHtml(msg.text)}</p>`;
+        }
+
+        wrapper.innerHTML = `
+            <div class="flex items-start justify-between gap-2">
+                <div class="flex-1">${channelContent}</div>
+                ${myRole==='owner'&&!isDeleted ? `<div class="flex gap-1 flex-shrink-0">
+                    <button onclick="deleteMessage('${conv.id}','${msg.id}','channel')" class="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-white/10 text-slate-700 hover:text-rose-400 transition" title="Удалить"><i class="fas fa-trash text-[9px]"></i></button>
+                </div>` : ''}
+            </div>
+            <div class="msg-meta">${time}</div>`;
+    } else {
+        wrapper.className = `msg-row ${isMineOwn?'mine':'theirs'}`;
+
+        // Reply quote
+        let replyHtml = '';
+        if (msg.replyTo && !isDeleted) {
+            const rClass = isMineOwn ? 'reply-quote reply-quote-mine' : 'reply-quote';
+            replyHtml = `<div class="${rClass}" onclick="scrollToMsg('${msg.replyTo.id}')">
+                <div>
+                    <div class="reply-quote-name">${escapeHtml(msg.replyTo.senderName||'?')}</div>
+                    <div class="reply-quote-text">${escapeHtml((msg.replyTo.text||'').slice(0,60))}</div>
                 </div>
-                <span class="msg-time">${time}</span>
+            </div>`;
+        }
+
+        // Read checkmarks
+        let checksHtml = '';
+        if (isMineOwn) {
+            const isRead = msg.read === true;
+            checksHtml = `<span class="check-icon ${isRead?'check-read':'check-sent'}"><i class="fas fa-check-double"></i></span>`;
+        }
+
+        const senderName = !isMineOwn ? `<div class="msg-sender-name">${escapeHtml(msg.senderName||'?')}</div>` : '';
+
+        // Edited mark
+        let editedMark = '';
+        if (isEdited) {
+            if (myRole === 'owner') {
+                const histCount = (msg.editHistory||[]).length;
+                editedMark = `<span class="edited-mark admin-view" onclick="showEditHistory(event,'${msg.id}')" title="Показать историю изменений"><i class="fas fa-pen-to-square" style="font-size:8px;margin-right:2px;"></i>ред. (${histCount})</span>`;
+            } else {
+                editedMark = `<span class="edited-mark">ред.</span>`;
+            }
+        }
+
+        // Context menu — pass isMineOwn for edit permission check, but use isMine for delete permission
+        const ctxOwn = isMineOwn;
+
+        if (isDeleted) {
+            // Admin sees a dimmed "deleted" bubble
+            wrapper.innerHTML = `${senderName}<div class="bubble ${isMineOwn?'bubble-mine':'bubble-theirs'} bubble-deleted">
+                <div class="deleted-label"><i class="fas fa-ban"></i>Удалено автором</div>
+                <div class="msg-meta"><span>${time}</span></div>
             </div>`;
         } else {
-            const bubbleClass = isMine ? 'bubble-mine' : (isAdmin ? 'bubble-admin' : 'bubble-theirs');
-            const canEdit = canEditMessage(msg);
-            const canDelete = isMine || myRole === 'owner';
-            
-            html += `<div style="display:flex;flex-direction:column;align-items:${isMine?'flex-end':'flex-start'};">
-                ${!isMine ? `<span class="msg-sender" style="padding-left:4px;">${escapeHtml(msg.senderName||'?')}</span>` : ''}
-                <div class="bubble ${bubbleClass} ${hasReply?'bubble-reply':''} ${isDeleted?'bubble-deleted':''}" data-msgid="${msg.id}">
-                    ${hasReply ? renderReplyPreview(msg.replyTo) : ''}
-                    ${isDeleted ? '<p>Удалено</p>' : (msg.type === 'voice' ? renderVoiceMessage(msg) : `<p>${escapeHtml(msg.text)}</p>`)}
-                    ${isEdited && !isDeleted ? '<span class="msg-edited">(изменено)</span>' : ''}
-                    <div class="flex items-center justify-between mt-1">
-                        <span class="msg-time" style="text-align:${isMine?'right':'left'};">${time}</span>
-                        ${isMine && !isDeleted ? renderReadReceipt(msg) : ''}
-                    </div>
-                    ${!isDeleted && (canEdit || canDelete) ? `<div class="flex gap-1 mt-2 ${isMine?'justify-end':'justify-start'}">
-                        ${canEdit ? `<button onclick="editMessage('${msg.id}')" class="text-[10px] text-slate-500 hover:text-cyan-400 transition"><i class="fas fa-edit"></i></button>` : ''}
-                        ${canDelete ? `<button onclick="deleteMessage('${conv.id}','${msg.id}','dm')" class="text-[10px] text-slate-500 hover:text-rose-400 transition"><i class="fas fa-trash"></i></button>` : ''}
-                        ${!isMine ? `<button onclick="replyToMessage('${msg.id}')" class="text-[10px] text-slate-500 hover:text-cyan-400 transition"><i class="fas fa-reply"></i></button>` : ''}
-                    </div>` : ''}
-                    ${myRole === 'owner' && isDeleted && msg.deletedAt ? `<p class="text-[9px] text-rose-400 mt-1">Удалено: ${formatTime(msg.deletedAt)}</p>` : ''}
+            wrapper.innerHTML = `${senderName}<div class="bubble ${isMineOwn?'bubble-mine':'bubble-theirs'}" oncontextmenu="showCtxMenu(event,'${msg.id}','${conv.id}','${conv.type}',${ctxOwn})">
+                ${replyHtml}
+                <span style="white-space:pre-wrap;">${escapeHtml(msg.text)}</span>
+                <div class="msg-meta">
+                    ${editedMark}
+                    ${checksHtml}
+                    <span>${time}</span>
                 </div>
             </div>`;
         }
-    });
-
-    wrap.innerHTML = html;
-    wrap.scrollTop = wrap.scrollHeight;
-}
-
-function renderReplyPreview(replyTo) {
-    return `<div class="reply-preview">
-        <span class="reply-preview-name">${escapeHtml(replyTo.senderName)}</span>
-        <p class="reply-preview-text">${escapeHtml(replyTo.text)}</p>
-    </div>`;
-}
-
-function renderVoiceMessage(msg) {
-    const duration = msg.duration || 0;
-    const minutes = Math.floor(duration / 60);
-    const seconds = duration % 60;
-    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    
-    return `<div class="voice-msg">
-        <button class="voice-play-btn" onclick="playVoiceMessage('${msg.audioUrl}', this)">
-            <i class="fas fa-play text-sm"></i>
-        </button>
-        <div class="voice-waveform">
-            ${Array(30).fill(0).map(() => `<div class="voice-bar" style="height:${Math.random() * 16 + 4}px;"></div>`).join('')}
-        </div>
-        <span class="voice-duration">${timeStr}</span>
-        <button class="voice-speed" onclick="changeVoiceSpeed(this)">1x</button>
-    </div>`;
-}
-
-function renderReadReceipt(msg) {
-    if (!msg.read) {
-        return `<span class="msg-read-receipt sent"><i class="fas fa-check"></i></span>`;
     }
-    return `<span class="msg-read-receipt read"><i class="fas fa-check-double"></i></span>`;
+    return wrapper;
 }
 
-window.playVoiceMessage = function(audioUrl, btn) {
-    const audio = new Audio(audioUrl);
-    const icon = btn.querySelector('i');
-    
-    audio.onplay = () => {
-        icon.className = 'fas fa-pause text-sm';
-    };
-    
-    audio.onended = () => {
-        icon.className = 'fas fa-play text-sm';
-    };
-    
-    audio.play();
+function appendMessage(msg, conv) {
+    const wrap = document.getElementById('messages-wrap');
+    // Remove empty state if present
+    const empty = wrap.querySelector('.empty-msg');
+    if (empty) empty.remove();
+
+    // Day divider
+    const ts = msg.createdAt?.toDate ? msg.createdAt.toDate() : (msg.createdAt ? new Date(msg.createdAt) : new Date());
+    const day = ts.toLocaleDateString('ru', {day:'2-digit', month:'long'});
+    const lastDivider = wrap.querySelector('.day-divider:last-of-type');
+    if (!lastDivider || lastDivider.textContent !== day) {
+        const divEl = document.createElement('div');
+        divEl.className = 'day-divider';
+        divEl.textContent = day;
+        wrap.appendChild(divEl);
+    }
+
+    const el = buildMsgElement(msg, conv, true);
+    wrap.appendChild(el);
+
+    // Increment unread scroll badge if not at bottom
+    const atBottom = wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight < 100;
+    if (!atBottom && msg.senderId !== myId) {
+        _unreadScrollCount++;
+        showScrollBtn();
+    }
+}
+
+function updateMessageInDOM(msg, conv) {
+    const existing = document.querySelector(`[data-msgid="${msg.id}"]`);
+    if (!existing) return;
+    const newEl = buildMsgElement(msg, conv, false);
+    existing.replaceWith(newEl);
+}
+
+function removeMessageFromDOM(msgId) {
+    const el = document.querySelector(`[data-msgid="${msgId}"]`);
+    if (!el) return;
+    el.classList.add('bubble-leaving');
+    setTimeout(() => el.remove(), 200);
+}
+
+// ─── SCROLL ────────────────────────────────────────────────────────
+let _unreadScrollCount = 0;
+
+function scrollToBottom(smooth) {
+    const wrap = document.getElementById('messages-wrap');
+    wrap.scrollTo({ top: wrap.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
+    _unreadScrollCount = 0;
+    hideScrollBtn();
+}
+
+function scrollToBottomIfNear() {
+    const wrap = document.getElementById('messages-wrap');
+    if (wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight < 120) {
+        scrollToBottom(true);
+    }
+}
+
+function showScrollBtn() {
+    const btn = document.getElementById('scroll-btn');
+    const badge = document.getElementById('scroll-badge');
+    btn.classList.add('show');
+    if (_unreadScrollCount > 0) {
+        badge.textContent = _unreadScrollCount;
+        badge.style.display = 'flex';
+    }
+}
+function hideScrollBtn() {
+    const btn = document.getElementById('scroll-btn');
+    const badge = document.getElementById('scroll-badge');
+    btn.classList.remove('show');
+    badge.style.display = 'none';
+    _unreadScrollCount = 0;
+}
+
+document.getElementById('messages-wrap').addEventListener('scroll', function() {
+    const atBottom = this.scrollHeight - this.scrollTop - this.clientHeight < 100;
+    if (atBottom) hideScrollBtn();
+    else if (_unreadScrollCount > 0) showScrollBtn();
+});
+
+window.scrollToMsg = function(msgId) {
+    const el = document.querySelector(`[data-msgid="${msgId}"]`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.transition = 'background 0.2s';
+    el.style.background = 'rgba(0,198,251,0.12)';
+    setTimeout(() => { el.style.background = ''; }, 1200);
 };
 
-window.changeVoiceSpeed = function(btn) {
-    const speeds = ['1x', '1.5x', '2x'];
-    const current = speeds.indexOf(btn.textContent);
-    const next = (current + 1) % speeds.length;
-    btn.textContent = speeds[next];
-    // Apply speed to audio element (implement)
+window.scrollToBottom = scrollToBottom;
+
+// ─── CONTEXT MENU ──────────────────────────────────────────────────
+let _ctxMsgId = null, _ctxConvId = null, _ctxConvType = null, _ctxIsMine = false;
+
+window.showCtxMenu = function(e, msgId, convId, convType, isMine) {
+    e.preventDefault();
+    e.stopPropagation();
+    _ctxMsgId = msgId; _ctxConvId = convId; _ctxConvType = convType; _ctxIsMine = isMine;
+
+    const menu = document.getElementById('ctx-menu');
+    let items = `<div class="ctx-item" onclick="ctxReply()"><i class="fas fa-reply"></i>Ответить</div>`;
+
+    // Edit: only own messages, within 1 hour, non-deleted
+    if (isMine) {
+        const msgEl = document.querySelector(`[data-msgid="${msgId}"]`);
+        // Find createdAt from DOM timestamp or we check via Firestore; use a data attribute set during build
+        const createdAtStr = msgEl?.getAttribute('data-created-at');
+        const ageMs = createdAtStr ? (Date.now() - parseInt(createdAtStr, 10)) : Infinity;
+        if (ageMs < 3600000) {
+            items += `<div class="ctx-item" onclick="ctxEdit()"><i class="fas fa-pen"></i>Редактировать</div>`;
+        }
+    }
+
+    if (isMine || myRole === 'owner') {
+        items += `<div class="ctx-item danger" onclick="ctxDelete()"><i class="fas fa-trash"></i>Удалить</div>`;
+    }
+    menu.innerHTML = items;
+    menu.style.display = 'block';
+
+    // Position
+    const vw = window.innerWidth, vh = window.innerHeight;
+    let x = e.clientX, y = e.clientY;
+    menu.style.left = '0'; menu.style.top = '0';
+    menu.style.display = 'block';
+    const mw = menu.offsetWidth, mh = menu.offsetHeight;
+    if (x + mw > vw - 8) x = vw - mw - 8;
+    if (y + mh > vh - 8) y = vh - mh - 8;
+    menu.style.left = x + 'px'; menu.style.top = y + 'px';
 };
 
-// ─── SEND MESSAGE ─────────────────────────────────────────────────
+window.ctxReply = function() {
+    hideCtxMenu();
+    if (!_ctxMsgId) return;
+    // Find message in DOM to get text/name
+    const el = document.querySelector(`[data-msgid="${_ctxMsgId}"]`);
+    if (!el) return;
+    const bubble = el.querySelector('.bubble') || el;
+    const textEl = bubble.querySelector('span[style]') || bubble.querySelector('p');
+    const nameEl = el.querySelector('.msg-sender-name') || el.querySelector('.reply-quote-name');
+    const text = textEl ? textEl.textContent.trim().slice(0,80) : '';
+    const name = nameEl ? nameEl.textContent.trim() : (document.getElementById('chat-title').textContent);
+    setReply(_ctxMsgId, name, text);
+};
+
+window.ctxEdit = function() {
+    hideCtxMenu();
+    if (!_ctxMsgId) return;
+    startInlineEdit(_ctxMsgId, _ctxConvId, _ctxConvType);
+};
+
+window.ctxDelete = function() {
+    hideCtxMenu();
+    if (!_ctxMsgId) return;
+    deleteMessage(_ctxConvId, _ctxMsgId, _ctxConvType);
+};
+
+function hideCtxMenu() {
+    document.getElementById('ctx-menu').style.display = 'none';
+}
+
+document.addEventListener('click', hideCtxMenu);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { hideCtxMenu(); cancelReply(); } });
+
+// ─── REPLY ─────────────────────────────────────────────────────────
+let _replyTo = null; // { id, senderName, text }
+
+function setReply(msgId, name, text) {
+    _replyTo = { id: msgId, senderName: name, text };
+    document.getElementById('reply-bar-name').textContent = name;
+    document.getElementById('reply-bar-text').textContent = text;
+    document.getElementById('reply-bar').classList.add('show');
+    document.getElementById('msg-input').focus();
+}
+
+window.cancelReply = function() {
+    _replyTo = null;
+    document.getElementById('reply-bar').classList.remove('show');
+};
+
+// ─── SEND MESSAGE ──────────────────────────────────────────────────
 window.sendMessage = async function() {
     const input = document.getElementById('msg-input');
     const text  = input.value.trim();
@@ -1541,22 +1605,16 @@ window.sendMessage = async function() {
     const conv = _conversations.find(c => c.id === _activeConvId);
     if (!conv) return;
 
-    // Check if editing
-    if (_editingMsgId) {
-        await updateExistingMessage(_editingMsgId, text);
-        _editingMsgId = null;
-        input.placeholder = 'Сообщение...';
-        document.getElementById('send-btn').innerHTML = '<i class="fas fa-paper-plane text-sm"></i>';
-        input.value = '';
-        input.style.height = '';
-        document.getElementById('send-btn').disabled = true;
-        cancelReply();
-        return;
-    }
-
     input.value = '';
     input.style.height = '';
     document.getElementById('send-btn').disabled = true;
+
+    // Stop typing indicator
+    clearTimeout(_myTypingTimeout);
+    await setTyping(false);
+
+    const replySnapshot = _replyTo ? { ..._replyTo } : null;
+    cancelReply();
 
     try {
         await ensureAuth();
@@ -1564,219 +1622,39 @@ window.sendMessage = async function() {
             senderId: myId,
             senderName: myProfile.name,
             text,
-            type: 'text',
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            ...(replySnapshot ? { replyTo: replySnapshot } : {})
         };
-
-        // Add reply if exists
-        if (_replyToMsg) {
-            msgData.replyTo = _replyToMsg;
-        }
 
         if (conv.type === 'dm') {
             await addDoc(collection(db, ...BASE('chats'), conv.id, 'messages'), { ...msgData, read: false });
-            // Обновляем meta + счётчик непрочитанных для получателя
             const recipientField = myRole === 'owner' ? 'unreadEditor' : 'unreadOwner';
             await setDoc(doc(db, ...BASE('chats'), conv.id, 'meta', 'info'), {
                 lastMessage: text.slice(0,80),
                 lastAt: new Date().toISOString(),
+                lastSenderId: myId,
                 [recipientField]: increment(1)
             }, { merge: true });
-            // TG уведомление
             sendTgNotification(conv, text);
         } else {
-            await addDoc(collection(db, ...BASE('channels'), conv.id, 'messages'), { ...msgData, pinned: false });
-            await setDoc(doc(db, ...BASE('channels'), conv.id), { lastMessage: text.slice(0,80), lastAt: new Date().toISOString() }, { merge: true });
+            await addDoc(collection(db, ...BASE('channels'), conv.id, 'messages'), { ...msgData });
+            await setDoc(doc(db, ...BASE('channels'), conv.id), { lastMessage: text.slice(0,80), lastAt: new Date().toISOString(), lastSenderId: myId }, { merge: true });
         }
 
-        // Обновить lastMsg в sidebar
         conv.lastMsg = text.slice(0,80);
+        conv.lastAt = new Date().toISOString();
+        conv.lastSenderId = myId;
         renderSidebar(document.getElementById('search-input').value);
-        
-        // Clear reply
-        cancelReply();
-        // Clear draft
-        delete _drafts[_activeConvId];
-        localStorage.setItem('space_drafts', JSON.stringify(_drafts));
     } catch(e) {
         showToast('Ошибка отправки: ' + e.message, 'error');
     }
     document.getElementById('send-btn').disabled = false;
 };
 
-async function updateExistingMessage(msgId, newText) {
-    if (!_activeConvId) return;
-    const conv = _conversations.find(c => c.id === _activeConvId);
-    if (!conv) return;
-
-    try {
-        await ensureAuth();
-        const msgRef = doc(db, ...BASE('chats'), conv.id, 'messages', msgId);
-        const msgSnap = await getDoc(msgRef);
-        
-        if (!msgSnap.exists()) {
-            showToast('Сообщение не найдено', 'error');
-            return;
-        }
-
-        const currentData = msgSnap.data();
-        const editHistory = currentData.editHistory || [];
-        
-        // Add current version to history
-        editHistory.push({
-            text: currentData.text,
-            editedAt: new Date().toISOString(),
-            editedBy: myProfile.name
-        });
-
-        // Update message
-        await updateDoc(msgRef, {
-            text: newText,
-            editHistory: editHistory,
-            editedAt: serverTimestamp()
-        });
-
-        showToast('Сообщение изменено', 'success');
-    } catch(e) {
-        showToast('Ошибка редактирования: ' + e.message, 'error');
-    }
-}
-
-// ─── DELETE MESSAGE ─────────────────────────────────────────────────
-window.deleteMessage = async function(convId, msgId, type) {
-    if (!confirm('Удалить сообщение?')) return;
-
-    try {
-        await ensureAuth();
-        
-        if (type === 'channel') {
-            // Admin deletes channel message - delete for everyone
-            await deleteDoc(doc(db, ...BASE('channels'), convId, 'messages', msgId));
-            showToast('Сообщение удалено', 'success');
-        } else {
-            // DM message
-            if (myRole === 'owner') {
-                // Admin deletes - delete for everyone
-                await deleteDoc(doc(db, ...BASE('chats'), convId, 'messages', msgId));
-                showToast('Сообщение удалено для всех', 'success');
-            } else {
-                // Editor deletes - mark as deleted for editor only
-                const msgRef = doc(db, ...BASE('chats'), convId, 'messages', msgId);
-                const msgSnap = await getDoc(msgRef);
-                if (msgSnap.exists()) {
-                    const deletedFor = msgSnap.data().deletedFor || [];
-                    if (!deletedFor.includes(myId)) {
-                        deletedFor.push(myId);
-                        await updateDoc(msgRef, {
-                            deletedFor: deletedFor,
-                            deletedAt: serverTimestamp()
-                        });
-                        showToast('Сообщение удалено', 'success');
-                    }
-                }
-            }
-        }
-    } catch(e) {
-        showToast('Ошибка удаления: ' + e.message, 'error');
-    }
-};
-
-// ─── CHANNEL VIEWERS ───────────────────────────────────────────────
-window.openChannelViewers = async function(channelId, msgId) {
-    if (myRole !== 'owner') return;
-    
-    openModal('modal-channel-viewers');
-    const content = document.getElementById('channel-viewers-content');
-    content.innerHTML = '<p class="text-slate-600 text-xs">Загрузка...</p>';
-    
-    try {
-        await ensureAuth();
-        const viewersRef = collection(db, ...BASE('channels'), channelId, 'messages', msgId, 'viewers');
-        const snap = await getDocs(viewersRef);
-        
-        if (snap.empty) {
-            content.innerHTML = '<p class="text-slate-600 text-xs">Пока никто не прочитал</p>';
-            return;
-        }
-        
-        let html = '<div class="space-y-2">';
-        snap.forEach(doc => {
-            const data = doc.data();
-            const viewTime = data.viewedAt?.toDate ? data.viewedAt.toDate() : new Date(data.viewedAt);
-            html += `<div class="flex items-center justify-between p-2 rounded-lg bg-white/5">
-                <span class="text-sm text-slate-300">${escapeHtml(data.userName || '?')}</span>
-                <span class="text-xs text-slate-500 font-mono">${formatTime(viewTime)}</span>
-            </div>`;
-        });
-        html += '</div>';
-        content.innerHTML = html;
-    } catch(e) {
-        content.innerHTML = '<p class="text-rose-400 text-xs">Ошибка загрузки</p>';
-    }
-};
-
-// ─── MARK AS READ ─────────────────────────────────────────────────
-async function markMessageAsRead(convId, msgId) {
-    if (myRole !== 'owner') return;
-    try {
-        await ensureAuth();
-        const viewerRef = doc(db, ...BASE('channels'), convId, 'messages', msgId, 'viewers', myId);
-        await setDoc(viewerRef, {
-            userId: myId,
-            userName: myProfile.name,
-            viewedAt: serverTimestamp()
-        });
-    } catch(e) {}
-}
-
-// ─── EDIT HISTORY (ADMIN) ───────────────────────────────────────────
-window.openEditHistory = async function(msgId) {
-    if (myRole !== 'owner') return;
-    
-    openModal('modal-edit-history');
-    const content = document.getElementById('edit-history-content');
-    content.innerHTML = '<p class="text-slate-600 text-xs">Загрузка...</p>';
-    
-    try {
-        await ensureAuth();
-        const msgRef = doc(db, ...BASE('chats'), _activeConvId, 'messages', msgId);
-        const msgSnap = await getDoc(msgRef);
-        
-        if (!msgSnap.exists()) {
-            content.innerHTML = '<p class="text-slate-600 text-xs">Сообщение не найдено</p>';
-            return;
-        }
-        
-        const editHistory = msgSnap.data().editHistory || [];
-        if (editHistory.length === 0) {
-            content.innerHTML = '<p class="text-slate-600 text-xs">Нет истории изменений</p>';
-            return;
-        }
-        
-        let html = '<div class="space-y-3">';
-        editHistory.reverse().forEach((edit, index) => {
-            const editTime = new Date(edit.editedAt).toLocaleString('ru');
-            html += `<div class="p-3 rounded-lg bg-white/5 border border-white/10">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs text-cyan-400 font-space font-bold">Версия ${editHistory.length - index}</span>
-                    <span class="text-[10px] text-slate-500 font-mono">${editTime}</span>
-                </div>
-                <p class="text-sm text-slate-300">${escapeHtml(edit.text)}</p>
-                <p class="text-[10px] text-slate-500 mt-1">Редактировал: ${escapeHtml(edit.editedBy)}</p>
-            </div>`;
-        });
-        html += '</div>';
-        content.innerHTML = html;
-    } catch(e) {
-        content.innerHTML = '<p class="text-rose-400 text-xs">Ошибка загрузки</p>';
-    }
-};
-
-// ─── TG NOTIFICATION ──────────────────────────────────────────────
+// ─── TG NOTIFICATION ───────────────────────────────────────────────
 async function sendTgNotification(conv, text) {
     if (!_tgToken || !_tgChatId) return;
     try {
-        // Уведомляем владельца когда монтажёр пишет
         if (myRole === 'editor') {
             const msg = `💬 Новое сообщение\n\nОт: ${myProfile.name}\nТекст: ${text.slice(0,200)}`;
             await fetch(`https://api.telegram.org/bot${_tgToken}/sendMessage`, {
@@ -1784,7 +1662,6 @@ async function sendTgNotification(conv, text) {
                 body: JSON.stringify({ chat_id: _tgChatId, text: msg })
             });
         }
-        // Уведомляем монтажёра (если есть tgChatId в профиле) когда владелец пишет
         if (myRole === 'owner') {
             const convObj = _conversations.find(c => c.id === conv.id);
             if (convObj) {
@@ -1801,60 +1678,172 @@ async function sendTgNotification(conv, text) {
     } catch(e){ console.warn('TG:', e); }
 }
 
-// ─── PIN MESSAGE ──────────────────────────────────────────────────
-window.pinMessage = async function(channelId, msgId, pin) {
-    try {
-        await ensureAuth();
-        // Открепляем предыдущий если закрепляем новый
-        if (pin) {
-            const snap = await getDocs(query(
-                collection(db, ...BASE('channels'), channelId, 'messages'),
-                where('pinned', '==', true)
-            ));
-            for (const d of snap.docs) {
-                await updateDoc(doc(db, ...BASE('channels'), channelId, 'messages', d.id), { pinned: false });
-            }
-        }
-        await updateDoc(doc(db, ...BASE('channels'), channelId, 'messages', msgId), { pinned: pin });
-        updatePinnedBar(channelId);
-    } catch(e){ showToast('Ошибка: ' + e.message, 'error'); }
-};
-
-async function updatePinnedBar(channelId) {
-    const bar   = document.getElementById('pinned-bar');
-    const textEl = document.getElementById('pinned-text');
-    const unpinBtn = document.getElementById('pinned-unpin-btn');
-    try {
-        const snap = await getDocs(query(
-            collection(db, ...BASE('channels'), channelId, 'messages'),
-            where('pinned', '==', true)
-        ));
-        if (!snap.empty) {
-            const d = snap.docs[0];
-            bar.classList.remove('hidden');
-            textEl.textContent = d.data().text || '';
-            if (myRole === 'owner') {
-                unpinBtn.classList.remove('hidden');
-                unpinBtn.onclick = () => pinMessage(channelId, d.id, false);
-            }
-        } else {
-            bar.classList.add('hidden');
-        }
-    } catch(e){ bar.classList.add('hidden'); }
-}
-
-// ─── DELETE MESSAGE ───────────────────────────────────────────────
+// ─── DELETE MESSAGE (soft delete) ──────────────────────────────────
 window.deleteMessage = async function(convId, msgId, type) {
     if (!confirm('Удалить сообщение?')) return;
     try {
         await ensureAuth();
-        const col = type === 'channel' ? BASE('channels') : BASE('chats');
-        const sub = type === 'channel' ? 'messages' : 'messages';
-        await deleteDoc(doc(db, ...col, convId, sub, msgId));
+        const col = type === 'channel'
+            ? [...BASE('channels'), convId, 'messages']
+            : [...BASE('chats'), convId, 'messages'];
+        await updateDoc(doc(db, ...col, msgId), {
+            deleted: true,
+            deletedAt: new Date().toISOString(),
+            deletedBy: myId
+        });
     } catch(e){ showToast('Ошибка: ' + e.message, 'error'); }
 };
 
-// ─── PROFILE ──────────────────────────────────────────────────────
+// ─── INLINE EDIT ───────────────────────────────────────────────────
+// _editingMsgId prevents double-edit
+let _editingMsgId = null;
+
+function startInlineEdit(msgId, convId, convType) {
+    if (_editingMsgId) cancelInlineEdit();
+    _editingMsgId = msgId;
+
+    const el = document.querySelector(`[data-msgid="${msgId}"]`);
+    if (!el) return;
+    const bubble = el.querySelector('.bubble');
+    if (!bubble) return;
+    const textSpan = bubble.querySelector('span[style*="pre-wrap"]');
+    if (!textSpan) return;
+
+    const originalText = textSpan.textContent;
+    // Store original html to restore on cancel
+    bubble.setAttribute('data-edit-backup', bubble.innerHTML);
+
+    // Replace span with textarea
+    const ta = document.createElement('textarea');
+    ta.className = 'edit-textarea';
+    ta.value = originalText;
+    ta.rows = Math.min(Math.max(originalText.split('\n').length, 1), 6);
+    ta.setAttribute('data-edit-original', originalText);
+    // Auto-height
+    ta.addEventListener('input', () => {
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'edit-actions';
+    actions.innerHTML = `
+        <button class="edit-btn edit-btn-cancel" onclick="cancelInlineEdit()"><i class="fas fa-times" style="margin-right:4px;font-size:10px;"></i>Отмена</button>
+        <button class="edit-btn edit-btn-save" onclick="saveInlineEdit('${msgId}','${convId}','${convType}')"><i class="fas fa-check" style="margin-right:4px;font-size:10px;"></i>Сохранить</button>`;
+
+    // Clear bubble content, inject editor
+    bubble.innerHTML = '';
+    bubble.appendChild(ta);
+    bubble.appendChild(actions);
+
+    ta.focus();
+    ta.selectionStart = ta.selectionEnd = ta.value.length;
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+
+    // Save on Enter (no shift)
+    ta.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveInlineEdit(msgId, convId, convType); }
+        if (e.key === 'Escape') { e.preventDefault(); cancelInlineEdit(); }
+    });
+}
+
+window.cancelInlineEdit = function() {
+    if (!_editingMsgId) return;
+    const el = document.querySelector(`[data-msgid="${_editingMsgId}"]`);
+    if (el) {
+        const bubble = el.querySelector('.bubble');
+        if (bubble) {
+            const backup = bubble.getAttribute('data-edit-backup');
+            if (backup) bubble.innerHTML = backup;
+        }
+    }
+    _editingMsgId = null;
+};
+
+window.saveInlineEdit = async function(msgId, convId, convType) {
+    if (!msgId) return;
+    const el = document.querySelector(`[data-msgid="${msgId}"]`);
+    if (!el) return;
+    const ta = el.querySelector('.edit-textarea');
+    if (!ta) return;
+    const newText = ta.value.trim();
+    const origText = ta.getAttribute('data-edit-original') || '';
+    if (!newText) { showToast('Сообщение не может быть пустым', 'error'); return; }
+    if (newText === origText) { cancelInlineEdit(); return; }
+
+    try {
+        await ensureAuth();
+        const col = convType === 'channel'
+            ? [...BASE('channels'), convId, 'messages']
+            : [...BASE('chats'), convId, 'messages'];
+        const msgRef = doc(db, ...col, msgId);
+        // Read current editHistory
+        const snap = await getDoc(msgRef);
+        const existing = snap.exists() ? (snap.data().editHistory || []) : [];
+        const prevText = snap.exists() ? snap.data().text : origText;
+        const now = new Date().toISOString();
+        await updateDoc(msgRef, {
+            text: newText,
+            editedAt: now,
+            editHistory: [...existing, { text: prevText, editedAt: now }]
+        });
+        _editingMsgId = null;
+        showToast('Изменено', 'success');
+    } catch(e) {
+        showToast('Ошибка: ' + e.message, 'error');
+    }
+};
+
+// ─── EDIT HISTORY (admin only) ─────────────────────────────────────
+window.showEditHistory = async function(e, msgId) {
+    e.stopPropagation();
+    if (myRole !== 'owner') return;
+
+    // Find message data — fetch fresh from Firestore via active conv
+    const conv = _conversations.find(c => c.id === _activeConvId);
+    if (!conv) return;
+    try {
+        await ensureAuth();
+        const col = conv.type === 'channel'
+            ? [...BASE('channels'), conv.id, 'messages']
+            : [...BASE('chats'), conv.id, 'messages'];
+        const snap = await getDoc(doc(db, ...col, msgId));
+        if (!snap.exists()) { showToast('Сообщение не найдено', 'error'); return; }
+        const data = snap.data();
+        const history = data.editHistory || [];
+
+        const listEl = document.getElementById('edit-history-list');
+        if (!history.length) {
+            listEl.innerHTML = '<p class="text-xs text-slate-600 font-space">История пуста</p>';
+        } else {
+            let html = '';
+            // Original (oldest)
+            const original = history[0];
+            // Show all edits oldest → newest, then current
+            history.forEach((h, i) => {
+                const dt = new Date(h.editedAt);
+                const label = i === 0 ? 'Оригинал' : `Редакция ${i}`;
+                const timeStr = dt.toLocaleString('ru', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+                html += `<div class="history-entry">
+                    <div class="history-entry-label">${label} · ${timeStr}</div>
+                    <div class="history-entry-text">${escapeHtml(h.text)}</div>
+                </div>`;
+            });
+            // Current version
+            const curDt = new Date(data.editedAt);
+            const curTimeStr = curDt.toLocaleString('ru', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+            html += `<div class="history-entry current">
+                <div class="history-entry-label">Текущая версия · ${curTimeStr}</div>
+                <div class="history-entry-text">${escapeHtml(data.text)}</div>
+            </div>`;
+            listEl.innerHTML = html;
+        }
+        openModal('modal-edit-history');
+    } catch(err) { showToast('Ошибка: ' + err.message, 'error'); }
+};
+
+// ─── PROFILE ───────────────────────────────────────────────────────
 let _selectedAvatarColor = 'cyan';
 
 window.openProfileModal = function() {
@@ -1864,7 +1853,6 @@ window.openProfileModal = function() {
     document.getElementById('profile-login-label').textContent = myRole === 'owner' ? 'spaceowner' : ('@' + (sessionStorage.getItem('chat_login') || myId));
     const initials = myProfile.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
     applyAvatarStyle(document.getElementById('profile-avatar-preview'), _selectedAvatarColor, initials);
-    // Подсвечиваем текущий цвет
     document.querySelectorAll('[data-color]').forEach(btn => {
         btn.style.outline = btn.getAttribute('data-color') === _selectedAvatarColor ? '2px solid white' : '';
     });
@@ -1884,21 +1872,13 @@ window.saveProfile = async function() {
     const name   = document.getElementById('profile-name-input').value.trim();
     const status = document.getElementById('profile-status-input').value.trim();
     if (!name) { showToast('Имя не может быть пустым', 'error'); return; }
-
-    myProfile.name   = name;
-    myProfile.color  = _selectedAvatarColor;
-    myProfile.status = status;
-
+    myProfile.name = name; myProfile.color = _selectedAvatarColor; myProfile.status = status;
     try {
         await ensureAuth();
         if (myRole === 'owner') {
             localStorage.setItem('space_owner_chat_profile', JSON.stringify(myProfile));
         } else {
-            await updateDoc(doc(db, ...BASE('editors'), myId), {
-                chatName:   name,
-                chatColor:  _selectedAvatarColor,
-                chatStatus: status
-            });
+            await updateDoc(doc(db, ...BASE('editors'), myId), { chatName: name, chatColor: _selectedAvatarColor, chatStatus: status });
         }
         renderMyHeader();
         closeModal('modal-profile');
@@ -1906,7 +1886,7 @@ window.saveProfile = async function() {
     } catch(e){ showToast('Ошибка: ' + e.message, 'error'); }
 };
 
-// ─── EDITOR PROFILE MODAL (admin only) ───────────────────────────
+// ─── EDITOR PROFILE ────────────────────────────────────────────────
 window.openEditorProfileModal = async function(editorId) {
     const ed = _allEditors.find(e => e.id === editorId);
     if (!ed) return;
@@ -1920,6 +1900,18 @@ window.openEditorProfileModal = async function(editorId) {
     applyAvatarStyle(document.getElementById('ep-avatar'), ed.chatColor||'cyan', initials);
     const blockBtn = document.getElementById('ep-block-btn');
     blockBtn.innerHTML = isBlocked ? '<i class="fas fa-unlock mr-1"></i>Разблокировать' : '<i class="fas fa-ban mr-1"></i>Заблокировать';
+    // Last seen
+    const p = _presenceData[editorId];
+    const lastSeenEl = document.getElementById('ep-last-seen');
+    if (p?.online) {
+        lastSeenEl.textContent = '● В сети';
+        lastSeenEl.style.color = '#22c55e';
+    } else if (p?.lastSeen) {
+        lastSeenEl.textContent = `был(а) ${formatLastSeen(p.lastSeen)}`;
+        lastSeenEl.style.color = '';
+    } else {
+        lastSeenEl.textContent = '';
+    }
     openModal('modal-editor-profile');
 };
 
@@ -1932,8 +1924,7 @@ window.epToggleBlock = async function() {
         await ensureAuth();
         await updateDoc(doc(db, ...BASE('editors'), id), { isBlocked: newBlocked });
         ed.isBlocked = newBlocked;
-        const blockBtn = document.getElementById('ep-block-btn');
-        blockBtn.innerHTML = newBlocked ? '<i class="fas fa-unlock mr-1"></i>Разблокировать' : '<i class="fas fa-ban mr-1"></i>Заблокировать';
+        document.getElementById('ep-block-btn').innerHTML = newBlocked ? '<i class="fas fa-unlock mr-1"></i>Разблокировать' : '<i class="fas fa-ban mr-1"></i>Заблокировать';
         showToast(newBlocked ? 'Монтажёр заблокирован' : 'Монтажёр разблокирован', 'info');
     } catch(e){ showToast('Ошибка: ' + e.message, 'error'); }
 };
@@ -1959,12 +1950,10 @@ window.epDelete = async function() {
 };
 
 window.epSavePass = async function() {
-    const id      = document.getElementById('ep-id').value;
+    const id = document.getElementById('ep-id').value;
     const newPass = document.getElementById('ep-new-pass').value;
     if (!newPass) { showToast('Введите новый пароль', 'error'); return; }
-    if (!window.CryptoJS) {
-        showToast('CryptoJS не загружен', 'error'); return;
-    }
+    if (!window.CryptoJS) { showToast('CryptoJS не загружен', 'error'); return; }
     try {
         await ensureAuth();
         const hash = CryptoJS.SHA256(newPass).toString();
@@ -1974,7 +1963,7 @@ window.epSavePass = async function() {
     } catch(e){ showToast('Ошибка: ' + e.message, 'error'); }
 };
 
-// ─── CHANNELS (admin) ─────────────────────────────────────────────
+// ─── CHANNELS ──────────────────────────────────────────────────────
 window.openCreateChannelModal = async function() {
     document.getElementById('ch-name-input').value = '';
     document.getElementById('ch-desc-input').value = '';
@@ -1995,10 +1984,7 @@ window.createChannel = async function() {
     const members = [...document.querySelectorAll('.ch-member-check:checked')].map(el => el.value);
     try {
         await ensureAuth();
-        const newDoc = await addDoc(collection(db, ...BASE('channels')), {
-            name, desc, members, createdAt: new Date().toISOString(),
-            lastMessage: '', lastAt: null
-        });
+        const newDoc = await addDoc(collection(db, ...BASE('channels')), { name, desc, members, createdAt: new Date().toISOString(), lastMessage: '', lastAt: null });
         closeModal('modal-create-channel');
         showToast('Канал создан!', 'success');
         await loadSidebar();
@@ -2023,10 +2009,10 @@ window.openChannelSettings = async function(channelId) {
 };
 
 window.saveChannelSettings = async function() {
-    const id   = document.getElementById('chs-id').value;
+    const id = document.getElementById('chs-id').value;
     const name = document.getElementById('chs-name').value.trim();
     if (!name) { showToast('Название обязательно', 'error'); return; }
-    const desc    = document.getElementById('chs-desc').value.trim();
+    const desc = document.getElementById('chs-desc').value.trim();
     const members = [...document.querySelectorAll('.chs-member-check:checked')].map(el => el.value);
     try {
         await ensureAuth();
@@ -2044,9 +2030,9 @@ window.saveChannelSettings = async function() {
 };
 
 window.deleteChannel = async function() {
-    const id   = document.getElementById('chs-id').value;
+    const id = document.getElementById('chs-id').value;
     const conv = _conversations.find(c => c.id === id);
-    if (!confirm(`Удалить канал «${conv?.name||id}»? Все сообщения будут удалены.`)) return;
+    if (!confirm(`Удалить канал «${conv?.name||id}»?`)) return;
     try {
         await ensureAuth();
         await deleteDoc(doc(db, ...BASE('channels'), id));
@@ -2063,41 +2049,10 @@ window.deleteChannel = async function() {
     } catch(e){ showToast('Ошибка: ' + e.message, 'error'); }
 };
 
-// ─── UTILS ────────────────────────────────────────────────────────
+// ─── UTILS ─────────────────────────────────────────────────────────
 function escapeHtml(str) {
-    return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
-function formatTimeAgo(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = now - date;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    
-    if (minutes < 1) return 'только что';
-    if (minutes < 60) return `${minutes}м`;
-    if (hours < 24) return `${hours}ч`;
-    if (days < 7) return `${days}д`;
-    return date.toLocaleDateString('ru', {day:'2-digit', month:'2-digit'});
-}
-
-function formatTime(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
-}
-
-function canEditMessage(msg) {
-    if (!msg.createdAt) return false;
-    const msgTime = msg.createdAt.toDate ? msg.createdAt.toDate() : new Date(msg.createdAt);
-    const now = new Date();
-    const diffHours = (now - msgTime) / 3600000;
-    return diffHours < 1 && msg.senderId === myId;
-}
-
 window.openModal  = id => document.getElementById(id).classList.remove('hidden');
 window.closeModal = id => document.getElementById(id).classList.add('hidden');
 
@@ -2110,13 +2065,25 @@ window.showToast = function(msg, type='info') {
 };
 
 window.handleMsgKey = function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); return; }
+    // Typing indicator
+    if (_activeConvType === 'dm') {
+        setTyping(true);
+        clearTimeout(_myTypingTimeout);
+        _myTypingTimeout = setTimeout(() => setTyping(false), 4000);
+    }
 };
 
 window.autoResizeInput = function(el) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
     document.getElementById('send-btn').disabled = !el.value.trim() || !_activeConvId;
+    // Typing
+    if (_activeConvType === 'dm') {
+        setTyping(true);
+        clearTimeout(_myTypingTimeout);
+        _myTypingTimeout = setTimeout(() => setTyping(false), 4000);
+    }
 };
 
 window.toggleSidebar = function() {
@@ -2128,415 +2095,45 @@ window.closeSidebar = function() {
     document.getElementById('sidebar-overlay').classList.remove('open');
 };
 
-// ─── THEME ─────────────────────────────────────────────────────────
-window.setTheme = function(theme) {
-    _currentTheme = theme;
-    localStorage.setItem('space_theme', theme);
-    applyTheme(theme);
-    closeModal('modal-theme-selector');
-};
+document.getElementById('search-input').addEventListener('input', e => renderSidebar(e.target.value));
 
-function applyTheme(theme) {
-    document.body.className = '';
-    if (theme !== 'original') {
-        document.body.classList.add(`theme-${theme}`);
-    }
-}
-
-// ─── REPLY ─────────────────────────────────────────────────────────
-window.replyToMessage = function(msgId) {
-    // Find message in current messages
-    const msgEl = document.querySelector(`[data-msgid="${msgId}"]`);
-    if (!msgEl) return;
-    
-    const textEl = msgEl.querySelector('p');
-    const msgText = textEl ? textEl.textContent : '';
-    const senderEl = msgEl.closest('.bubble').previousElementSibling;
-    const senderName = senderEl ? senderEl.textContent : '';
-    
-    _replyToMsg = { id: msgId, text: msgText, senderName: senderName };
-    document.getElementById('reply-preview').classList.remove('hidden');
-    document.getElementById('reply-to-name').textContent = senderName;
-    document.getElementById('reply-to-text').textContent = msgText.slice(0,50) + (msgText.length > 50 ? '...' : '');
-    document.getElementById('msg-input').focus();
-};
-
-window.cancelReply = function() {
-    _replyToMsg = null;
-    document.getElementById('reply-preview').classList.add('hidden');
-};
-
-// ─── EDIT MESSAGE ───────────────────────────────────────────────────
-window.editMessage = function(msgId) {
-    // Find message in current messages
-    const msgEl = document.querySelector(`[data-msgid="${msgId}"]`);
-    if (!msgEl) return;
-    
-    // Get text from message element (simplified approach)
-    const textEl = msgEl.querySelector('p');
-    const currentText = textEl ? textEl.textContent : '';
-    
-    _editingMsgId = msgId;
-    const input = document.getElementById('msg-input');
-    input.value = currentText;
-    input.focus();
-    input.placeholder = 'Редактирование сообщения...';
-    document.getElementById('send-btn').innerHTML = '<i class="fas fa-check text-sm"></i>';
-};
-
-// ─── DRAFT AUTO-SAVE ───────────────────────────────────────────────
-window.saveDraft = function() {
-    if (!_activeConvId) return;
-    const input = document.getElementById('msg-input');
-    const text = input.value.trim();
-    if (text) {
-        _drafts[_activeConvId] = text;
-    } else {
-        delete _drafts[_activeConvId];
-    }
-    localStorage.setItem('space_drafts', JSON.stringify(_drafts));
-    renderSidebar(document.getElementById('search-input').value);
-};
-
-window.loadDraft = function() {
-    if (!_activeConvId || !_drafts[_activeConvId]) return;
-    const input = document.getElementById('msg-input');
-    if (!input.value) {
-        input.value = _drafts[_activeConvId];
-        autoResizeInput(input);
-    }
-};
-
-// ─── SEARCH IN CHAT ─────────────────────────────────────────────────
-window.openChatSearch = function() {
-    document.getElementById('search-in-chat').classList.add('show');
-    document.getElementById('chat-search-input').focus();
-};
-
-window.closeChatSearch = function() {
-    document.getElementById('search-in-chat').classList.remove('show');
-    document.getElementById('chat-search-input').value = '';
-    _searchResults = [];
-    _searchIndex = 0;
-    document.getElementById('search-count').textContent = '';
-    // Remove highlights
-    document.querySelectorAll('.search-highlight').forEach(el => {
-        el.classList.remove('search-highlight');
-    });
-};
-
-window.searchInChat = function(query) {
-    if (!query || !_activeConvId) return;
-    query = query.toLowerCase();
-    const messages = document.querySelectorAll('[data-msgid]');
-    _searchResults = [];
-    
-    messages.forEach(msgEl => {
-        const text = msgEl.textContent.toLowerCase();
-        if (text.includes(query)) {
-            _searchResults.push(msgEl);
-        }
-    });
-    
-    _searchIndex = 0;
-    document.getElementById('search-count').textContent = _searchResults.length > 0 ? `${_searchIndex + 1}/${_searchResults.length}` : '';
-    
-    if (_searchResults.length > 0) {
-        highlightSearchResult();
-    }
-};
-
-window.prevSearchResult = function() {
-    if (_searchResults.length === 0) return;
-    _searchIndex = (_searchIndex - 1 + _searchResults.length) % _searchResults.length;
-    document.getElementById('search-count').textContent = `${_searchIndex + 1}/${_searchResults.length}`;
-    highlightSearchResult();
-};
-
-window.nextSearchResult = function() {
-    if (_searchResults.length === 0) return;
-    _searchIndex = (_searchIndex + 1) % _searchResults.length;
-    document.getElementById('search-count').textContent = `${_searchIndex + 1}/${_searchResults.length}`;
-    highlightSearchResult();
-};
-
-function highlightSearchResult() {
-    // Remove previous highlights
-    document.querySelectorAll('.search-highlight').forEach(el => {
-        el.classList.remove('search-highlight');
-    });
-    
-    const result = _searchResults[_searchIndex];
-    if (result) {
-        result.classList.add('search-highlight');
-        result.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-}
-
-// ─── VOICE RECORDING ───────────────────────────────────────────────
-window.toggleVoiceRecording = async function() {
-    if (_voiceRecorder) {
-        cancelVoiceRecording();
-        return;
-    }
-    
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        _voiceRecorder = new MediaRecorder(stream);
-        _voiceChunks = [];
-        _voiceStartTime = Date.now();
-        _voiceIsPaused = false;
-        
-        _voiceRecorder.ondataavailable = (e) => {
-            _voiceChunks.push(e.data);
-        };
-        
-        _voiceRecorder.onstop = async () => {
-            // Handle when recording stops
-        };
-        
-        _voiceRecorder.start();
-        document.getElementById('voice-recording-ui').classList.remove('hidden');
-        document.getElementById('voice-btn').classList.add('text-rose-400');
-        
-        // Start timer
-        _voiceTimerInterval = setInterval(updateVoiceDuration, 1000);
-        
-        // Animate waveform
-        animateVoiceWaveform();
-        
-    } catch (e) {
-        showToast('Нет доступа к микрофону', 'error');
-    }
-};
-
-window.cancelVoiceRecording = function() {
-    if (_voiceRecorder) {
-        _voiceRecorder.stop();
-        _voiceRecorder.stream.getTracks().forEach(track => track.stop());
-        _voiceRecorder = null;
-    }
-    _voiceChunks = [];
-    _voiceIsPaused = false;
-    clearInterval(_voiceTimerInterval);
-    document.getElementById('voice-recording-ui').classList.add('hidden');
-    document.getElementById('voice-btn').classList.remove('text-rose-400');
-    document.getElementById('voice-duration-live').textContent = '0:00';
-};
-
-window.pauseResumeVoiceRecording = function() {
-    if (!_voiceRecorder) return;
-    
-    if (_voiceIsPaused) {
-        _voiceRecorder.resume();
-        _voiceIsPaused = false;
-        document.getElementById('voice-pause-btn').innerHTML = '<i class="fas fa-pause text-xs"></i>';
-    } else {
-        _voiceRecorder.pause();
-        _voiceIsPaused = true;
-        document.getElementById('voice-pause-btn').innerHTML = '<i class="fas fa-play text-xs"></i>';
-    }
-};
-
-window.sendVoiceMessage = async function() {
-    if (!_voiceRecorder || _voiceChunks.length === 0) return;
-    
-    _voiceRecorder.stop();
-    _voiceRecorder.stream.getTracks().forEach(track => track.stop());
-    
-    const blob = new Blob(_voiceChunks, { type: 'audio/webm' });
-    const duration = Math.floor((Date.now() - _voiceStartTime) / 1000);
-    
-    try {
-        await ensureAuth();
-        const fileName = `voice_${Date.now()}.webm`;
-        const storageRef = ref(storage, `voice_messages/${fileName}`);
-        await uploadBytes(storageRef, blob);
-        const downloadURL = await getDownloadURL(storageRef);
-        
-        // Send message with voice
-        const conv = _conversations.find(c => c.id === _activeConvId);
-        if (!conv) return;
-        
-        const msgData = {
-            senderId: myId,
-            senderName: myProfile.name,
-            type: 'voice',
-            audioUrl: downloadURL,
-            duration: duration,
-            createdAt: serverTimestamp()
-        };
-        
-        if (_replyToMsg) {
-            msgData.replyTo = _replyToMsg;
-        }
-        
-        if (conv.type === 'dm') {
-            await addDoc(collection(db, ...BASE('chats'), conv.id, 'messages'), { ...msgData, read: false });
-            const recipientField = myRole === 'owner' ? 'unreadEditor' : 'unreadOwner';
-            await setDoc(doc(db, ...BASE('chats'), conv.id, 'meta', 'info'), {
-                lastMessage: '🎤 Голосовое сообщение',
-                lastAt: new Date().toISOString(),
-                [recipientField]: increment(1)
-            }, { merge: true });
-        } else {
-            await addDoc(collection(db, ...BASE('channels'), conv.id, 'messages'), { ...msgData, pinned: false });
-            await setDoc(doc(db, ...BASE('channels'), conv.id), { lastMessage: '🎤 Голосовое сообщение', lastAt: new Date().toISOString() }, { merge: true });
-        }
-        
-        conv.lastMsg = '🎤 Голосовое сообщение';
-        renderSidebar(document.getElementById('search-input').value);
-        showToast('Голосовое сообщение отправлено', 'success');
-        
-    } catch (e) {
-        showToast('Ошибка отправки: ' + e.message, 'error');
-    }
-    
-    // Reset
-    _voiceRecorder = null;
-    _voiceChunks = [];
-    _voiceIsPaused = false;
-    clearInterval(_voiceTimerInterval);
-    document.getElementById('voice-recording-ui').classList.add('hidden');
-    document.getElementById('voice-btn').classList.remove('text-rose-400');
-    document.getElementById('voice-duration-live').textContent = '0:00';
-};
-
-function updateVoiceDuration() {
-    if (!_voiceStartTime) return;
-    const elapsed = Math.floor((Date.now() - _voiceStartTime) / 1000);
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-    document.getElementById('voice-duration-live').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-}
-
-function animateVoiceWaveform() {
-    const waveform = document.getElementById('voice-waveform-live');
-    if (!waveform) return;
-    
-    waveform.innerHTML = '';
-    for (let i = 0; i < 20; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'voice-bar';
-        bar.style.height = Math.random() * 20 + 4 + 'px';
-        waveform.appendChild(bar);
-    }
-    
-    if (_voiceRecorder && !_voiceIsPaused) {
-        setTimeout(animateVoiceWaveform, 100);
-    }
-}
-
-// ─── TYPING INDICATOR ───────────────────────────────────────────────
-window.handleMsgKey = function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-        return;
-    }
-    
-    // Send typing indicator
-    if (_typingTimeout) clearTimeout(_typingTimeout);
-    _typingTimeout = setTimeout(() => {
-        // Typing stopped
-    }, 2000);
-    
-    // Send typing status to Firebase (implement)
-    sendTypingStatus();
-};
-
-async function sendTypingStatus() {
-    if (!_activeConvId || _activeConvType !== 'dm') return;
-    try {
-        await ensureAuth();
-        const typingRef = doc(db, ...BASE('chats'), _activeConvId, 'typing', myId);
-        await setDoc(typingRef, {
-            userId: myId,
-            userName: myProfile.name,
-            timestamp: serverTimestamp()
-        });
-        
-        // Auto-remove after 3 seconds
-        setTimeout(async () => {
-            await deleteDoc(typingRef);
-        }, 3000);
-    } catch(e) {}
-}
-
-// ─── ONLINE STATUS ─────────────────────────────────────────────────
-async function updateOnlineStatus() {
-    try {
-        await ensureAuth();
-        const statusRef = doc(db, ...BASE('online_status'), myId);
-        await setDoc(statusRef, {
-            userId: myId,
-            userName: myProfile.name,
-            lastSeen: serverTimestamp(),
-            showExactTime: myProfile.showExactTime !== false
-        });
-    } catch(e) {}
-}
-
-// ─── CHAT SETTINGS ─────────────────────────────────────────────────
-window.openChatSettingsModal = function() {
-    if (!_activeConvId) return;
-    const settings = _chatSettings[_activeConvId] || {
-        voice: true,
-        notifications: true,
-        online: true,
-        typing: true,
-        silent: false
-    };
-    
-    document.getElementById('chat-setting-voice').checked = settings.voice;
-    document.getElementById('chat-setting-notifications').checked = settings.notifications;
-    document.getElementById('chat-setting-online').checked = settings.online;
-    document.getElementById('chat-setting-typing').checked = settings.typing;
-    document.getElementById('chat-setting-silent').checked = settings.silent;
-    
-    openModal('modal-chat-settings');
-};
-
-window.saveChatSettings = function() {
-    if (!_activeConvId) return;
-    
-    _chatSettings[_activeConvId] = {
-        voice: document.getElementById('chat-setting-voice').checked,
-        notifications: document.getElementById('chat-setting-notifications').checked,
-        online: document.getElementById('chat-setting-online').checked,
-        typing: document.getElementById('chat-setting-typing').checked,
-        silent: document.getElementById('chat-setting-silent').checked
-    };
-    
-    localStorage.setItem('space_chat_settings', JSON.stringify(_chatSettings));
-    closeModal('modal-chat-settings');
-    showToast('Настройки сохранены', 'success');
-};
-
-// Поиск
-document.getElementById('search-input').addEventListener('input', e => {
-    renderSidebar(e.target.value);
-});
-
-// Draft auto-save on input
-document.getElementById('msg-input').addEventListener('input', e => {
-    saveDraft();
-    autoResizeInput(e.target);
-});
-
-// CryptoJS для смены пароля монтажёра
+// CryptoJS
 window.CryptoJS = null;
 const cjsScript = document.createElement('script');
 cjsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
 cjsScript.onload = () => { window.CryptoJS = window.CryptoJS || CryptoJS; };
 document.head.appendChild(cjsScript);
 
-// ─── INIT ─────────────────────────────────────────────────────────
+// ─── INIT ──────────────────────────────────────────────────────────
 (async () => {
     await ensureAuth();
     await loadMyProfile();
     await loadSidebar();
 })();
 </script>
+<!-- Edit History Modal (admin only) -->
+<div id="modal-edit-history" class="modal-bg hidden">
+    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
+        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
+        <div style="position:relative;z-index:2;">
+            <div class="flex items-center justify-between px-7 pt-7 pb-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);">
+                        <i class="fas fa-clock-rotate-left text-cyan-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-cyan-400 uppercase tracking-[0.2em] font-space font-bold">Администратор</p>
+                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">История изменений</h3>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-edit-history')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
+            </div>
+            <div class="px-7 py-6">
+                <div id="edit-history-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
