@@ -2113,13 +2113,16 @@
             calcTgLink: ''
         };
 
-        // Загрузка настроек калькулятора из localStorage
+        // Загрузка настроек калькулятора.
+        // localStorage используется только как временный кеш —
+        // реальный источник истины всегда Firebase (см. loadData и onSnapshot).
+        // Это гарантирует, что мобильные устройства и новые браузеры
+        // не получат устаревшие данные из чужого localStorage.
         function _loadCalcConfig() {
             try {
                 const saved = localStorage.getItem('space_calc_config');
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    // Мержим с дефолтами: если opts отсутствует или пустой — берём дефолт
                     const result = JSON.parse(JSON.stringify(_CP_DEFAULT));
                     ['base','pro','premium'].forEach(pk => {
                         if (parsed[pk]) {
@@ -2302,8 +2305,28 @@
 
         // calc render: встроен в switchAdminTab
 
-        window.openCalcModal = function() {
+        window.openCalcModal = async function() {
             document.getElementById('calc-modal').classList.remove('hidden');
+
+            // Всегда подгружаем актуальные данные из Firebase перед показом калькулятора.
+            // Это ключевое исправление для мобильных устройств, у которых localStorage
+            // может быть пустым или устаревшим.
+            try {
+                if (typeof window._firebaseLoadCalcConfig === 'function') {
+                    const freshData = await window._firebaseLoadCalcConfig();
+                    if (freshData) {
+                        ['base','pro','premium'].forEach(pk => {
+                            if (freshData[pk]) {
+                                Object.assign(_CP[pk], freshData[pk]);
+                                if (Array.isArray(freshData[pk].opts)) _CP[pk].opts = freshData[pk].opts;
+                            }
+                        });
+                        if (freshData.calcTgLink !== undefined) _CP.calcTgLink = freshData.calcTgLink || '';
+                        try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
+                    }
+                }
+            } catch(e) { console.warn('openCalcModal Firebase fetch:', e); }
+
             // Обновляем цены на кнопках пакетов из _CP
             const pkgBtns = document.querySelectorAll('.calc-pkg-btn');
             pkgBtns.forEach(btn => {
@@ -2367,7 +2390,7 @@
             return total;
         }
         window.calcUpdate = _calcUpdate;
-        window.calcSendTelegram = function() {
+        window.calcSendTelegram = async function() {
             const pkg = _CP[_cs.pkg];
             const total = _calcUpdate();
             const lines = ['📋 Расчёт стоимости монтажа', '',
@@ -2381,11 +2404,26 @@
             if (_cs.urg) lines.push('⚡ Срочный запуск: +' + pkg.urg + '%');
             lines.push('', '💰 Итого: ' + total.toLocaleString('ru') + ' ₽');
             const msg = encodeURIComponent(lines.join('\n'));
-            // Используем кастомную ссылку из настроек или fallback на основную TG-кнопку
+
+            // Всегда берём свежую ссылку из Firebase, чтобы мобильные устройства
+            // не использовали устаревший localStorage или хардкод.
+            let freshTgLink = '';
+            try {
+                if (typeof window._firebaseLoadCalcConfig === 'function') {
+                    const freshData = await window._firebaseLoadCalcConfig();
+                    if (freshData && freshData.calcTgLink) {
+                        freshTgLink = freshData.calcTgLink;
+                        // Синхронизируем локальное состояние
+                        _CP.calcTgLink = freshTgLink;
+                        try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
+                    }
+                }
+            } catch(e) { console.warn('TG link fetch:', e); }
+
             const tgBtn = document.getElementById('tg-btn');
             const fallback = (tgBtn && tgBtn.href && tgBtn.href.includes('t.me'))
                 ? tgBtn.href.split('?')[0] : 'https://t.me/spacevideoagency';
-            const base = (_CP.calcTgLink || fallback).split('?')[0];
+            const base = (freshTgLink || _CP.calcTgLink || fallback).split('?')[0];
             const tgUrl = base + '?text=' + msg;
             window.open(tgUrl, '_blank');
         };
