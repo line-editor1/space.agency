@@ -261,7 +261,7 @@
                 </div>
                 <div>
                     <p class="text-[9px] text-cyan-400 uppercase tracking-[0.2em] font-space font-bold">SPACE Video Agency</p>
-                    <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Экосистема Space 01</h3>
+                    <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Экосистема Space 1.0</h3>
                 </div>
             </div>
 
@@ -337,7 +337,7 @@
                     </div>
                 </div>
 
-                <p class="text-center text-[10px] text-slate-700 mt-5 font-space">Экосистема Space 01</p>
+                <p class="text-center text-[10px] text-slate-700 mt-5 font-space">Экосистема Space 1.0</p>
             </div>
         </div>
     </div>
@@ -1006,11 +1006,13 @@
         const pass = document.getElementById('editor-pass-input').value;
         if (!login || !pass) { showToast('Заполните все поля', 'error'); return; }
 
+        if (!window.db) { showToast('Идёт загрузка, попробуйте через секунду', 'error'); return; }
+
         const hash = CryptoJS.SHA256(pass).toString();
 
         try {
             const { getDocs, collection, query, where } = await fbModules();
-            const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'editors'), where('login', '==', login));
+            const q = query(collection(window.db, 'artifacts', window.APP_ID, 'public', 'data', 'editors'), where('login', '==', login));
             const snap = await getDocs(q);
             if (snap.empty) { showToast('Монтажёр не найден', 'error'); return; }
             const edDoc = snap.docs[0];

@@ -398,6 +398,10 @@
         } catch(e) {}
         try {
             await ensureAuth();
+        } catch(e) {
+            console.error('Firebase auth failed:', e);
+        }
+        try {
             const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calc_config', 'main'));
             if (snap.exists()) {
                 const data = snap.data();
@@ -409,8 +413,11 @@
                     }
                 });
                 if (data.calcTgLink) _calcTgLink = data.calcTgLink;
+                try { localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink: _calcTgLink})); } catch(e) {}
             }
-        } catch(e) {}
+        } catch(e) {
+            console.error('Calc config Firebase fetch failed:', e);
+        }
         // Обновляем цены на кнопках
         ['base','pro','premium'].forEach(pk => {
             const el = document.getElementById('pkg-price-' + pk);
@@ -627,21 +634,10 @@
         const base = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
         const tgUrl = base + '?text=' + msg;
 
-        // Открываем Telegram СРАЗУ (в user-gesture), до любых async-операций.
-        // На мобильных: tg:// deep link открывает приложение напрямую.
-        // Fallback через 1.5с — открывает https://t.me/ если приложение не установлено.
-        const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-        if (isMobile) {
-            const tgBaseRaw = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
-            const tgUsername = tgBaseRaw.replace(/^https?:\/\/t\.me\//i, '').replace(/\/$/, '');
-            const tgDeepLink = 'tg://resolve?domain=' + encodeURIComponent(tgUsername) + '&text=' + msg;
-            window.location.href = tgDeepLink;
-            setTimeout(function() {
-                if (!document.hidden) { window.open(tgUrl, '_blank'); }
-            }, 1500);
-        } else {
-            window.open(tgUrl, '_blank');
-        }
+        // Открываем https://t.me/<username>?text=... СРАЗУ, в момент клика (user-gesture).
+        // Эта ссылка работает одинаково на ПК, Android и iOS: Telegram перехватывает
+        // https://t.me/ ссылки и открывает приложение (если установлено) либо веб-версию.
+        window.open(tgUrl, '_blank');
 
         // Инкрементируем счётчик промокода ПОСЛЕ перехода (fire-and-forget)
         if (_promo && _promo.docId) {
@@ -705,8 +701,7 @@
         bsClose('bs-dur-sheet', 'bs-dur-backdrop');
         if (action === 'tg') {
             const base = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
-            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-            if (isMobile) { window.location.href = base; } else { window.open(base, '_blank'); }
+            window.open(base, '_blank');
         }
     };
 </script>
