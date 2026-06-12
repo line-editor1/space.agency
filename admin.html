@@ -991,6 +991,12 @@
                         </div>
                     </div>
 
+                    <!-- Базовые цены пакетов -->
+                    <div class="rounded-3xl border border-white/5 p-6 space-y-4" style="background:rgba(255,255,255,0.025)">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold flex items-center gap-2"><i class="fas fa-box-open text-cyan-400"></i> Базовые цены пакетов</p>
+                        <div id="calc-admin-packages" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+                    </div>
+
                     <!-- Срочность -->
                     <div class="rounded-3xl border border-white/5 p-6" style="background:rgba(255,255,255,0.025)">
                         <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-4 flex items-center gap-2"><i class="fas fa-bolt text-yellow-400"></i> Надбавка за срочность (%)</p>
@@ -2137,7 +2143,23 @@
         function _loadCalcConfig() {
             try {
                 const saved = localStorage.getItem('space_calc_config');
-                if (saved) return JSON.parse(saved);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    // Мержим с дефолтами: если opts отсутствует или пустой — берём дефолт
+                    const result = JSON.parse(JSON.stringify(_CP_DEFAULT));
+                    ['base','pro','premium'].forEach(pk => {
+                        if (parsed[pk]) {
+                            if (parsed[pk].base)  result[pk].base  = parsed[pk].base;
+                            if (parsed[pk].per30) result[pk].per30 = parsed[pk].per30;
+                            if (parsed[pk].urg)   result[pk].urg   = parsed[pk].urg;
+                            if (Array.isArray(parsed[pk].opts) && parsed[pk].opts.length > 0) {
+                                result[pk].opts = parsed[pk].opts;
+                            }
+                        }
+                    });
+                    result.calcTgLink = parsed.calcTgLink || '';
+                    return result;
+                }
             } catch(e) {}
             return JSON.parse(JSON.stringify(_CP_DEFAULT));
         }
@@ -2225,6 +2247,14 @@
                 _CP[pkg].opts = _CP[pkg].opts.filter(x => x.id !== id);
             }
             _renderCalcAdminOptions();
+            // Сохраняем изменение сразу
+            try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
+            if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
+                ensureAuth().then(() => {
+                    const calcCfgRef = doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main');
+                    setDoc(calcCfgRef, _CP, { merge: true }).catch(e => console.warn('Calc delete save:', e));
+                }).catch(()=>{});
+            }
         };
 
         window.calcAdminAddOption = function() {
@@ -2240,6 +2270,14 @@
             if (labelEl) labelEl.value = '';
             if (priceEl) priceEl.value = '';
             _renderCalcAdminOptions();
+            // Сохраняем изменение сразу
+            try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
+            if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
+                ensureAuth().then(() => {
+                    const calcCfgRef = doc(db, 'artifacts', appId, 'public', 'data', 'calc_config', 'main');
+                    setDoc(calcCfgRef, _CP, { merge: true }).catch(e => console.warn('Calc add save:', e));
+                }).catch(()=>{});
+            }
             showToast('Услуга добавлена в пакет ' + _CP[pkg].name + '!', 'success');
         };
 

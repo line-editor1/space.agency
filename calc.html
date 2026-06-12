@@ -619,18 +619,6 @@
             lines.push('', `🏷 Промокод: ${_promo.code} (${discLabel})`);
             lines.push('💰 Стоимость без скидки: ' + totalBase.toLocaleString('ru') + ' ₽');
             lines.push('✅ Итого со скидкой: ' + totalFinal.toLocaleString('ru') + ' ₽');
-
-            // Инкрементируем счётчик активаций — только один раз
-            if (_promo.docId) {
-                try {
-                    await ensureAuth();
-                    await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'promo_codes', _promo.docId), {
-                        usedCount: increment(1)
-                    });
-                    _promo.docId = null; // сбрасываем — повторный клик не считается
-                } catch(e) { console.warn('Promo increment failed:', e); }
-            }
-
         } else {
             lines.push('', '💰 Итого: ' + totalFinal.toLocaleString('ru') + ' ₽');
         }
@@ -638,12 +626,26 @@
         const msg = encodeURIComponent(lines.join('\n'));
         const base = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
         const tgUrl = base + '?text=' + msg;
-        // На мобильных устройствах window.open может не работать — используем location.href
+
+        // Открываем Telegram СРАЗУ (в user-gesture), до любых async-операций.
+        // window.open на десктопе, location.href на мобильных (iOS/Android Safari блокирует window.open вне user-gesture).
         const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
         if (isMobile) {
-            location.href = tgUrl;
+            window.location.href = tgUrl;
         } else {
             window.open(tgUrl, '_blank');
+        }
+
+        // Инкрементируем счётчик промокода ПОСЛЕ перехода (fire-and-forget)
+        if (_promo && _promo.docId) {
+            const docIdToIncrement = _promo.docId;
+            _promo.docId = null; // сбрасываем — повторный клик не считается
+            try {
+                await ensureAuth();
+                await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'promo_codes', docIdToIncrement), {
+                    usedCount: increment(1)
+                });
+            } catch(e) { console.warn('Promo increment failed:', e); }
         }
     }
 
@@ -678,9 +680,15 @@
         _pendingTgAction = null;
     };
 
-    window.bsPromoConfirm = async function() {
+    window.bsPromoConfirm = function() {
         bsClose('bs-promo-sheet', 'bs-promo-backdrop');
-        if (_pendingTgAction) { await _pendingTgAction(); _pendingTgAction = null; }
+        if (_pendingTgAction) {
+            const action = _pendingTgAction;
+            _pendingTgAction = null;
+            // Вызываем action (doSendToTelegram) - внутри неё переход в TG происходит
+            // ДО async-операций, поэтому блокировка iOS не сработает
+            action();
+        }
     };
 
     // ─── BOTTOM SHEET: ДЛИТЕЛЬНОСТЬ ──────────────────────────────────
@@ -691,7 +699,7 @@
         if (action === 'tg') {
             const base = (_calcTgLink || 'https://t.me/spacevideoagency').split('?')[0];
             const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-            if (isMobile) { location.href = base; } else { window.open(base, '_blank'); }
+            if (isMobile) { window.location.href = base; } else { window.open(base, '_blank'); }
         }
     };
 </script>
