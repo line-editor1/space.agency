@@ -1546,13 +1546,14 @@
         };
 
         const bgCanvas = document.getElementById('stars-canvas');
-        const bgCtx = bgCanvas.getContext('2d');
+        const bgCtx = bgCanvas ? bgCanvas.getContext('2d') : null;
         let stars = [];
         let mouse = { x: null, y: null };
         let comet = null;
         window.extraComets = [];
 
         function resizeCanvas() {
+            if (!bgCanvas) return;
             bgCanvas.width = window.innerWidth;
             bgCanvas.height = window.innerHeight;
             initStars();
@@ -1743,12 +1744,13 @@
         }
 
         function planNextComet() {
-            if (window.innerWidth < 768) return; // кометы только на десктопе
+            if (!bgCanvas || window.innerWidth < 768) return; // кометы только на десктопе
             const delay = 10000 + Math.random() * 10000;
             setTimeout(() => { comet = new Comet(); planNextComet(); }, delay);
         }
 
         function animateBg() {
+            if (!bgCtx) return;
             bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
             stars.forEach(star => { star.update(); star.draw(); });
             if (comet && comet.active) { comet.update(); comet.draw(); }
@@ -1770,7 +1772,7 @@
                 logo.classList.add('hyperdrive-mode');
                 if(window.showToast) window.showToast("Активирован гипердвигатель!", "success");
                 for(let i=0; i<25; i++) {
-                    setTimeout(() => { let c = new Comet(); window.extraComets.push(c); }, i*150);
+                    if (bgCanvas) setTimeout(() => { let c = new Comet(); window.extraComets.push(c); }, i*150);
                 }
                 
                 if(hyperdriveTimeout) clearTimeout(hyperdriveTimeout);
@@ -1879,9 +1881,7 @@
         }, { passive: true });
 
         window.addEventListener('load', () => {
-            resizeCanvas();
-            animateBg();
-            planNextComet();
+            if (bgCanvas) { resizeCanvas(); animateBg(); planNextComet(); }
             
             setTimeout(() => {
                 const heroText = document.getElementById('hero-text');
