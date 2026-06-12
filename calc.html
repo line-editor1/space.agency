@@ -346,7 +346,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, getDocs, collection,
-             query, where, updateDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+             query, where, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ─── CONFIG ───────────────────────────────────────────────────────
     let FB_CONFIG = {
@@ -391,6 +391,26 @@
     let _calcTgLink = '';
 
     // Загружаем конфиг: сначала localStorage, потом Firebase
+    async function applyCalcConfigData(data) {
+        ['base','pro','premium'].forEach(pk => {
+            if (data[pk]) {
+                Object.assign(_CP[pk], data[pk]);
+                // Заменяем opts полностью, чтобы видеть актуальные услуги из админки
+                if (Array.isArray(data[pk].opts)) _CP[pk].opts = data[pk].opts;
+            }
+        });
+        // Важно: проверяем !== undefined, иначе очистка ссылки админом (calcTgLink = '')
+        // не применится и останется старое значение из localStorage.
+        if (data.calcTgLink !== undefined) _calcTgLink = data.calcTgLink || '';
+        try { localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink: _calcTgLink})); } catch(e) {}
+        ['base','pro','premium'].forEach(pk => {
+            const el = document.getElementById('pkg-price-' + pk);
+            if (el && _CP[pk]) el.textContent = _CP[pk].base.toLocaleString('ru') + '₽';
+        });
+        renderOpts();
+        calcUpdate();
+    }
+
     async function loadCalcConfig() {
         try {
             const saved = localStorage.getItem('space_calc_config');
@@ -400,31 +420,31 @@
             await ensureAuth();
         } catch(e) {
             console.error('Firebase auth failed:', e);
+            showToast('Не удалось подключиться к серверу (auth): ' + (e.message || e), 'error');
         }
         try {
             const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calc_config', 'main'));
             if (snap.exists()) {
-                const data = snap.data();
-                ['base','pro','premium'].forEach(pk => {
-                    if (data[pk]) {
-                        Object.assign(_CP[pk], data[pk]);
-                        // Заменяем opts полностью, чтобы видеть актуальные услуги из админки
-                        if (Array.isArray(data[pk].opts)) _CP[pk].opts = data[pk].opts;
-                    }
-                });
-                if (data.calcTgLink) _calcTgLink = data.calcTgLink;
-                try { localStorage.setItem('space_calc_config', JSON.stringify({..._CP, calcTgLink: _calcTgLink})); } catch(e) {}
+                await applyCalcConfigData(snap.data());
+            } else {
+                renderOpts();
+                calcUpdate();
             }
         } catch(e) {
             console.error('Calc config Firebase fetch failed:', e);
+            showToast('Не удалось загрузить настройки калькулятора: ' + (e.message || e), 'error');
+            renderOpts();
+            calcUpdate();
         }
-        // Обновляем цены на кнопках
-        ['base','pro','premium'].forEach(pk => {
-            const el = document.getElementById('pkg-price-' + pk);
-            if (el && _CP[pk]) el.textContent = _CP[pk].base.toLocaleString('ru') + '₽';
-        });
-        renderOpts();
-        calcUpdate();
+
+        // Реал-тайм: подхватываем изменения из админки без перезагрузки страницы
+        try {
+            onSnapshot(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calc_config', 'main'), (snap) => {
+                if (snap.exists()) applyCalcConfigData(snap.data());
+            }, (err) => console.warn('Calc config realtime sync error:', err));
+        } catch(e) {
+            console.warn('Calc config realtime sync setup failed:', e);
+        }
     }
     loadCalcConfig();
 
@@ -656,6 +676,7 @@
     let _toastTimer;
     function showToast(msg, type = 'info') {
         const el = document.getElementById('toast');
+        if (!el) { console.warn('Toast:', msg); return; }
         el.textContent = msg;
         el.className = `show ${type}`;
         clearTimeout(_toastTimer);
