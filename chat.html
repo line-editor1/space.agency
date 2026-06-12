@@ -13,8 +13,8 @@
         .font-space{font-family:'Space Grotesk',sans-serif;}
         ::-webkit-scrollbar{width:4px;}
         ::-webkit-scrollbar-track{background:transparent;}
-        ::-webkit-scrollbar-thumb{background:rgba(0,198,251,0.2);border-radius:4px;}
-        ::-webkit-scrollbar-thumb:hover{background:rgba(0,198,251,0.35);}
+        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.18);}
 
         #app{display:flex;height:100vh;position:relative;}
 
@@ -45,14 +45,14 @@
         /* ── REPLY BAR ── */
         #reply-bar{
             display:none;padding:6px 12px;
-            border-top:1px solid rgba(0,198,251,0.12);
-            background:rgba(0,198,251,0.04);
+            border-top:1px solid rgba(0,198,251,0.08);
+            background:rgba(0,198,251,0.03);
             align-items:center;gap:10px;
         }
         #reply-bar.show{display:flex;}
-        #reply-bar-line{width:3px;height:32px;border-radius:2px;background:#00c6fb;flex-shrink:0;}
+        #reply-bar-line{width:3px;height:32px;border-radius:2px;background:#5ba3c9;flex-shrink:0;}
         #reply-bar-content{flex:1;min-width:0;}
-        #reply-bar-name{font-size:11px;font-weight:700;color:#00c6fb;font-family:'Space Grotesk',sans-serif;}
+        #reply-bar-name{font-size:11px;font-weight:700;color:#7db5d4;font-family:'Space Grotesk',sans-serif;}
         #reply-bar-text{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         #reply-bar-close{width:24px;height:24px;border-radius:8px;background:rgba(255,255,255,0.06);border:none;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
         #reply-bar-close:hover{background:rgba(255,255,255,0.1);color:white;}
@@ -60,16 +60,16 @@
         /* ── AMBIENT ── */
         .ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
             background:
-                radial-gradient(ellipse 60% 40% at 10% 20%,rgba(0,198,251,0.04) 0%,transparent 70%),
-                radial-gradient(ellipse 50% 50% at 85% 80%,rgba(139,92,246,0.03) 0%,transparent 70%);}
+                radial-gradient(ellipse 60% 40% at 10% 20%,rgba(0,198,251,0.015) 0%,transparent 70%),
+                radial-gradient(ellipse 50% 50% at 85% 80%,rgba(139,92,246,0.01) 0%,transparent 70%);}
 
         /* ── GLASS ── */
         .glass{
-            background:linear-gradient(135deg,rgba(255,255,255,0.03) 0%,rgba(255,255,255,0.01) 100%);
+            background:linear-gradient(135deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.02) 100%);
             backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);
-            border-top:1px solid rgba(255,255,255,0.12);border-left:1px solid rgba(255,255,255,0.08);
+            border-top:1px solid rgba(255,255,255,0.1);border-left:1px solid rgba(255,255,255,0.07);
             border-right:1px solid rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.01);
-            box-shadow:0 20px 40px rgba(0,0,0,0.5),inset 0 1px 1px rgba(255,255,255,0.1);
+            box-shadow:0 20px 40px rgba(0,0,0,0.5);
         }
 
         /* ── CONV ITEM ── */
@@ -80,14 +80,14 @@
             border:1px solid transparent;position:relative;
         }
         .conv-item:hover{background:rgba(255,255,255,0.04);}
-        .conv-item.active{background:rgba(0,198,251,0.08);border-color:rgba(0,198,251,0.18);}
+        .conv-item.active{background:rgba(0,198,251,0.06);border-color:rgba(0,198,251,0.12);}
         .conv-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
         .conv-time{font-size:10px;color:#334155;font-family:'Space Grotesk',sans-serif;}
-        .conv-item.active .conv-time{color:rgba(0,198,251,0.5);}
+        .conv-item.active .conv-time{color:rgba(0,198,251,0.4);}
         .conv-lastmsg{font-size:11px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
         .conv-lastmsg-wrap{display:flex;align-items:center;gap:4px;min-width:0;}
         .conv-checks{font-size:9px;color:#475569;flex-shrink:0;}
-        .conv-checks.read{color:#00c6fb;}
+        .conv-checks.read{color:#7dd3fc;}
 
         /* ── AVATAR ── */
         .avatar{
@@ -124,8 +124,8 @@
         }
         /* Telegram-style tails */
         .bubble-mine{
-            background:linear-gradient(145deg,rgba(0,198,251,0.22),rgba(0,82,212,0.18));
-            border:1px solid rgba(0,198,251,0.28);
+            background:linear-gradient(145deg,rgba(0,198,251,0.16),rgba(0,82,212,0.14));
+            border:1px solid rgba(0,198,251,0.18);
             border-bottom-right-radius:4px;
             color:#e2f8ff;
         }
@@ -145,13 +145,13 @@
         .reply-quote{
             display:flex;gap:7px;padding:5px 8px;
             border-radius:8px;margin-bottom:6px;
-            background:rgba(0,0,0,0.25);border-left:3px solid #00c6fb;
+            background:rgba(0,0,0,0.25);border-left:3px solid #5ba3c9;
             cursor:pointer;transition:background 0.15s;
         }
         .reply-quote:hover{background:rgba(0,0,0,0.35);}
-        .reply-quote-mine{border-left-color:rgba(255,255,255,0.4);}
-        .reply-quote-name{font-size:10px;font-weight:700;color:#00c6fb;font-family:'Space Grotesk',sans-serif;margin-bottom:1px;}
-        .reply-quote-mine .reply-quote-name{color:rgba(255,255,255,0.6);}
+        .reply-quote-mine{border-left-color:rgba(255,255,255,0.3);}
+        .reply-quote-name{font-size:10px;font-weight:700;color:#7db5d4;font-family:'Space Grotesk',sans-serif;margin-bottom:1px;}
+        .reply-quote-mine .reply-quote-name{color:rgba(255,255,255,0.5);}
         .reply-quote-text{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;}
 
         /* ── MSG META ── */
@@ -161,12 +161,12 @@
             float:right;margin-left:8px;margin-top:2px;
             position:relative;bottom:-2px;
         }
-        .msg-sender-name{font-size:10px;color:rgba(0,198,251,0.65);font-family:'Space Grotesk',sans-serif;font-weight:700;margin-bottom:2px;}
+        .msg-sender-name{font-size:10px;color:rgba(0,198,251,0.5);font-family:'Space Grotesk',sans-serif;font-weight:700;margin-bottom:2px;}
 
         /* check icons */
         .check-icon{font-size:9px;}
         .check-sent{color:rgba(255,255,255,0.3);}
-        .check-read{color:#00c6fb;}
+        .check-read{color:#7db5d4;}
 
         /* ── TYPING INDICATOR ── */
         #typing-indicator{
@@ -181,7 +181,7 @@
         .typing-name{font-size:11px;color:#64748b;}
         .typing-dots{display:flex;gap:3px;align-items:center;}
         .typing-dots span{
-            width:5px;height:5px;border-radius:50%;background:#00c6fb;opacity:0.5;
+            width:5px;height:5px;border-radius:50%;background:#7db5d4;opacity:0.5;
             animation:typingBounce 1.4s infinite;
         }
         .typing-dots span:nth-child(2){animation-delay:0.2s;}
@@ -236,17 +236,17 @@
             transition:border-color 0.2s;resize:none;
             line-height:1.5;max-height:120px;overflow-y:auto;
         }
-        .msg-input:focus{border-color:rgba(0,198,251,0.38);}
+        .msg-input:focus{border-color:rgba(0,198,251,0.25);}
         .msg-input::placeholder{color:#334155;}
 
         /* ── SEND BTN ── */
         .send-btn{
             width:42px;height:42px;border-radius:13px;flex-shrink:0;
-            background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.28);
-            color:#00c6fb;cursor:pointer;
+            background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);
+            color:#7db5d4;cursor:pointer;
             transition:all 0.2s;display:flex;align-items:center;justify-content:center;
         }
-        .send-btn:hover{background:rgba(0,198,251,0.25);transform:scale(1.05);}
+        .send-btn:hover{background:rgba(0,198,251,0.18);transform:scale(1.05);}
         .send-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
 
         /* ── ONLINE STATUS ── */
@@ -264,12 +264,12 @@
         #toast.show{opacity:1;}
         #toast.success{background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;}
         #toast.error{background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;}
-        #toast.info{background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.3);color:#7dd3fc;}
+        #toast.info{background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);color:#93c5d8;}
 
         /* ── MODAL ── */
         .modal-bg{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:16px;}
         .input-dark{background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;color:white;outline:none;transition:border-color 0.2s;width:100%;font-size:13px;font-family:'Inter',sans-serif;}
-        .input-dark:focus{border-color:rgba(0,198,251,0.6);}
+        .input-dark:focus{border-color:rgba(0,198,251,0.35);}
         .sec-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#334155;margin-bottom:8px;}
         .empty-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#334155;gap:8px;}
 
@@ -280,8 +280,8 @@
             text-transform:uppercase;letter-spacing:0.12em;
             margin:10px 0 6px;display:flex;align-items:center;gap:8px;
         }
-        .unread-marker::before,.unread-marker::after{content:'';flex:1;height:1px;background:rgba(0,198,251,0.15);}
-        .unread-marker span{color:rgba(0,198,251,0.5);background:rgba(0,198,251,0.08);border:1px solid rgba(0,198,251,0.15);padding:1px 8px;border-radius:99px;font-size:9px;}
+        .unread-marker::before,.unread-marker::after{content:'';flex:1;height:1px;background:rgba(0,198,251,0.08);}
+        .unread-marker span{color:rgba(0,198,251,0.4);background:rgba(0,198,251,0.05);border:1px solid rgba(0,198,251,0.1);padding:1px 8px;border-radius:99px;font-size:9px;}
 
         /* ── SCROLL TO BOTTOM ── */
         #scroll-btn{
@@ -305,16 +305,76 @@
         /* ── MOBILE ── */
         #sidebar-toggle{display:none;}
         @media(max-width:700px){
-            #sidebar{position:absolute;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);}
+            /* Sidebar slides in as overlay */
+            #sidebar{
+                position:fixed;left:0;top:0;bottom:0;z-index:200;
+                width:min(300px, 88vw);
+                transform:translateX(-100%);
+                box-shadow:8px 0 40px rgba(0,0,0,0.6);
+            }
             #sidebar.open{transform:translateX(0);}
-            #sidebar-overlay{display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,0.5);}
+            #sidebar-overlay{
+                display:none;position:fixed;inset:0;z-index:199;
+                background:rgba(0,0,0,0.55);backdrop-filter:blur(2px);
+            }
             #sidebar-overlay.open{display:block;}
             #sidebar-toggle{display:flex;}
+
+            /* Header */
+            #chat-header{padding:10px 12px;gap:10px;}
+
+            /* Messages */
+            #messages-wrap{padding:8px 10px;}
+
+            /* Bubbles wider on mobile */
+            .bubble{max-width:85%;}
+            .reply-quote-text{max-width:180px;}
+
+            /* Input area */
+            #input-area{padding:8px 10px;}
+            .msg-input{font-size:16px;} /* prevent iOS zoom */
+
+            /* Context menu larger tap targets */
+            .ctx-item{padding:11px 14px;font-size:14px;}
+
+            /* Modals full-width bottom sheet style on mobile */
+            .modal-bg{align-items:flex-end;padding:0;}
+            .modal-bg .glass{
+                border-radius:28px 28px 0 0 !important;
+                width:100% !important;
+                max-width:100% !important;
+                max-height:92vh;
+                overflow-y:auto;
+            }
+
+            /* Toast higher up so keyboard doesn't cover it */
+            #toast{bottom:80px;}
+
+            /* Pinned bar compact */
+            #pinned-bar{padding:6px 12px;}
+            #pinned-bar-label{display:none;}
+
+            /* Chat search bar */
+            #chat-search-bar{padding:6px 10px;}
+
+            /* Scroll to bottom btn */
+            #scroll-btn{bottom:70px;right:12px;}
+
+            /* Header actions - smaller gap */
+            #chat-header-actions{gap:6px;}
+            #chat-header-actions button{width:34px;height:34px;}
+        }
+
+        /* Very small screens */
+        @media(max-width:380px){
+            .bubble{max-width:92%;}
+            #chat-header{padding:8px 10px;}
+            #messages-wrap{padding:6px 8px;}
         }
 
         /* ── NO CARET / SELECT ── */
         *{caret-color:transparent;}
-        input,textarea,[contenteditable="true"]{caret-color:#00c6fb !important;}
+        input,textarea,[contenteditable="true"]{caret-color:#7db5d4 !important;}
         button,a,label,select,[onclick],[data-tab],[data-pkg],
         div,span,p,h1,h2,h3,h4,h5{-webkit-user-select:none;user-select:none;}
         input,textarea{-webkit-user-select:text !important;user-select:text !important;}
@@ -345,118 +405,21 @@
             font-style:italic;margin-left:4px;cursor:default;
         }
         .edited-mark.admin-view{
-            color:rgba(0,198,251,0.4);cursor:pointer;
+            color:rgba(0,198,251,0.3);cursor:pointer;
         }
-        .edited-mark.admin-view:hover{color:rgba(0,198,251,0.7);}
+        .edited-mark.admin-view:hover{color:rgba(0,198,251,0.55);}
 
-        /* ── VOICE RECORDER UI ── */
-        #voice-recorder-bar{
-            display:none;align-items:center;gap:10px;
-            padding:8px 12px;
-            border-top:1px solid rgba(0,198,251,0.12);
-            background:rgba(0,198,251,0.04);
-        }
-        #voice-recorder-bar.show{display:flex;}
 
-        .voice-rec-dot{
-            width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;
-            animation:voicePulse 1s infinite;
-        }
-        .voice-rec-dot.paused{animation:none;background:#f59e0b;}
-        @keyframes voicePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);}}
-
-        .voice-rec-timer{
-            font-size:13px;font-family:'Space Grotesk',sans-serif;font-weight:700;
-            color:#00c6fb;min-width:42px;
-        }
-
-        .voice-waveform{
-            flex:1;height:28px;position:relative;overflow:hidden;
-            display:flex;align-items:center;gap:1.5px;
-        }
-        .voice-waveform-bar{
-            width:3px;border-radius:2px;background:rgba(0,198,251,0.35);
-            flex-shrink:0;transition:height 0.08s;
-        }
-
-        .voice-ctrl-btn{
-            width:30px;height:30px;border-radius:9px;border:none;cursor:pointer;
-            display:flex;align-items:center;justify-content:center;
-            font-size:11px;flex-shrink:0;transition:all 0.15s;
-        }
-        .voice-ctrl-btn.pause-btn{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.25);color:#f59e0b;}
-        .voice-ctrl-btn.pause-btn:hover{background:rgba(245,158,11,0.28);}
-        .voice-ctrl-btn.resume-btn{background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.25);color:#00c6fb;}
-        .voice-ctrl-btn.resume-btn:hover{background:rgba(0,198,251,0.28);}
-        .voice-ctrl-btn.delete-btn{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.22);color:#fb7185;}
-        .voice-ctrl-btn.delete-btn:hover{background:rgba(239,68,68,0.22);}
-        .voice-ctrl-btn.send-btn-voice{background:linear-gradient(135deg,rgba(0,82,212,0.3),rgba(0,198,251,0.25));border:1px solid rgba(0,198,251,0.35);color:#00c6fb;}
-        .voice-ctrl-btn.send-btn-voice:hover{background:linear-gradient(135deg,rgba(0,82,212,0.5),rgba(0,198,251,0.4));}
-
-        /* ── VOICE PREVIEW BAR ── */
-        #voice-preview-bar{
-            display:none;align-items:center;gap:10px;
-            padding:8px 12px;
-            border-top:1px solid rgba(139,92,246,0.12);
-            background:rgba(139,92,246,0.04);
-        }
-        #voice-preview-bar.show{display:flex;}
-
-        /* ── VOICE MESSAGE BUBBLE ── */
-        .voice-msg-bubble{
-            display:flex;align-items:center;gap:10px;
-            min-width:200px;
-        }
-        .voice-play-btn{
-            width:34px;height:34px;border-radius:50%;flex-shrink:0;cursor:pointer;
-            display:flex;align-items:center;justify-content:center;
-            border:none;transition:all 0.15s;font-size:11px;
-        }
-        .bubble-mine .voice-play-btn{background:rgba(0,198,251,0.25);border:1px solid rgba(0,198,251,0.4);color:#00c6fb;}
-        .bubble-mine .voice-play-btn:hover{background:rgba(0,198,251,0.4);}
-        .bubble-theirs .voice-play-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#e2e8f0;}
-        .bubble-theirs .voice-play-btn:hover{background:rgba(255,255,255,0.2);}
-
-        .voice-progress-wrap{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;}
-        .voice-progress-track{
-            width:100%;height:3px;border-radius:2px;
-            background:rgba(255,255,255,0.12);
-            cursor:pointer;position:relative;overflow:hidden;
-        }
-        .voice-progress-fill{
-            height:100%;border-radius:2px;background:#00c6fb;
-            transition:width 0.1s linear;pointer-events:none;
-        }
-        .bubble-theirs .voice-progress-fill{background:rgba(0,198,251,0.7);}
-
-        .voice-duration{font-size:10px;color:rgba(255,255,255,0.4);font-family:'Space Grotesk',sans-serif;font-weight:600;}
-        .voice-speed-btn{
-            font-size:9px;font-weight:900;font-family:'Space Grotesk',sans-serif;
-            padding:2px 6px;border-radius:5px;border:none;cursor:pointer;
-            background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);
-            transition:all 0.15s;flex-shrink:0;
-        }
-        .voice-speed-btn:hover,.voice-speed-btn.active{background:rgba(0,198,251,0.2);color:#00c6fb;}
-
-        /* ── MIC BTN ── */
-        #mic-btn{
-            width:42px;height:42px;border-radius:13px;flex-shrink:0;
-            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
-            color:#475569;cursor:pointer;
-            transition:all 0.2s;display:flex;align-items:center;justify-content:center;
-        }
-        #mic-btn:hover{background:rgba(0,198,251,0.12);border-color:rgba(0,198,251,0.2);color:#00c6fb;}
-        #mic-btn.recording{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#fb7185;}
 
         /* ── INLINE EDIT ── */
         .edit-textarea{
             width:100%;background:rgba(0,0,0,0.5);
-            border:1px solid rgba(0,198,251,0.38);
+            border:1px solid rgba(0,198,251,0.25);
             border-radius:10px;padding:7px 10px;
             color:white;font-size:13.5px;outline:none;
             font-family:'Inter',sans-serif;
             resize:none;line-height:1.5;
-            caret-color:#00c6fb !important;
+            caret-color:#7db5d4 !important;
             -webkit-user-select:text !important;user-select:text !important;
         }
         .edit-actions{display:flex;gap:6px;margin-top:6px;justify-content:flex-end;}
@@ -464,8 +427,8 @@
             padding:4px 12px;border-radius:8px;font-size:11px;font-weight:700;
             font-family:'Space Grotesk',sans-serif;cursor:pointer;border:none;transition:all 0.15s;
         }
-        .edit-btn-save{background:rgba(0,198,251,0.2);border:1px solid rgba(0,198,251,0.35);color:#00c6fb;}
-        .edit-btn-save:hover{background:rgba(0,198,251,0.32);}
+        .edit-btn-save{background:rgba(0,198,251,0.14);border:1px solid rgba(0,198,251,0.25);color:#7db5d4;}
+        .edit-btn-save:hover{background:rgba(0,198,251,0.22);}
         .edit-btn-cancel{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#64748b;}
         .edit-btn-cancel:hover{background:rgba(255,255,255,0.1);color:white;}
 
@@ -478,8 +441,98 @@
         .history-entry:last-child{margin-bottom:0;}
         .history-entry-label{font-size:9px;color:#475569;font-family:'Space Grotesk',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;}
         .history-entry-text{font-size:12.5px;color:#94a3b8;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
-        .history-entry.current .history-entry-label{color:rgba(0,198,251,0.6);}
-        .history-entry.current .history-entry-text{color:#e2f8ff;}
+        .history-entry.current .history-entry-label{color:rgba(0,198,251,0.45);}
+        .history-entry.current .history-entry-text{color:#d4edf8;}
+
+        /* ── BACK TO CABINET BUTTON ── */
+        .back-to-cabinet-btn{
+            display:flex;align-items:center;gap:8px;
+            padding:8px 12px;margin:8px;border-radius:10px;
+            background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+            color:#475569;font-size:11px;font-weight:700;font-family:'Space Grotesk',sans-serif;
+            cursor:pointer;text-decoration:none;transition:all 0.15s;
+        }
+        .back-to-cabinet-btn:hover{background:rgba(255,255,255,0.06);color:#94a3b8;}
+        .back-to-cabinet-btn i{font-size:10px;opacity:0.7;}
+
+        /* ── PINNED MESSAGES BAR ── */
+        #pinned-bar{
+            display:none;padding:7px 16px;
+            border-bottom:1px solid rgba(255,255,255,0.05);
+            background:rgba(0,198,251,0.03);
+            align-items:center;gap:10px;
+            cursor:pointer;transition:background 0.15s;
+            flex-shrink:0;
+        }
+        #pinned-bar.show{display:flex;}
+        #pinned-bar:hover{background:rgba(0,198,251,0.05);}
+        #pinned-bar-icon{color:#5ba3c9;font-size:11px;flex-shrink:0;}
+        #pinned-bar-content{flex:1;min-width:0;}
+        #pinned-bar-label{font-size:9px;font-weight:700;color:#5ba3c9;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:0.1em;}
+        #pinned-bar-text{font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        #pinned-bar-count{font-size:9px;font-weight:700;color:#475569;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);padding:1px 6px;border-radius:99px;flex-shrink:0;font-family:'Space Grotesk',sans-serif;}
+
+        /* ── PINNED BADGE ON MESSAGE ── */
+        .pin-badge{
+            display:inline-flex;align-items:center;gap:3px;
+            font-size:9px;color:#5ba3c9;
+            font-family:'Space Grotesk',sans-serif;font-weight:700;
+            padding:1px 6px;border-radius:5px;
+            background:rgba(0,198,251,0.06);border:1px solid rgba(0,198,251,0.1);
+            margin-bottom:4px;
+        }
+
+        /* ── CHAT SEARCH BAR ── */
+        #chat-search-bar{
+            display:none;padding:8px 16px;
+            border-bottom:1px solid rgba(255,255,255,0.05);
+            background:rgba(4,2,18,0.95);
+            align-items:center;gap:8px;
+            flex-shrink:0;
+        }
+        #chat-search-bar.show{display:flex;}
+        #chat-search-input{
+            flex:1;background:rgba(0,0,0,0.4);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:10px;padding:7px 12px;
+            color:white;font-size:12.5px;outline:none;
+            font-family:'Inter',sans-serif;
+            transition:border-color 0.2s;
+        }
+        #chat-search-input:focus{border-color:rgba(0,198,251,0.2);}
+        #chat-search-input::placeholder{color:#334155;}
+        .chat-search-nav-btn{
+            width:28px;height:28px;border-radius:8px;flex-shrink:0;
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+            color:#475569;cursor:pointer;display:flex;align-items:center;justify-content:center;
+            transition:all 0.15s;font-size:11px;
+        }
+        .chat-search-nav-btn:hover{background:rgba(255,255,255,0.09);color:#94a3b8;}
+        #chat-search-counter{font-size:11px;color:#475569;font-family:'Space Grotesk',sans-serif;white-space:nowrap;}
+
+        /* search highlight */
+        .search-highlight{background:rgba(245,158,11,0.2);border-radius:2px;color:#fbbf24;}
+        .search-highlight.current{background:rgba(245,158,11,0.35);}
+
+        /* ── DRAFT INDICATOR ── */
+        .draft-indicator{
+            font-size:10px;color:#f59e0b;font-style:italic;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;
+        }
+        .draft-dot{color:#f59e0b;font-size:10px;}
+
+        /* ── PINNED LIST MODAL ── */
+        .pinned-msg-item{
+            padding:10px 12px;border-radius:10px;
+            background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+            margin-bottom:6px;cursor:pointer;transition:background 0.15s;
+        }
+        .pinned-msg-item:hover{background:rgba(255,255,255,0.06);}
+        .pinned-msg-item:last-child{margin-bottom:0;}
+        .pinned-msg-sender{font-size:10px;font-weight:700;color:#5ba3c9;font-family:'Space Grotesk',sans-serif;margin-bottom:3px;}
+        .pinned-msg-text{font-size:12.5px;color:#94a3b8;line-height:1.4;white-space:pre-wrap;word-break:break-word;max-height:60px;overflow:hidden;}
+        .pinned-msg-unpin{font-size:10px;color:#475569;cursor:pointer;float:right;padding:2px 6px;border-radius:5px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);transition:all 0.15s;font-family:'Space Grotesk',sans-serif;font-weight:700;}
+        .pinned-msg-unpin:hover{color:#fb7185;border-color:rgba(244,63,94,0.2);background:rgba(244,63,94,0.06);}
     </style>
 </head>
 <body>
@@ -496,7 +549,7 @@
             <!-- My profile row -->
             <div class="flex items-center gap-3 mb-3 cursor-pointer hover:opacity-80 transition" onclick="openProfileModal()" style="padding:4px;border-radius:12px;">
                 <div style="position:relative;flex-shrink:0;">
-                    <div id="my-avatar" class="avatar" style="background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.3);color:#00c6fb;">?</div>
+                    <div id="my-avatar" class="avatar" style="background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);color:#7db5d4;">?</div>
                     <div class="online-dot"></div>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -513,6 +566,13 @@
             </div>
         </div>
         <div id="sidebar-list"></div>
+        <!-- Back to cabinet button -->
+        <div id="back-cabinet-wrap" class="p-3 border-t border-white/5">
+            <a id="back-to-cabinet-link" href="montage.html" class="back-to-cabinet-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>Личный кабинет</span>
+            </a>
+        </div>
         <div id="create-channel-btn-wrap" class="hidden p-3 border-t border-white/5">
             <button onclick="openCreateChannelModal()" class="w-full py-2.5 rounded-xl text-xs font-bold font-space text-violet-300 border border-violet-500/20 hover:border-violet-500/40 transition" style="background:rgba(139,92,246,0.08);">
                 <i class="fas fa-plus mr-1.5"></i>Создать канал
@@ -540,6 +600,26 @@
             <div id="chat-header-actions" class="flex items-center gap-2" onclick="event.stopPropagation()"></div>
         </div>
 
+        <!-- Pinned messages bar -->
+        <div id="pinned-bar" onclick="openPinnedListModal()">
+            <i id="pinned-bar-icon" class="fas fa-thumbtack"></i>
+            <div id="pinned-bar-content">
+                <div id="pinned-bar-label">Закреплено</div>
+                <div id="pinned-bar-text">—</div>
+            </div>
+            <span id="pinned-bar-count" class="hidden"></span>
+            <button onclick="event.stopPropagation();scrollToPinnedFromBar()" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-400 transition" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);font-size:10px;" title="Перейти к сообщению"><i class="fas fa-arrow-down"></i></button>
+        </div>
+
+        <!-- Chat search bar -->
+        <div id="chat-search-bar">
+            <button onclick="closeChatSearch()" class="chat-search-nav-btn" title="Закрыть"><i class="fas fa-times"></i></button>
+            <input type="text" id="chat-search-input" placeholder="Поиск в чате..." oninput="onChatSearchInput(this.value)" onkeydown="onChatSearchKey(event)">
+            <span id="chat-search-counter">0/0</span>
+            <button onclick="chatSearchPrev()" class="chat-search-nav-btn" title="Предыдущее"><i class="fas fa-chevron-up"></i></button>
+            <button onclick="chatSearchNext()" class="chat-search-nav-btn" title="Следующее"><i class="fas fa-chevron-down"></i></button>
+        </div>
+
         <!-- Messages -->
         <div id="messages-wrap">
             <div class="empty-msg">
@@ -563,7 +643,7 @@
             <div id="scroll-badge" class="scroll-badge" style="display:none;"></div>
         </button>
 
-        <!-- Reply bar + Input -->
+            <!-- Reply bar + Input -->
         <div id="input-area">
             <div id="reply-bar">
                 <div id="reply-bar-line"></div>
@@ -573,36 +653,7 @@
                 </div>
                 <button id="reply-bar-close" onclick="cancelReply()"><i class="fas fa-times" style="font-size:10px;"></i></button>
             </div>
-            <!-- Voice recorder bar (shown while recording) -->
-            <div id="voice-recorder-bar">
-                <div class="voice-rec-dot" id="voice-rec-dot"></div>
-                <span class="voice-rec-timer" id="voice-rec-timer">0:00</span>
-                <div class="voice-waveform" id="voice-waveform"></div>
-                <button class="voice-ctrl-btn pause-btn" id="voice-pause-btn" onclick="voicePauseResume()" title="Пауза"><i class="fas fa-pause"></i></button>
-                <button class="voice-ctrl-btn delete-btn" onclick="voiceCancel()" title="Отмена"><i class="fas fa-trash"></i></button>
-                <button class="voice-ctrl-btn send-btn-voice" onclick="voiceStopAndPreview()" title="Прослушать и отправить"><i class="fas fa-check"></i></button>
-            </div>
-            <!-- Voice preview bar (shown after recording, before send) -->
-            <div id="voice-preview-bar">
-                <button class="voice-ctrl-btn resume-btn" id="preview-play-btn" onclick="voicePreviewPlayPause()" title="Прослушать"><i class="fas fa-play"></i></button>
-                <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
-                    <div class="voice-progress-track" id="preview-progress-track" onclick="voicePreviewSeek(event)">
-                        <div class="voice-progress-fill" id="preview-progress-fill" style="width:0%"></div>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span class="voice-duration" id="preview-duration-label">0:00</span>
-                        <div style="display:flex;gap:4px;">
-                            <button class="voice-speed-btn active" id="preview-speed-btn" onclick="voicePreviewCycleSpeed()">1×</button>
-                        </div>
-                    </div>
-                </div>
-                <button class="voice-ctrl-btn delete-btn" onclick="voicePreviewCancel()" title="Удалить"><i class="fas fa-trash"></i></button>
-                <button class="voice-ctrl-btn send-btn-voice" onclick="voiceSendAudio()" title="Отправить" id="voice-send-final-btn"><i class="fas fa-paper-plane"></i></button>
-            </div>
             <div class="flex items-end gap-2" style="padding-top:8px;" id="text-input-row">
-                <button id="mic-btn" onclick="voiceStartRecord()" title="Голосовое сообщение">
-                    <i class="fas fa-microphone text-sm"></i>
-                </button>
                 <textarea id="msg-input" class="msg-input" rows="1" placeholder="Сообщение..."
                     onkeydown="handleMsgKey(event)" oninput="autoResizeInput(this)"></textarea>
                 <button id="send-btn" class="send-btn" onclick="sendMessage()" disabled>
@@ -634,7 +685,7 @@
             </div>
             <div class="px-7 py-6">
                 <div class="flex flex-col items-center gap-3 mb-6">
-                    <div id="profile-avatar-preview" class="avatar w-20 h-20 text-2xl rounded-3xl" style="background:rgba(0,198,251,0.15);border:1px solid rgba(0,198,251,0.3);color:#00c6fb;">?</div>
+                    <div id="profile-avatar-preview" class="avatar w-20 h-20 text-2xl rounded-3xl" style="background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);color:#7db5d4;">?</div>
                     <p id="profile-login-label" class="text-xs text-slate-600 font-mono"></p>
                 </div>
                 <div class="space-y-3">
@@ -659,7 +710,7 @@
                     </div>
                     <div class="flex gap-3 pt-2">
                         <button onclick="closeModal('modal-profile')" class="flex-1 py-3 rounded-2xl border border-white/8 text-slate-500 text-sm hover:border-white/15 transition font-space font-bold">Отмена</button>
-                        <button onclick="saveProfile()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Сохранить</button>
+                        <button onclick="saveProfile()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#2a85a8 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Сохранить</button>
                     </div>
                 </div>
             </div>
@@ -708,7 +759,7 @@
                             <i class="fas fa-trash mr-1"></i>Удалить
                         </button>
                     </div>
-                    <button onclick="epSavePass()" class="w-full py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                    <button onclick="epSavePass()" class="w-full py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#2a85a8 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
                         <i class="fas fa-save mr-1.5"></i>Сохранить изменения
                     </button>
                 </div>
@@ -815,9 +866,6 @@ import {
     collection, getDocs, query, where, orderBy, onSnapshot,
     serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import {
-    getStorage, ref as storageRef, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
 // ─── CONFIG ───────────────────────────────────────────────────────
 let FB_CONFIG = {
@@ -836,7 +884,6 @@ const BASE   = (col) => ['artifacts', APP_ID, 'public', 'data', col];
 const app     = initializeApp(FB_CONFIG);
 const auth    = getAuth(app);
 const db      = getFirestore(app);
-const storage = getStorage(app);
 
 async function ensureAuth() {
     if (!auth.currentUser) await signInAnonymously(auth);
@@ -858,10 +905,10 @@ if (!myRole || !myId) {
                 <div style="position:relative;z-index:2;padding:28px;">
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
                         <div style="width:36px;height:36px;border-radius:12px;background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <i class="fas fa-comments" style="color:#00c6fb;font-size:14px;"></i>
+                            <i class="fas fa-comments" style="color:#5ba3c9;font-size:14px;"></i>
                         </div>
                         <div>
-                            <p style="font-size:9px;color:#00c6fb;text-transform:uppercase;letter-spacing:0.2em;font-family:'Space Grotesk',sans-serif;font-weight:700;">SPACE Video Agency</p>
+                            <p style="font-size:9px;color:#5ba3c9;text-transform:uppercase;letter-spacing:0.2em;font-family:'Space Grotesk',sans-serif;font-weight:700;">SPACE Video Agency</p>
                             <p style="font-size:14px;font-family:'Space Grotesk',sans-serif;font-weight:900;color:white;margin-top:1px;">Внутренний чат</p>
                         </div>
                     </div>
@@ -870,9 +917,9 @@ if (!myRole || !myId) {
                             <i class="fas fa-lock" style="color:#f87171;font-size:24px;"></i>
                         </div>
                         <h4 style="font-size:18px;font-family:'Space Grotesk',sans-serif;font-weight:900;color:white;margin-bottom:8px;">Нет активной сессии</h4>
-                        <p style="font-size:12px;color:#475569;line-height:1.6;">Для доступа к чату войдите через <span style="color:#00c6fb;font-weight:600;">montage.html</span></p>
+                        <p style="font-size:12px;color:#475569;line-height:1.6;">Для доступа к чату войдите через <span style="color:#5ba3c9;font-weight:600;">montage.html</span></p>
                     </div>
-                    <a href="montage.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;text-shadow:0 1px 3px rgba(0,0,0,0.3);transition:all 0.3s;box-shadow:0 8px 24px rgba(0,198,251,0.2);">
+                    <a href="montage.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,#0052d4 0%,#2a85a8 100%);color:white;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;text-shadow:0 1px 3px rgba(0,0,0,0.3);transition:all 0.3s;">
                         <i class="fas fa-arrow-right-to-bracket"></i>Перейти к входу
                     </a>
                     <p style="text-align:center;font-size:10px;color:#1e293b;margin-top:16px;font-family:'Space Grotesk',sans-serif;">Экосистема Space 1.0</p>
@@ -884,7 +931,7 @@ if (!myRole || !myId) {
 
 // ─── AVATAR COLORS ─────────────────────────────────────────────────
 const AVATAR_PRESETS = {
-    cyan:   { bg:'rgba(0,198,251,0.18)',   border:'rgba(0,198,251,0.35)',   text:'#00c6fb' },
+    cyan:   { bg:'rgba(0,198,251,0.12)',   border:'rgba(0,198,251,0.22)',   text:'#7db5d4' },
     violet: { bg:'rgba(139,92,246,0.18)',  border:'rgba(139,92,246,0.35)',  text:'#a78bfa' },
     orange: { bg:'rgba(249,115,22,0.18)',  border:'rgba(249,115,22,0.35)',  text:'#fb923c' },
     green:  { bg:'rgba(16,185,129,0.18)',  border:'rgba(16,185,129,0.35)',  text:'#34d399' },
@@ -1208,6 +1255,10 @@ function renderConvItem(c) {
         : '';
 
     const lastMsgTrunc = c.lastMsg ? (c.lastMsg.slice(0,38) + (c.lastMsg.length > 38 ? '…' : '')) : '';
+    const hasDraft = c.draft && c.draft.trim();
+    const lastMsgDisplay = hasDraft
+        ? `<span class="draft-dot">✏</span><span class="draft-indicator">Черновик: ${escapeHtml(c.draft.slice(0,30))}${c.draft.length > 30 ? '…' : ''}</span>`
+        : `${checksHtml}<span class="conv-lastmsg">${escapeHtml(lastMsgTrunc)}</span>`;
 
     return `<div class="conv-item ${isActive?'active':''}" onclick="openConversation('${c.id}','${c.type}')" data-editor-id="${editorId||''}">
         <div style="position:relative;flex-shrink:0;">
@@ -1223,8 +1274,7 @@ function renderConvItem(c) {
             </div>
             <div class="flex items-center justify-between gap-1 mt-0.5">
                 <div class="conv-lastmsg-wrap">
-                    ${checksHtml}
-                    <span class="conv-lastmsg">${escapeHtml(lastMsgTrunc)}</span>
+                    ${lastMsgDisplay}
                 </div>
                 ${badgeHtml}
             </div>
@@ -1243,6 +1293,9 @@ window.openConversation = async function(convId, type) {
     _activeConvId   = convId;
     _activeConvType = type;
     _renderedMsgIds = new Set();
+    loadPinnedFromStorage(convId);
+    // Close search if open
+    closeChatSearch();
 
     if (_msgUnsub) { _msgUnsub(); _msgUnsub = null; }
     if (_typingUnsub) { _typingUnsub(); _typingUnsub = null; }
@@ -1286,27 +1339,26 @@ window.openConversation = async function(convId, type) {
 
     // Header actions
     actionsEl.innerHTML = '';
+    // Search button (always available when chat is open)
+    actionsEl.innerHTML += `<button onclick="openChatSearch()" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition" title="Поиск в чате"><i class="fas fa-search text-xs"></i></button>`;
     if (conv.type === 'channel' && myRole === 'owner') {
-        actionsEl.innerHTML = `<button onclick="openChannelSettings('${conv.id}')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-cog text-xs"></i></button>`;
+        actionsEl.innerHTML += `<button onclick="openChannelSettings('${conv.id}')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-cog text-xs"></i></button>`;
     }
     if (conv.type === 'dm' && myRole === 'owner') {
-        actionsEl.innerHTML = `<button onclick="openEditorProfileModal('${conv.editorId}')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-user text-xs"></i></button>`;
+        actionsEl.innerHTML += `<button onclick="openEditorProfileModal('${conv.editorId}')" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-500 transition"><i class="fas fa-user text-xs"></i></button>`;
     }
 
     // Input
     const inputEl = document.getElementById('msg-input');
     const sendBtn = document.getElementById('send-btn');
-    const micBtn  = document.getElementById('mic-btn');
     const canWrite = conv.type === 'dm' || myRole === 'owner';
     inputEl.disabled = !canWrite;
     sendBtn.disabled = !canWrite;
-    micBtn.disabled  = !canWrite;
-    micBtn.style.opacity = canWrite ? '' : '0.3';
-    micBtn.style.cursor  = canWrite ? '' : 'not-allowed';
     inputEl.placeholder = canWrite ? 'Сообщение...' : 'Только администратор может писать в канал';
 
     // Cancel any reply
     cancelReply();
+    loadDraft(convId);
 
     renderSidebar(document.getElementById('search-input').value);
     await resetUnread(conv);
@@ -1350,7 +1402,7 @@ function subscribeMessages(conv) {
     }
 
     const wrap = document.getElementById('messages-wrap');
-    wrap.innerHTML = `<div class="empty-msg"><i class="fas fa-circle-notch fa-spin text-xl" style="color:#00c6fb;opacity:0.5;"></i></div>`;
+    wrap.innerHTML = `<div class="empty-msg"><i class="fas fa-circle-notch fa-spin text-xl" style="color:#5ba3c9;opacity:0.4;"></i></div>`;
 
     const q = query(msgCol, orderBy('createdAt', 'asc'));
     let isFirst = true;
@@ -1363,6 +1415,8 @@ function subscribeMessages(conv) {
             msgs.forEach(m => _renderedMsgIds.add(m.id));
             renderAllMessages(msgs, conv);
             scrollToBottom(false);
+            updatePinnedBar();
+            updatePinnedBadgesInDOM();
             // Mark messages as read if DM
             if (conv.type === 'dm') markMessagesRead(conv, msgs);
         } else {
@@ -1536,33 +1590,6 @@ function buildMsgElement(msg, conv, isNew) {
                 <div class="deleted-label"><i class="fas fa-ban"></i>Удалено автором</div>
                 <div class="msg-meta"><span>${time}</span></div>
             </div>`;
-        } else if (msg.type === 'voice') {
-            const vId  = msg.id;
-            const fillId  = 'vfill-' + vId;
-            const durId   = 'vdur-' + vId;
-            const speedId = 'vspd-' + vId;
-            const dur = msg.voiceDuration ? _fmtSec(msg.voiceDuration) : '—';
-            wrapper.innerHTML = `${senderName}<div class="bubble ${isMineOwn?'bubble-mine':'bubble-theirs'}" oncontextmenu="showCtxMenu(event,'${msg.id}','${conv.id}','${conv.type}',${ctxOwn})">
-                ${replyHtml}
-                <div class="voice-msg-bubble">
-                    <button class="voice-play-btn" id="vbtn-${vId}" onclick="voiceMsgPlayPause('${vId}','${msg.voiceUrl}',this,'${fillId}','${durId}','${speedId}')">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <div class="voice-progress-wrap">
-                        <div class="voice-progress-track" onclick="voiceMsgSeek(event,'${vId}')">
-                            <div class="voice-progress-fill" id="${fillId}" style="width:0%"></div>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <span class="voice-duration" id="${durId}">${dur}</span>
-                            <button class="voice-speed-btn active" id="${speedId}" onclick="voiceMsgCycleSpeed('${vId}',this)">1×</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="msg-meta">
-                    ${checksHtml}
-                    <span>${time}</span>
-                </div>
-            </div>`;
         } else {
             wrapper.innerHTML = `${senderName}<div class="bubble ${isMineOwn?'bubble-mine':'bubble-theirs'}" oncontextmenu="showCtxMenu(event,'${msg.id}','${conv.id}','${conv.type}',${ctxOwn})">
                 ${replyHtml}
@@ -1665,7 +1692,7 @@ window.scrollToMsg = function(msgId) {
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     el.style.transition = 'background 0.2s';
-    el.style.background = 'rgba(0,198,251,0.12)';
+    el.style.background = 'rgba(0,198,251,0.07)';
     setTimeout(() => { el.style.background = ''; }, 1200);
 };
 
@@ -1682,10 +1709,19 @@ window.showCtxMenu = function(e, msgId, convId, convType, isMine) {
     const menu = document.getElementById('ctx-menu');
     let items = `<div class="ctx-item" onclick="ctxReply()"><i class="fas fa-reply"></i>Ответить</div>`;
 
+    // Pin/Unpin — available to admin always, and own messages too
+    const isPinned = _pinnedMsgs.some(p => p.id === msgId);
+    if (myRole === 'owner' || isMine) {
+        if (isPinned) {
+            items += `<div class="ctx-item" onclick="ctxUnpin()"><i class="fas fa-thumbtack"></i>Открепить</div>`;
+        } else {
+            items += `<div class="ctx-item" onclick="ctxPin()"><i class="fas fa-thumbtack"></i>Закрепить</div>`;
+        }
+    }
+
     // Edit: only own messages, within 1 hour, non-deleted
     if (isMine) {
         const msgEl = document.querySelector(`[data-msgid="${msgId}"]`);
-        // Find createdAt from DOM timestamp or we check via Firestore; use a data attribute set during build
         const createdAtStr = msgEl?.getAttribute('data-created-at');
         const ageMs = createdAtStr ? (Date.now() - parseInt(createdAtStr, 10)) : Infinity;
         if (ageMs < 3600000) {
@@ -1699,14 +1735,17 @@ window.showCtxMenu = function(e, msgId, convId, convType, isMine) {
     menu.innerHTML = items;
     menu.style.display = 'block';
 
-    // Position
+    // Position — on mobile center horizontally, near touch point
     const vw = window.innerWidth, vh = window.innerHeight;
-    let x = e.clientX, y = e.clientY;
+    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX) || vw/2;
+    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY) || vh/2;
+    let x = clientX, y = clientY;
     menu.style.left = '0'; menu.style.top = '0';
-    menu.style.display = 'block';
     const mw = menu.offsetWidth, mh = menu.offsetHeight;
     if (x + mw > vw - 8) x = vw - mw - 8;
+    if (x < 8) x = 8;
     if (y + mh > vh - 8) y = vh - mh - 8;
+    if (y < 8) y = 8;
     menu.style.left = x + 'px'; menu.style.top = y + 'px';
 };
 
@@ -1717,11 +1756,9 @@ window.ctxReply = function() {
     const el = document.querySelector(`[data-msgid="${_ctxMsgId}"]`);
     if (!el) return;
     const bubble = el.querySelector('.bubble') || el;
-    // Check for voice message
-    const isVoice = bubble.querySelector('.voice-msg-bubble');
-    const textEl = isVoice ? null : (bubble.querySelector('span[style]') || bubble.querySelector('p'));
+    const textEl = bubble.querySelector('span[style]') || bubble.querySelector('p');
     const nameEl = el.querySelector('.msg-sender-name') || el.querySelector('.reply-quote-name');
-    const text = isVoice ? '🎤 Голосовое сообщение' : (textEl ? textEl.textContent.trim().slice(0,80) : '');
+    const text = textEl ? textEl.textContent.trim().slice(0,80) : '';
     const name = nameEl ? nameEl.textContent.trim() : (document.getElementById('chat-title').textContent);
     setReply(_ctxMsgId, name, text);
 };
@@ -1738,12 +1775,155 @@ window.ctxDelete = function() {
     deleteMessage(_ctxConvId, _ctxMsgId, _ctxConvType);
 };
 
+// ─── PIN / UNPIN ───────────────────────────────────────────────────
+let _pinnedMsgs = []; // [{id, text, senderName, pinnedAt}]
+let _pinnedCurIdx = 0; // current index for cycling through pinned bar
+
+window.ctxPin = function() {
+    hideCtxMenu();
+    if (!_ctxMsgId) return;
+    const el = document.querySelector(`[data-msgid="${_ctxMsgId}"]`);
+    if (!el) return;
+    const bubble = el.querySelector('.bubble') || el;
+    const textEl = bubble.querySelector('span[style*="pre-wrap"]') || bubble.querySelector('p');
+    const nameEl = el.querySelector('.msg-sender-name');
+    const text = textEl ? textEl.textContent.trim().slice(0,120) : '';
+    const name = nameEl ? nameEl.textContent.trim() : (document.getElementById('chat-title').textContent);
+    if (_pinnedMsgs.some(p => p.id === _ctxMsgId)) { showToast('Уже закреплено', 'info'); return; }
+    _pinnedMsgs.push({ id: _ctxMsgId, text, senderName: name, pinnedAt: Date.now() });
+    savePinnedToStorage();
+    updatePinnedBar();
+    updatePinnedBadgesInDOM();
+    showToast('Сообщение закреплено', 'success');
+};
+
+window.ctxUnpin = function() {
+    hideCtxMenu();
+    if (!_ctxMsgId) return;
+    unpinMsg(_ctxMsgId);
+};
+
+function unpinMsg(msgId) {
+    _pinnedMsgs = _pinnedMsgs.filter(p => p.id !== msgId);
+    if (_pinnedCurIdx >= _pinnedMsgs.length) _pinnedCurIdx = Math.max(0, _pinnedMsgs.length - 1);
+    savePinnedToStorage();
+    updatePinnedBar();
+    updatePinnedBadgesInDOM();
+    showToast('Откреплено', 'info');
+}
+
+function savePinnedToStorage() {
+    if (!_activeConvId) return;
+    try {
+        const key = 'pinned_' + _activeConvId;
+        localStorage.setItem(key, JSON.stringify(_pinnedMsgs));
+    } catch(e){}
+}
+
+function loadPinnedFromStorage(convId) {
+    try {
+        const key = 'pinned_' + convId;
+        const s = localStorage.getItem(key);
+        _pinnedMsgs = s ? JSON.parse(s) : [];
+    } catch(e){ _pinnedMsgs = []; }
+    _pinnedCurIdx = Math.max(0, _pinnedMsgs.length - 1);
+}
+
+function updatePinnedBar() {
+    const bar = document.getElementById('pinned-bar');
+    const textEl = document.getElementById('pinned-bar-text');
+    const countEl = document.getElementById('pinned-bar-count');
+    if (!_pinnedMsgs.length) {
+        bar.classList.remove('show');
+        return;
+    }
+    bar.classList.add('show');
+    const cur = _pinnedMsgs[_pinnedCurIdx] || _pinnedMsgs[0];
+    textEl.textContent = cur.text || '—';
+    if (_pinnedMsgs.length > 1) {
+        countEl.textContent = (_pinnedCurIdx + 1) + '/' + _pinnedMsgs.length;
+        countEl.classList.remove('hidden');
+    } else {
+        countEl.classList.add('hidden');
+    }
+}
+
+function updatePinnedBadgesInDOM() {
+    // Remove all existing pin badges
+    document.querySelectorAll('.pin-badge').forEach(el => el.remove());
+    // Add badges to currently pinned messages
+    _pinnedMsgs.forEach(pin => {
+        const el = document.querySelector(`[data-msgid="${pin.id}"]`);
+        if (!el) return;
+        const bubble = el.querySelector('.bubble') || el;
+        const badge = document.createElement('div');
+        badge.className = 'pin-badge';
+        badge.innerHTML = '<i class="fas fa-thumbtack" style="font-size:8px;"></i> Закреплено';
+        bubble.insertBefore(badge, bubble.firstChild);
+    });
+}
+
+window.scrollToPinnedFromBar = function() {
+    if (!_pinnedMsgs.length) return;
+    const cur = _pinnedMsgs[_pinnedCurIdx];
+    scrollToMsg(cur.id);
+    // Cycle to next
+    _pinnedCurIdx = (_pinnedCurIdx + 1) % _pinnedMsgs.length;
+    updatePinnedBar();
+};
+
+window.openPinnedListModal = function(e) {
+    if (e) e.stopPropagation();
+    const listEl = document.getElementById('pinned-list-content');
+    if (!_pinnedMsgs.length) {
+        listEl.innerHTML = '<p class="text-xs text-slate-600 font-space text-center py-4">Нет закреплённых сообщений</p>';
+    } else {
+        listEl.innerHTML = _pinnedMsgs.slice().reverse().map(pin => `
+            <div class="pinned-msg-item" onclick="scrollToMsg('${pin.id}');closeModal('modal-pinned-list')">
+                <div class="flex items-start justify-between gap-2 mb-1">
+                    <span class="pinned-msg-sender">${escapeHtml(pin.senderName||'?')}</span>
+                    <span class="pinned-msg-unpin" onclick="event.stopPropagation();unpinMsg('${pin.id}');renderPinnedListModal()" title="Открепить">
+                        <i class="fas fa-times" style="font-size:9px;"></i>
+                    </span>
+                </div>
+                <div class="pinned-msg-text">${escapeHtml(pin.text||'')}</div>
+            </div>`).join('');
+    }
+    openModal('modal-pinned-list');
+};
+
+window.renderPinnedListModal = function() {
+    window.openPinnedListModal();
+};
+
 function hideCtxMenu() {
     document.getElementById('ctx-menu').style.display = 'none';
 }
 
 document.addEventListener('click', hideCtxMenu);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { hideCtxMenu(); cancelReply(); } });
+
+// ─── LONG-PRESS (mobile context menu) ─────────────────────────────
+let _lpTimer = null;
+document.addEventListener('touchstart', e => {
+    const bubble = e.target.closest('.bubble[oncontextmenu]');
+    if (!bubble) return;
+    _lpTimer = setTimeout(() => {
+        // Extract args from oncontextmenu attribute
+        const attr = bubble.getAttribute('oncontextmenu');
+        if (!attr) return;
+        const match = attr.match(/showCtxMenu\(event,'([^']+)','([^']+)','([^']+)',(true|false)\)/);
+        if (!match) return;
+        const fakeEvt = {
+            preventDefault: ()=>{}, stopPropagation: ()=>{},
+            clientX: e.touches[0]?.clientX || window.innerWidth/2,
+            clientY: e.touches[0]?.clientY || window.innerHeight/2
+        };
+        showCtxMenu(fakeEvt, match[1], match[2], match[3], match[4]==='true');
+    }, 500);
+}, { passive: true });
+document.addEventListener('touchend',  () => clearTimeout(_lpTimer), { passive: true });
+document.addEventListener('touchmove', () => clearTimeout(_lpTimer), { passive: true });
 
 // ─── REPLY ─────────────────────────────────────────────────────────
 let _replyTo = null; // { id, senderName, text }
@@ -1809,6 +1989,8 @@ window.sendMessage = async function() {
         conv.lastMsg = text.slice(0,80);
         conv.lastAt = new Date().toISOString();
         conv.lastSenderId = myId;
+        delete _drafts[_activeConvId];
+        if (conv) conv.draft = null;
         renderSidebar(document.getElementById('search-input').value);
     } catch(e) {
         showToast('Ошибка отправки: ' + e.message, 'error');
@@ -2243,6 +2425,8 @@ window.autoResizeInput = function(el) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
     document.getElementById('send-btn').disabled = !el.value.trim() || !_activeConvId;
+    // Save draft
+    saveDraft(el.value);
     // Typing
     if (_activeConvType === 'dm') {
         setTyping(true);
@@ -2262,402 +2446,142 @@ window.closeSidebar = function() {
 
 document.getElementById('search-input').addEventListener('input', e => renderSidebar(e.target.value));
 
+// ─── DRAFTS ────────────────────────────────────────────────────────
+const _drafts = {}; // convId → text
+
+function saveDraft(text) {
+    if (!_activeConvId) return;
+    if (text.trim()) {
+        _drafts[_activeConvId] = text;
+    } else {
+        delete _drafts[_activeConvId];
+    }
+    // Update conv object
+    const conv = _conversations.find(c => c.id === _activeConvId);
+    if (conv) conv.draft = text.trim() || null;
+    renderSidebar(document.getElementById('search-input').value);
+}
+
+function loadDraft(convId) {
+    const input = document.getElementById('msg-input');
+    const draft = _drafts[convId] || '';
+    input.value = draft;
+    input.style.height = 'auto';
+    if (draft) input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    document.getElementById('send-btn').disabled = !draft.trim() || !convId;
+}
+
+// ─── CHAT SEARCH ───────────────────────────────────────────────────
+let _chatSearchResults = [];
+let _chatSearchIdx     = 0;
+let _chatSearchQuery   = '';
+
+window.openChatSearch = function() {
+    const bar = document.getElementById('chat-search-bar');
+    bar.classList.add('show');
+    document.getElementById('chat-search-input').focus();
+};
+
+window.closeChatSearch = function() {
+    document.getElementById('chat-search-bar').classList.remove('show');
+    document.getElementById('chat-search-input').value = '';
+    _chatSearchQuery = '';
+    clearChatSearchHighlights();
+    _chatSearchResults = [];
+    _chatSearchIdx = 0;
+    document.getElementById('chat-search-counter').textContent = '0/0';
+};
+
+window.onChatSearchInput = function(val) {
+    _chatSearchQuery = val.trim();
+    runChatSearch();
+};
+
+window.onChatSearchKey = function(e) {
+    if (e.key === 'Enter') { e.shiftKey ? chatSearchPrev() : chatSearchNext(); }
+    if (e.key === 'Escape') closeChatSearch();
+};
+
+function clearChatSearchHighlights() {
+    document.querySelectorAll('.search-highlight').forEach(el => {
+        el.outerHTML = el.textContent;
+    });
+}
+
+function runChatSearch() {
+    clearChatSearchHighlights();
+    _chatSearchResults = [];
+    _chatSearchIdx = 0;
+    const counter = document.getElementById('chat-search-counter');
+
+    if (!_chatSearchQuery) { counter.textContent = '0/0'; return; }
+
+    const q = _chatSearchQuery.toLowerCase();
+    const wrap = document.getElementById('messages-wrap');
+    const textNodes = [];
+
+    // Find all text spans in bubbles
+    wrap.querySelectorAll('.bubble span[style*="pre-wrap"], .bubble p, .bubble-channel p').forEach(el => {
+        const t = el.textContent;
+        if (t.toLowerCase().includes(q)) {
+            // Highlight matches
+            const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+            el.innerHTML = el.textContent.replace(regex, m => `<span class="search-highlight">${escapeHtml(m)}</span>`);
+            el.querySelectorAll('.search-highlight').forEach(h => _chatSearchResults.push(h));
+        }
+    });
+
+    counter.textContent = _chatSearchResults.length ? `1/${_chatSearchResults.length}` : '0/0';
+    if (_chatSearchResults.length) {
+        _chatSearchIdx = 0;
+        highlightCurrent();
+    }
+}
+
+function highlightCurrent() {
+    _chatSearchResults.forEach((el, i) => {
+        el.classList.toggle('current', i === _chatSearchIdx);
+    });
+    if (_chatSearchResults[_chatSearchIdx]) {
+        _chatSearchResults[_chatSearchIdx].scrollIntoView({ behavior:'smooth', block:'center' });
+    }
+    document.getElementById('chat-search-counter').textContent =
+        `${_chatSearchIdx + 1}/${_chatSearchResults.length}`;
+}
+
+window.chatSearchNext = function() {
+    if (!_chatSearchResults.length) return;
+    _chatSearchIdx = (_chatSearchIdx + 1) % _chatSearchResults.length;
+    highlightCurrent();
+};
+
+window.chatSearchPrev = function() {
+    if (!_chatSearchResults.length) return;
+    _chatSearchIdx = (_chatSearchIdx - 1 + _chatSearchResults.length) % _chatSearchResults.length;
+    highlightCurrent();
+};
+
+// ─── BACK TO CABINET LINK ──────────────────────────────────────────
+(function() {
+    const link = document.getElementById('back-to-cabinet-link');
+    if (!link) return;
+    // Detect role from sessionStorage
+    const role = sessionStorage.getItem('chat_role') || sessionStorage.getItem('space_role') || '';
+    if (role === 'owner' || role === 'admin') {
+        link.href = 'admin.html';
+        link.querySelector('span').textContent = 'Панель администратора';
+    } else {
+        link.href = 'montage.html';
+        link.querySelector('span').textContent = 'Личный кабинет';
+    }
+})();
+
 // CryptoJS
 window.CryptoJS = null;
 const cjsScript = document.createElement('script');
 cjsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
 cjsScript.onload = () => { window.CryptoJS = window.CryptoJS || CryptoJS; };
 document.head.appendChild(cjsScript);
-
-// ─── VOICE MESSAGE ENGINE ──────────────────────────────────────────
-let _mediaRecorder   = null;
-let _audioChunks     = [];
-let _recTimerInt     = null;
-let _recSeconds      = 0;
-let _analyserNode    = null;
-let _audioCtx        = null;
-let _waveAnimId      = null;
-let _voiceBlob       = null;   // final recorded blob
-let _previewAudio    = null;   // HTMLAudioElement for preview
-let _previewSpeed    = 1;
-let _isPreviewPlaying = false;
-let _waveformBars    = [];
-
-function _fmtSec(s) {
-    const m = Math.floor(s/60);
-    return `${m}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-}
-
-// Build waveform bars once
-function _initWaveform() {
-    const wrap = document.getElementById('voice-waveform');
-    wrap.innerHTML = '';
-    _waveformBars = [];
-    const count = 40;
-    for (let i = 0; i < count; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'voice-waveform-bar';
-        bar.style.height = '4px';
-        wrap.appendChild(bar);
-        _waveformBars.push(bar);
-    }
-}
-
-function _animateWaveform() {
-    if (!_analyserNode) return;
-    const dataArray = new Uint8Array(_analyserNode.frequencyBinCount);
-    function draw() {
-        _waveAnimId = requestAnimationFrame(draw);
-        _analyserNode.getByteFrequencyData(dataArray);
-        const step = Math.floor(dataArray.length / _waveformBars.length);
-        _waveformBars.forEach((bar, i) => {
-            const val = dataArray[i * step] || 0;
-            const h = Math.max(3, (val / 255) * 24);
-            bar.style.height = h + 'px';
-            bar.style.background = val > 80 ? 'rgba(0,198,251,0.7)' : 'rgba(0,198,251,0.3)';
-        });
-    }
-    draw();
-}
-
-function _stopWaveAnim() {
-    if (_waveAnimId) { cancelAnimationFrame(_waveAnimId); _waveAnimId = null; }
-    _waveformBars.forEach(b => { b.style.height = '4px'; b.style.background = 'rgba(0,198,251,0.35)'; });
-}
-
-function _startRecTimer() {
-    _recSeconds = 0;
-    document.getElementById('voice-rec-timer').textContent = '0:00';
-    clearInterval(_recTimerInt);
-    _recTimerInt = setInterval(() => {
-        _recSeconds++;
-        document.getElementById('voice-rec-timer').textContent = _fmtSec(_recSeconds);
-    }, 1000);
-}
-
-window.voiceStartRecord = async function() {
-    if (!_activeConvId) { showToast('Сначала выберите чат', 'info'); return; }
-    const conv = _conversations.find(c => c.id === _activeConvId);
-    if (!conv) return;
-    const canWrite = conv.type === 'dm' || myRole === 'owner';
-    if (!canWrite) { showToast('Только администратор может писать в канал', 'info'); return; }
-
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        // Audio analyser
-        _audioCtx     = new (window.AudioContext || window.webkitAudioContext)();
-        const source  = _audioCtx.createMediaStreamSource(stream);
-        _analyserNode = _audioCtx.createAnalyser();
-        _analyserNode.fftSize = 256;
-        source.connect(_analyserNode);
-
-        // Choose supported mime
-        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-            ? 'audio/webm;codecs=opus'
-            : MediaRecorder.isTypeSupported('audio/webm')
-            ? 'audio/webm'
-            : 'audio/ogg;codecs=opus';
-
-        _audioChunks   = [];
-        _mediaRecorder = new MediaRecorder(stream, { mimeType });
-        _mediaRecorder.ondataavailable = e => { if (e.data.size > 0) _audioChunks.push(e.data); };
-        _mediaRecorder.onstop = () => {
-            stream.getTracks().forEach(t => t.stop());
-            if (_audioCtx) { _audioCtx.close(); _audioCtx = null; }
-        };
-        _mediaRecorder.start(100);
-
-        // UI switch
-        _initWaveform();
-        document.getElementById('voice-recorder-bar').classList.add('show');
-        document.getElementById('text-input-row').style.display = 'none';
-        document.getElementById('mic-btn').classList.add('recording');
-        document.getElementById('voice-rec-dot').classList.remove('paused');
-        document.getElementById('voice-pause-btn').innerHTML = '<i class="fas fa-pause"></i>';
-        document.getElementById('voice-pause-btn').className = 'voice-ctrl-btn pause-btn';
-        _startRecTimer();
-        _animateWaveform();
-    } catch(e) {
-        showToast('Микрофон недоступен: ' + e.message, 'error');
-    }
-};
-
-window.voicePauseResume = function() {
-    if (!_mediaRecorder) return;
-    const dot = document.getElementById('voice-rec-dot');
-    const btn = document.getElementById('voice-pause-btn');
-    if (_mediaRecorder.state === 'recording') {
-        _mediaRecorder.pause();
-        clearInterval(_recTimerInt);
-        _stopWaveAnim();
-        dot.classList.add('paused');
-        btn.innerHTML = '<i class="fas fa-play"></i>';
-        btn.className = 'voice-ctrl-btn resume-btn';
-    } else if (_mediaRecorder.state === 'paused') {
-        _mediaRecorder.resume();
-        _startRecTimerFrom(_recSeconds);
-        _animateWaveform();
-        dot.classList.remove('paused');
-        btn.innerHTML = '<i class="fas fa-pause"></i>';
-        btn.className = 'voice-ctrl-btn pause-btn';
-    }
-};
-
-function _startRecTimerFrom(from) {
-    _recSeconds = from;
-    clearInterval(_recTimerInt);
-    _recTimerInt = setInterval(() => {
-        _recSeconds++;
-        document.getElementById('voice-rec-timer').textContent = _fmtSec(_recSeconds);
-    }, 1000);
-}
-
-window.voiceCancel = function() {
-    _cleanupRecording();
-    _resetVoiceUI();
-};
-
-window.voiceStopAndPreview = function() {
-    if (!_mediaRecorder) return;
-    const totalSec = _recSeconds;
-    _mediaRecorder.onstop = (origStop => async function() {
-        origStop.call(_mediaRecorder);
-        _voiceBlob = new Blob(_audioChunks, { type: _mediaRecorder.mimeType });
-        _showPreview(totalSec);
-    })(_mediaRecorder.onstop);
-    _mediaRecorder.stop();
-    clearInterval(_recTimerInt);
-    _stopWaveAnim();
-    document.getElementById('voice-recorder-bar').classList.remove('show');
-};
-
-function _showPreview(totalSec) {
-    _previewSpeed = 1;
-    _isPreviewPlaying = false;
-    if (_previewAudio) { _previewAudio.pause(); _previewAudio = null; }
-
-    const url = URL.createObjectURL(_voiceBlob);
-    _previewAudio = new Audio(url);
-    _previewAudio.playbackRate = 1;
-
-    document.getElementById('preview-duration-label').textContent = _fmtSec(totalSec);
-    document.getElementById('preview-progress-fill').style.width = '0%';
-    document.getElementById('preview-play-btn').innerHTML = '<i class="fas fa-play"></i>';
-    document.getElementById('preview-speed-btn').textContent = '1×';
-    document.getElementById('preview-speed-btn').classList.add('active');
-
-    _previewAudio.ontimeupdate = () => {
-        const dur = _previewAudio.duration || totalSec;
-        const pct = (_previewAudio.currentTime / dur) * 100;
-        document.getElementById('preview-progress-fill').style.width = pct + '%';
-        document.getElementById('preview-duration-label').textContent =
-            _fmtSec(Math.floor(_previewAudio.currentTime)) + ' / ' + _fmtSec(totalSec);
-    };
-    _previewAudio.onended = () => {
-        _isPreviewPlaying = false;
-        document.getElementById('preview-play-btn').innerHTML = '<i class="fas fa-play"></i>';
-        document.getElementById('preview-progress-fill').style.width = '0%';
-        document.getElementById('preview-duration-label').textContent = _fmtSec(totalSec);
-    };
-
-    document.getElementById('voice-preview-bar').classList.add('show');
-    document.getElementById('text-input-row').style.display = 'none';
-}
-
-window.voicePreviewPlayPause = function() {
-    if (!_previewAudio) return;
-    if (_isPreviewPlaying) {
-        _previewAudio.pause();
-        _isPreviewPlaying = false;
-        document.getElementById('preview-play-btn').innerHTML = '<i class="fas fa-play"></i>';
-    } else {
-        _previewAudio.playbackRate = _previewSpeed;
-        _previewAudio.play();
-        _isPreviewPlaying = true;
-        document.getElementById('preview-play-btn').innerHTML = '<i class="fas fa-pause"></i>';
-    }
-};
-
-window.voicePreviewSeek = function(e) {
-    if (!_previewAudio || !_previewAudio.duration) return;
-    const track = document.getElementById('preview-progress-track');
-    const rect  = track.getBoundingClientRect();
-    const pct   = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    _previewAudio.currentTime = pct * _previewAudio.duration;
-};
-
-window.voicePreviewCycleSpeed = function() {
-    const speeds = [1, 1.5, 2];
-    const labels = ['1×', '1.5×', '2×'];
-    const idx = (speeds.indexOf(_previewSpeed) + 1) % speeds.length;
-    _previewSpeed = speeds[idx];
-    if (_previewAudio) _previewAudio.playbackRate = _previewSpeed;
-    const btn = document.getElementById('preview-speed-btn');
-    btn.textContent = labels[idx];
-};
-
-window.voicePreviewCancel = function() {
-    if (_previewAudio) { _previewAudio.pause(); _previewAudio = null; }
-    _voiceBlob = null;
-    document.getElementById('voice-preview-bar').classList.remove('show');
-    _resetVoiceUI();
-};
-
-window.voiceSendAudio = async function() {
-    if (!_voiceBlob || !_activeConvId) return;
-    if (_previewAudio) { _previewAudio.pause(); }
-
-    const btn = document.getElementById('voice-send-final-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-    showToast('Загрузка аудио…', 'info');
-
-    try {
-        await ensureAuth();
-        const ext  = _voiceBlob.type.includes('ogg') ? 'ogg' : 'webm';
-        const path = `voice/${APP_ID}/${_activeConvId}/${Date.now()}_${myId}.${ext}`;
-        const sRef = storageRef(storage, path);
-        await uploadBytes(sRef, _voiceBlob, { contentType: _voiceBlob.type });
-        const downloadUrl = await getDownloadURL(sRef);
-
-        const duration = _previewAudio?.duration
-            ? Math.round(_previewAudio.duration)
-            : _recSeconds;
-
-        const conv = _conversations.find(c => c.id === _activeConvId);
-        if (!conv) return;
-
-        const replySnapshot = _replyTo ? { ..._replyTo } : null;
-        cancelReply();
-
-        const msgData = {
-            senderId:   myId,
-            senderName: myProfile.name,
-            text:       '',
-            type:       'voice',
-            voiceUrl:   downloadUrl,
-            voiceDuration: duration,
-            createdAt:  serverTimestamp(),
-            ...(replySnapshot ? { replyTo: replySnapshot } : {})
-        };
-
-        const lastMsg = '🎤 Голосовое сообщение';
-        if (conv.type === 'dm') {
-            await addDoc(collection(db, ...BASE('chats'), conv.id, 'messages'), { ...msgData, read: false });
-            const recipientField = myRole === 'owner' ? 'unreadEditor' : 'unreadOwner';
-            await setDoc(doc(db, ...BASE('chats'), conv.id, 'meta', 'info'), {
-                lastMessage: lastMsg, lastAt: new Date().toISOString(),
-                lastSenderId: myId, [recipientField]: increment(1)
-            }, { merge: true });
-        } else {
-            await addDoc(collection(db, ...BASE('channels'), conv.id, 'messages'), msgData);
-            await setDoc(doc(db, ...BASE('channels'), conv.id), { lastMessage: lastMsg, lastAt: new Date().toISOString(), lastSenderId: myId }, { merge: true });
-        }
-
-        conv.lastMsg = lastMsg;
-        conv.lastAt  = new Date().toISOString();
-        conv.lastSenderId = myId;
-        renderSidebar(document.getElementById('search-input').value);
-        showToast('Голосовое отправлено', 'success');
-    } catch(e) {
-        showToast('Ошибка: ' + e.message, 'error');
-    } finally {
-        _voiceBlob = null;
-        _previewAudio = null;
-        document.getElementById('voice-preview-bar').classList.remove('show');
-        _resetVoiceUI();
-        btn.disabled = false;
-    }
-};
-
-function _cleanupRecording() {
-    if (_mediaRecorder) {
-        try { _mediaRecorder.stop(); } catch(e){}
-        _mediaRecorder = null;
-    }
-    clearInterval(_recTimerInt);
-    _stopWaveAnim();
-    if (_audioCtx) { _audioCtx.close(); _audioCtx = null; }
-    _analyserNode = null;
-    _audioChunks  = [];
-}
-
-function _resetVoiceUI() {
-    document.getElementById('voice-recorder-bar').classList.remove('show');
-    document.getElementById('voice-preview-bar').classList.remove('show');
-    document.getElementById('text-input-row').style.display = 'flex';
-    document.getElementById('mic-btn').classList.remove('recording');
-    _mediaRecorder = null;
-}
-
-// ── VOICE PLAYBACK IN CHAT ─────────────────────────────────────────
-const _voicePlayers = {}; // msgId → { audio, speed, playing }
-
-window.voiceMsgPlayPause = function(msgId, url, btn, fillId, durId, speedId) {
-    if (!_voicePlayers[msgId]) {
-        const audio = new Audio(url);
-        _voicePlayers[msgId] = { audio, speed: 1, playing: false };
-        audio.ontimeupdate = () => {
-            const dur = audio.duration || 1;
-            const fill = document.getElementById(fillId);
-            const durEl = document.getElementById(durId);
-            if (fill) fill.style.width = ((audio.currentTime / dur) * 100) + '%';
-            if (durEl) durEl.textContent = _fmtSec(Math.floor(audio.currentTime));
-        };
-        audio.onended = () => {
-            const p = _voicePlayers[msgId];
-            if (!p) return;
-            p.playing = false;
-            const b = document.getElementById('vbtn-' + msgId);
-            if (b) b.innerHTML = '<i class="fas fa-play"></i>';
-            const fill = document.getElementById(fillId);
-            if (fill) fill.style.width = '0%';
-            const durEl = document.getElementById(durId);
-            if (durEl && audio.duration) durEl.textContent = _fmtSec(Math.round(audio.duration));
-        };
-    }
-    const p = _voicePlayers[msgId];
-    const b = document.getElementById('vbtn-' + msgId);
-    if (p.playing) {
-        p.audio.pause();
-        p.playing = false;
-        if (b) b.innerHTML = '<i class="fas fa-play"></i>';
-    } else {
-        // Pause all other players
-        Object.entries(_voicePlayers).forEach(([id, pl]) => {
-            if (id !== msgId && pl.playing) {
-                pl.audio.pause(); pl.playing = false;
-                const ob = document.getElementById('vbtn-' + id);
-                if (ob) ob.innerHTML = '<i class="fas fa-play"></i>';
-            }
-        });
-        p.audio.playbackRate = p.speed;
-        p.audio.play();
-        p.playing = true;
-        if (b) b.innerHTML = '<i class="fas fa-pause"></i>';
-    }
-};
-
-window.voiceMsgSeek = function(e, msgId) {
-    const p = _voicePlayers[msgId];
-    if (!p || !p.audio.duration) return;
-    const track = e.currentTarget;
-    const rect  = track.getBoundingClientRect();
-    const pct   = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    p.audio.currentTime = pct * p.audio.duration;
-};
-
-window.voiceMsgCycleSpeed = function(msgId, btn) {
-    const speeds = [1, 1.5, 2];
-    const labels = ['1×', '1.5×', '2×'];
-    const p = _voicePlayers[msgId];
-    const cur = p ? p.speed : 1;
-    const idx = (speeds.indexOf(cur) + 1) % speeds.length;
-    const newSpeed = speeds[idx];
-    if (p) { p.speed = newSpeed; if (p.audio) p.audio.playbackRate = newSpeed; }
-    btn.textContent = labels[idx];
-};
 
 // ─── INIT ──────────────────────────────────────────────────────────
 (async () => {
@@ -2685,6 +2609,28 @@ window.voiceMsgCycleSpeed = function(msgId, btn) {
             </div>
             <div class="px-7 py-6">
                 <div id="edit-history-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Pinned Messages Modal -->
+<div id="modal-pinned-list" class="modal-bg hidden">
+    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
+        <div style="position:relative;z-index:2;">
+            <div class="flex items-center justify-between px-7 pt-7 pb-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,198,251,0.08);border:1px solid rgba(0,198,251,0.15);">
+                        <i class="fas fa-thumbtack text-sm" style="color:#5ba3c9;"></i>
+                    </div>
+                    <div>
+                        <p class="text-[9px] uppercase tracking-[0.2em] font-space font-bold" style="color:#5ba3c9;">Чат</p>
+                        <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Закреплённые</h3>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-pinned-list')" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-white transition" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);"><i class="fas fa-times text-xs"></i></button>
+            </div>
+            <div class="px-7 py-6">
+                <div id="pinned-list-content" class="space-y-2 max-h-80 overflow-y-auto"></div>
             </div>
         </div>
     </div>
