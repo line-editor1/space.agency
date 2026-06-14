@@ -407,13 +407,6 @@
             [class*="hover:shadow"] { --tw-shadow: none; }
             /* Астронавт — скрываем на маленьких экранах */
             .bg-astronaut { display: none !important; }
-            /* Звёздный фон: выносим в отдельный слой композитинга, чтобы canvas
-               не перерисовывался браузером при скролле страницы */
-            #stars-canvas {
-                will-change: transform;
-                transform: translateZ(0);
-                -webkit-transform: translateZ(0);
-            }
         }
     </style>
     <style>
@@ -1325,28 +1318,23 @@
         }
 
         class Star {
-            constructor(isMobile) {
-                this.isMobile = !!isMobile;
+            constructor() {
                 this.x = Math.random() * bgCanvas.width;
                 this.y = Math.random() * bgCanvas.height;
-                // На мобильных звёзды мельче, тусклее и медленнее — эффект "глубокого" фона + меньше нагрузки на CPU
-                this.size = this.isMobile ? (Math.random() * 0.9 + 0.2) : (Math.random() * 1.5);
-                const speedFactor = this.isMobile ? 0.05 : 0.12;
-                this.speedX = (Math.random() - 0.5) * speedFactor;
-                this.speedY = (Math.random() - 0.5) * speedFactor;
-                this.maxAlpha = this.isMobile ? 0.5 : 1;
-                this.alpha = Math.random() * this.maxAlpha;
-                this.alphaSpeed = (this.isMobile ? 0.0025 : 0.005) + Math.random() * 0.01;
+                this.size = Math.random() * 1.5;
+                this.speedX = (Math.random() - 0.5) * 0.12;
+                this.speedY = (Math.random() - 0.5) * 0.12;
+                this.alpha = Math.random();
+                this.alphaSpeed = 0.005 + Math.random() * 0.01;
             }
             update() {
                 this.x += this.speedX; this.y += this.speedY;
                 if (this.x < 0 || this.x > bgCanvas.width) this.speedX *= -1;
                 if (this.y < 0 || this.y > bgCanvas.height) this.speedY *= -1;
                 this.alpha += this.alphaSpeed;
-                if (this.alpha > this.maxAlpha || this.alpha < 0.1) this.alphaSpeed *= -1;
+                if (this.alpha > 1 || this.alpha < 0.1) this.alphaSpeed *= -1;
 
-                // Интерактивность звёзд с курсором — только на десктопе (на мобильных нет курсора)
-                if (!this.isMobile && mouse.x && mouse.y) {
+                if (mouse.x && mouse.y) {
                     let dx = mouse.x - this.x;
                     let dy = mouse.y - this.y;
                     let dist = Math.sqrt(dx * dx + dy * dy);
@@ -1507,10 +1495,10 @@
         function initStars() {
             stars = [];
             const isMobile = window.innerWidth < 768;
-            // Мобильные: значительно меньше звёзд для CPU, звёзды "глубже" (мельче и тусклее)
-            let count = Math.floor((bgCanvas.width * bgCanvas.height) / (isMobile ? 32000 : 4500));
-            count = Math.min(count, isMobile ? 18 : 250);
-            for (let i = 0; i < count; i++) stars.push(new Star(isMobile));
+            // Мобильные: значительно меньше звёзд для CPU
+            let count = Math.floor((bgCanvas.width * bgCanvas.height) / (isMobile ? 18000 : 4500));
+            count = Math.min(count, isMobile ? 35 : 250);
+            for (let i = 0; i < count; i++) stars.push(new Star());
         }
 
         function planNextComet() {
@@ -1519,18 +1507,7 @@
             setTimeout(() => { comet = new Comet(); planNextComet(); }, delay);
         }
 
-        let lastBgFrameTime = 0;
-        function animateBg(timestamp) {
-            // На мобильных ограничиваем фон до ~30 FPS — заметно снижает нагрузку на CPU/GPU
-            // во время скролла и избавляет от подвисаний.
-            if (window.innerWidth < 768) {
-                if (timestamp - lastBgFrameTime < 33) {
-                    requestAnimationFrame(animateBg);
-                    return;
-                }
-                lastBgFrameTime = timestamp;
-            }
-
+        function animateBg() {
             bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
             stars.forEach(star => { star.update(); star.draw(); });
             if (comet && comet.active) { comet.update(); comet.draw(); }
