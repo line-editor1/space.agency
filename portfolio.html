@@ -1,0 +1,30 @@
+        <div class="max-w-7xl mx-auto px-6 sm:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
+                <div>
+                    <p class="text-cyan-400 font-space tracking-widest text-xs uppercase mb-2 edit-field" data-id="portfolio_subtitle">НАШИ РАБОТЫ</p>
+                    <h2 class="text-4xl md:text-5xl font-space font-bold edit-field" data-id="portfolio_title">ПОРТФОЛИО</h2>
+                    <div class="w-16 h-1 bg-gradient-to-r from-blue-500 to-cyan-400 mt-4 rounded-full"></div>
+                </div>
+
+
+            </div>
+
+            <!-- МОБИЛЬНАЯ ПЛАШКА: кнопка "Смотреть работы" (только < 768px) -->
+            <div class="md:hidden mb-6" id="mobile-portfolio-toggle-wrap">
+                <button onclick="toggleMobilePortfolio()" id="mobile-portfolio-btn" class="w-full py-3.5 btn-liquid-glass text-white rounded-2xl flex items-center justify-center gap-2.5 px-5">
+                    <i class="fas fa-play-circle text-cyan-400 text-base flex-shrink-0"></i>
+                    <span id="mobile-portfolio-btn-text" class="font-space font-bold text-sm tracking-widest uppercase">Смотреть работы</span>
+                    <i id="mobile-portfolio-chevron" class="fas fa-chevron-down text-slate-400 text-xs flex-shrink-0 transition-transform duration-300"></i>
+                </button>
+            </div>
+
+            <!-- Контейнер портфолио (на мобиле управляется JS-классами mob-collapsed/mob-expanded) -->
+            <div id="portfolio-mobile-container">
+                <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 px-2 py-4" id="portfolio-grid"></div>
+                <div class="hidden md:flex justify-center mt-8" id="portfolio-show-more-wrap">
+                    <button onclick="showAllPortfolioDesktop()" id="portfolio-show-more-btn" class="px-8 py-3 btn-liquid-glass text-white rounded-full font-bold tracking-wide transition duration-300">
+                        Смотреть всё портфолио
+                    </button>
+                </div>
+            </div><!-- /portfolio-mobile-container -->
+        </div>
