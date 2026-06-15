@@ -9,10 +9,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Тема PWA в мета-тегах -->
+    <!-- PWA Meta tags -->
     <meta name="theme-color" content="#030208">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/png" href="1000002719.png">
+    <link rel="apple-touch-icon" href="1000002719.png">
 
     <style>
         * { caret-color: transparent; }
@@ -26,13 +28,13 @@
         }
         .font-space { font-family: 'Space Grotesk', sans-serif; }
 
-        /* Плавная прокрутка */
+        /* Smooth scrollbar styling */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #030208; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
-        /* Премиум стеклянные карточки */
+        /* Premium glass panels */
         .glass-card {
             background: rgba(14, 13, 24, 0.7);
             backdrop-filter: blur(20px);
@@ -57,7 +59,7 @@
             pointer-events: none;
         }
 
-        /* Анимации появления в стиле Apple (Staggered Fade-in) */
+        /* Apple-style fade-in-up transition */
         .fade-in-up {
             animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
@@ -70,7 +72,7 @@
             }
         }
 
-        /* Индикатор работы таймера */
+        /* Pulse glow for running timers */
         .timer-glow {
             animation: pulseGlow 2s infinite ease-in-out;
         }
@@ -79,7 +81,7 @@
             50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); border-color: rgba(16, 185, 129, 0.5); }
         }
 
-        /* Премиальное модальное окно */
+        /* Custom premium modal animations */
         .modal-animate {
             animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
@@ -88,23 +90,24 @@
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* Тосты */
-        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        /* Responsive notification toasts container */
+        #toast-container { position: fixed; bottom: 24px; right: 24px; left: 24px; md:left: auto; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .toast { 
             padding: 12px 18px; 
             border-radius: 16px; 
             font-size: 13px; 
             font-weight: 500; 
-            background: rgba(14, 13, 24, 0.9); 
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08); 
+            background: #0E0D18; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
             animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            max-width: 320px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+            max-width: 100%;
+            md:max-width: 320px; 
+            pointer-events: auto;
         }
         @keyframes toastIn { from { opacity: 0; transform: translateY(14px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         
-        /* Плавные табы */
+        /* Interactive segmented navigation buttons */
         .tab-segment { transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
         .tab-segment.active { 
             background: rgba(255, 255, 255, 0.05); 
@@ -112,7 +115,7 @@
             color: #ffffff;
         }
 
-        /* Живой светодиод статуса */
+        /* Status LED animation indicators */
         .status-led {
             position: relative;
         }
@@ -149,8 +152,13 @@
         #pwa-install-banner {
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(99, 102, 241, 0.2);
-            background: rgba(14, 13, 24, 0.95);
-            backdrop-filter: blur(24px);
+            background: #0E0D18;
+        }
+
+        .modal-bg {
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
     </style>
 </head>
@@ -161,7 +169,7 @@
 <div id="pwa-install-banner" class="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-[9998] p-5 rounded-2xl hidden transform translate-y-10 opacity-0 transition-all duration-500 ease-out">
     <div class="flex items-start gap-4">
         <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-            <i class="fas fa-circle-down text-lg"></i>
+            <img src="1000002719.png" alt="SPACE Logo" class="w-6 h-6 rounded-md">
         </div>
         <div class="space-y-1.5 flex-1">
             <h4 class="text-xs font-bold text-white font-space tracking-wide uppercase">Установите SPACE</h4>
@@ -179,7 +187,7 @@
         <div class="relative w-16 h-16 flex items-center justify-center">
             <div class="absolute inset-0 rounded-full border border-indigo-500/20 animate-[spin_4s_linear_infinite]"></div>
             <div class="absolute w-12 h-12 rounded-full border-t border-b border-indigo-400 animate-[spin_1.5s_linear_infinite]"></div>
-            <i class="fas fa-satellite text-indigo-400 text-lg animate-pulse"></i>
+            <img src="1000002719.png" alt="SPACE Logo" class="w-8 h-8 rounded-lg animate-pulse">
         </div>
         
         <div class="space-y-2">
@@ -197,16 +205,14 @@
 </div>
 
 <div id="screen-login" class="min-h-screen flex flex-col items-center justify-center px-4 relative z-10 transition-all duration-500">
-    <div class="w-full max-w-md glass-card premium-border rounded-3xl p-8 space-y-7 shadow-2xl relative overflow-hidden">
+    <div class="w-full max-w-md glass-card premium-border rounded-3xl p-6 sm:p-8 space-y-6 sm:space-y-7 shadow-2xl relative overflow-hidden">
         <div class="absolute -top-16 -left-16 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
 
-        <div class="flex items-center gap-3.5 justify-center">
-            <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-inner">
-                <i class="fas fa-rocket text-indigo-400 text-sm"></i>
-            </div>
+        <div class="flex items-center gap-3 justify-center text-center sm:text-left">
+            <img src="1000002719.png" alt="SPACE Logo" class="w-10 h-10 rounded-2xl border border-indigo-500/20 shadow-inner">
             <div>
                 <p class="text-[9px] text-indigo-400 uppercase tracking-[0.25em] font-space font-bold">SPACE Video Agency</p>
-                <h3 class="text-sm font-space font-black text-white tracking-wide">Центр Управления SPACE</h3>
+                <h3 class="text-xs sm:text-sm font-space font-black text-white tracking-wide">Центр Управления SPACE</h3>
             </div>
         </div>
 
@@ -238,27 +244,26 @@
 </div>
 
 <div id="screen-dashboard" class="hidden min-h-screen flex flex-col relative z-10 pb-12">
-    <!-- Навигационная панель Apple-style -->
     <nav class="border-b border-white/[0.04] bg-[#030208]/80 sticky top-0 backdrop-blur-xl z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <span class="font-space font-black tracking-[0.2em] text-white text-base mr-1" id="brand-header">SPACE TEAM</span>
-                <span id="user-nav-role" class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 px-2.5 py-0.5 rounded font-bold font-space uppercase tracking-wider">Личный Кабинет</span>
-                <div id="top-user-container" class="flex items-center gap-2 text-xs font-medium font-space text-slate-300 ml-2">
-                    <span id="top-user-name" class="text-white font-bold"></span>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 sm:gap-4">
+                <img src="1000002719.png" alt="SPACE Logo" class="w-6 h-6 sm:w-7 sm:h-7 rounded-md">
+                <span class="font-space font-black tracking-[0.15em] sm:tracking-[0.2em] text-white text-xs sm:text-base" id="brand-header">SPACE TEAM</span>
+                <span id="user-nav-role" class="text-[8px] sm:text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded font-bold font-space uppercase tracking-wider hidden md:inline-block">Личный Кабинет</span>
+                <div id="top-user-container" class="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-medium font-space text-slate-300 ml-2 hidden sm:flex">
+                    <span id="top-user-name" class="text-white font-bold truncate max-w-[80px]"></span>
                     <span id="top-user-status-dot" class="w-1.5 h-1.5 rounded-full status-led bg-emerald-500"></span>
                 </div>
             </div>
-            <div class="flex items-center gap-5 relative">
-                <!-- Центр уведомлений -->
+            
+            <div class="flex items-center gap-3 sm:gap-5 relative">
                 <button onclick="toggleNotifications()" class="pressable relative text-slate-400 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-bell text-sm"></i>
-                    <span id="nav-notif-badge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-[#030208]"></span>
+                    <i class="fas fa-bell text-xs sm:text-sm"></i>
+                    <span id="nav-notif-badge" class="hidden absolute -top-1 -right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-indigo-500 rounded-full border-2 border-[#030208]"></span>
                 </button>
                 
-                <!-- Дропдаун уведомлений -->
-                <div id="notifications-dropdown" class="absolute top-12 right-12 w-80 glass-card premium-border rounded-2xl border border-white/[0.05] shadow-2xl overflow-hidden z-50 hidden opacity-0 transition-all duration-300 transform scale-95 origin-top-right">
-                    <div class="p-4 border-b border-white/[0.05] flex justify-between items-center bg-black/20">
+                <div id="notifications-dropdown" class="absolute top-12 right-12 w-80 bg-[#0E0D18] rounded-2xl border border-white/[0.1] shadow-2xl overflow-hidden z-[100] hidden opacity-0 transition-all duration-300 transform scale-95 origin-top-right">
+                    <div class="p-4 border-b border-white/[0.05] flex justify-between items-center bg-[#141322]">
                         <span class="text-xs font-bold font-space text-white uppercase tracking-wider">Уведомления</span>
                         <button onclick="markAllNotificationsRead()" class="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors">Прочитать все</button>
                     </div>
@@ -268,21 +273,20 @@
 
                 <div class="h-4 w-[1px] bg-white/[0.08]"></div>
                 
-                <!-- Вспомогательные действия -->
-                <button id="admin-site-panel-btn" onclick="window.open('admin.html', '_blank')" class="pressable hidden px-3.5 py-2 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-xs font-bold text-indigo-300 hover:bg-indigo-500/20 transition-all flex items-center gap-2">
-                    <i class="fas fa-shield-halved text-indigo-400 text-xs"></i><span class="hidden sm:inline">Админка сайта</span>
+                <button id="admin-site-panel-btn" onclick="window.open('admin.html', '_blank')" class="pressable hidden px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-[9px] sm:text-xs font-bold text-indigo-300 hover:bg-indigo-500/20 transition-all flex items-center gap-1 sm:gap-2">
+                    <i class="fas fa-shield-halved text-indigo-400 text-[9px] sm:text-xs"></i><span class="hidden sm:inline">Админка</span>
                 </button>
-                <button onclick="openChatLink()" class="pressable px-3.5 py-2 rounded-xl border border-white/[0.04] bg-white/[0.02] text-xs font-bold text-slate-300 hover:bg-white/[0.06] transition-all flex items-center gap-2">
-                    <i class="fas fa-comments text-indigo-400 text-xs"></i><span class="hidden sm:inline">Командный чат</span>
+                <button onclick="openChatLink()" class="pressable px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-white/[0.04] bg-white/[0.02] text-[9px] sm:text-xs font-bold text-slate-300 hover:bg-white/[0.06] transition-all flex items-center gap-1 sm:gap-2">
+                    <i class="fas fa-comments text-indigo-400 text-[9px] sm:text-xs"></i><span class="hidden sm:inline">Чат</span>
                 </button>
-                <button onclick="logout()" class="pressable text-xs text-slate-400 hover:text-red-400 transition flex items-center gap-1.5 ml-2 font-bold font-space">
-                    <i class="fas fa-sign-out-alt"></i> Выйти
+                <button onclick="logout()" class="pressable text-[10px] sm:text-xs text-slate-400 hover:text-red-400 transition flex items-center gap-1 sm:gap-1.5 ml-1 font-bold font-space">
+                    <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Выйти</span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1 w-full">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 flex-1 w-full">
         <!-- ЛЕВАЯ ЧАСТЬ (Рабочее поле) -->
         <div class="lg:col-span-8 space-y-6">
             <div class="bg-[#0E0D18]/80 border border-white/[0.03] rounded-2xl p-1 flex flex-wrap gap-1 shadow-lg" id="dashboard-tabs-container">
@@ -292,7 +296,7 @@
             </div>
         </div>
 
-        <!-- ПРАВАЯ ЧАСТЬ (Расположение блоков как в предыдущей версии) -->
+        <!-- ПРАВАЯ ЧАСТЬ -->
         <div class="lg:col-span-4 space-y-6">
             <!-- Блок 1: Профиль Пользователя -->
             <div class="glass-card premium-border p-6 rounded-3xl flex flex-col gap-4 relative overflow-hidden shadow-xl">
@@ -300,7 +304,7 @@
                 
                 <div class="flex items-center gap-4 relative z-10">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg border border-white/10" id="my-avatar">?</div>
-                    <div class="min-w-0">
+                    <div class="min-w-0 flex-1">
                         <h4 class="text-sm font-bold text-white font-space truncate" id="my-name">—</h4>
                         <div class="flex items-center gap-2 mt-1.5">
                             <span id="my-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 status-led"></span>
@@ -312,13 +316,13 @@
                 <div class="flex flex-col gap-2 mt-2 pt-4 border-t border-white/[0.04]" id="status-fast-changer">
                     <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">Ваш статус работы</span>
                     <div class="grid grid-cols-3 gap-1.5">
-                        <button onclick="setUserWorkStatus('Свободен — жду проекты')" class="pressable py-2 text-[10px] font-bold font-space bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/15 text-emerald-400 rounded-xl transition flex items-center justify-center">
+                        <button onclick="setUserWorkStatus('Свободен — жду проекты')" class="pressable py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-bold font-space bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/15 text-emerald-400 rounded-xl transition flex items-center justify-center">
                             Свободен
                         </button>
-                        <button onclick="setUserWorkStatus('Занят')" class="pressable py-2 text-[10px] font-bold font-space bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/15 text-rose-400 rounded-xl transition flex items-center justify-center">
+                        <button onclick="setUserWorkStatus('Занят')" class="pressable py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-bold font-space bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/15 text-rose-400 rounded-xl transition flex items-center justify-center">
                             Занят
                         </button>
-                        <button onclick="setUserWorkStatus('Скоро вернусь')" class="pressable py-2 text-[10px] font-bold font-space bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/15 text-amber-400 rounded-xl transition flex items-center justify-center">
+                        <button onclick="setUserWorkStatus('Скоро вернусь')" class="pressable py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-bold font-space bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/15 text-amber-400 rounded-xl transition flex items-center justify-center">
                             Вернусь
                         </button>
                     </div>
@@ -354,11 +358,9 @@
     </div>
 </div>
 
-<!-- ═══ МОДАЛЬНЫЕ ОКНА ═══ -->
-
 <!-- Запрос изменений от Монтажёра -->
 <div id="modal-editor-project" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-editor-project')">
-    <div class="glass-card premium-border w-full max-w-lg rounded-3xl p-6 space-y-4 overflow-y-auto max-h-[90vh] modal-animate" onclick="event.stopPropagation()">
+    <div class="glass-card premium-border w-full max-w-lg rounded-3xl p-5 sm:p-6 space-y-4 overflow-y-auto max-h-[90vh] modal-animate" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between border-b border-white/[0.05] pb-3">
             <div>
                 <h3 class="font-space font-black text-white text-base">Инспекция и редактирование</h3>
@@ -368,7 +370,6 @@
         </div>
         <input type="hidden" id="editor-form-project-id">
         
-        <!-- Заблокированные параметры (Apple Locked Cards) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-black/20 p-4 rounded-2xl border border-white/[0.04]">
             <div class="col-span-1 md:col-span-2">
                 <span class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2"><i class="fas fa-lock mr-1.5"></i> Параметры (Установлены Администрацией)</span>
@@ -391,7 +392,6 @@
             </div>
         </div>
 
-        <!-- ЗАРПЛАТА И БОНУСЫ (Отображение) -->
         <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.04] space-y-3">
             <h4 class="text-[10px] text-emerald-400 uppercase tracking-wider font-bold">Зарплата и Бонусы Монтажёра <i class="fas fa-lock ml-1 text-slate-600"></i></h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -418,7 +418,6 @@
             </div>
         </div>
 
-        <!-- Редактируемые параметры -->
         <div class="space-y-4 pt-2 border-t border-white/[0.05]">
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -454,7 +453,7 @@
 
 <!-- Создать / Редактировать проект (Админ) -->
 <div id="modal-project" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-project')">
-    <div class="glass-card premium-border w-full max-w-lg rounded-3xl p-6 space-y-4 overflow-y-auto max-h-[90vh] modal-animate" onclick="event.stopPropagation()">
+    <div class="glass-card premium-border w-full max-w-lg rounded-3xl p-5 sm:p-6 space-y-4 overflow-y-auto max-h-[90vh] modal-animate" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between">
             <h3 class="font-space font-black text-white text-base" id="project-modal-title">Создание проекта</h3>
             <button onclick="closeModal('modal-project')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
@@ -480,7 +479,6 @@
             </div>
         </div>
 
-        <!-- БЮДЖЕТ КЛИЕНТА -->
         <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.04] space-y-3">
             <h4 class="text-[10px] text-indigo-400 uppercase tracking-wider font-bold">Стоимость работы для Клиента</h4>
             <div class="grid grid-cols-2 gap-4">
@@ -495,7 +493,6 @@
             </div>
         </div>
 
-        <!-- ЗАРПЛАТА И БОНУСЫ МОНТАЖЕРА -->
         <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.04] space-y-3">
             <h4 class="text-[10px] text-emerald-400 uppercase tracking-wider font-bold">Зарплата и Бонусы Монтажёра</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -621,7 +618,7 @@
 
 <!-- Модалка: Сдача работы монтажёром -->
 <div id="modal-submit-work" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-submit-work')">
-    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
+    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between border-b border-white/[0.05] pb-3">
             <h3 class="font-space font-black text-white text-base">Сдача проекта на ревью</h3>
             <button onclick="closeModal('modal-submit-work')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
@@ -653,7 +650,7 @@
 
 <!-- Модалка: Проверка работы (Админ) -->
 <div id="modal-review-submission" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-review-submission')">
-    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
+    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between border-b border-white/[0.05] pb-3">
             <h3 class="font-space font-black text-white text-base">Инспекция проекта</h3>
             <button onclick="closeModal('modal-review-submission')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
@@ -695,7 +692,7 @@
 
 <!-- Модалка: Настройки (Админ) -->
 <div id="modal-admin-settings" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-admin-settings')">
-    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
+    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between border-b border-white/[0.05] pb-3.5">
             <h3 class="font-space font-black text-white text-base">Глобальные стандарты</h3>
             <button onclick="closeModal('modal-admin-settings')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
@@ -741,10 +738,16 @@ const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// State
-let currentRole = sessionStorage.getItem('chat_role');
-let currentUserId = sessionStorage.getItem('chat_id');
-let currentUserName = sessionStorage.getItem('chat_name');
+// State Synchronization
+let currentRole = sessionStorage.getItem('chat_role') || localStorage.getItem('chat_role');
+let currentUserId = sessionStorage.getItem('chat_id') || localStorage.getItem('chat_id');
+let currentUserName = sessionStorage.getItem('chat_name') || localStorage.getItem('chat_name');
+
+if (currentRole && !sessionStorage.getItem('chat_role')) {
+    sessionStorage.setItem('chat_role', currentRole);
+    sessionStorage.setItem('chat_id', currentUserId);
+    sessionStorage.setItem('chat_name', currentUserName);
+}
 
 let _editors = [];
 let _projects = [];
@@ -754,7 +757,6 @@ let _editRequests = [];
 let _editRequestsArchive = [];
 let _globalChecklist = ["Проверить цветокоррекцию", "Проверить звук", "Проверить субтитры", "Проверить орфографию", "Проверить настройки экспорта"];
 
-// Массив космических цитат для загрузчика
 const spaceQuotes = [
     "Каждая склейка — это новая траектория полёта.",
     "Создаём визуальные миры из звёздной пыли исходников.",
@@ -764,7 +766,6 @@ const spaceQuotes = [
     "Идеальный таймлайн — гармония космических орбит."
 ];
 
-// Словарь русских названий для стадий проекта
 const stageLabels = {
     brief: "ТЗ & Бриф",
     edit: "Черновик",
@@ -775,9 +776,8 @@ const stageLabels = {
 
 let clockInterval;
 let activeTab = 'dashboard';
-let selectedDashboardEditorId = 'all'; // Фильтр монтажеров на главной админа
+let selectedDashboardEditorId = 'all';
 
-// Вынесена наверх для предотвращения ReferenceError в Snapshot-подписках
 window.getEditorRating = function(editorId) {
     const completedProjects = _projects.filter(p => p.editorId === editorId && p.stage === 'done' && typeof p.rating === 'number' && p.rating > 0);
     if (completedProjects.length === 0) return '0.0';
@@ -790,7 +790,7 @@ window.getEditorPayout = function(p) {
         return (parseFloat(p.baseSalary) || 0) + (parseFloat(p.extraSalary) || 0);
     }
     const base = parseFloat(p.editorSalary) || 0;
-    const extra = parseFloat(p.editorExtraSalary) || 0; // Новое поле дополнительных услуг монтажёра
+    const extra = parseFloat(p.editorExtraSalary) || 0;
     const bVal = parseFloat(p.editorBonusValue) || 0;
     let bonus = 0;
     if (p.editorBonusType === 'percent') {
@@ -819,9 +819,9 @@ function setupPWA() {
         "orientation": "any",
         "icons": [
             {
-                "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='128' fill='%23030208'/><path d='M256 110 L390 380 L256 310 L122 380 Z' fill='%236366F1'/></svg>",
+                "src": "1000002719.png",
                 "sizes": "512x512",
-                "type": "image/svg+xml",
+                "type": "image/png",
                 "purpose": "any maskable"
             }
         ]
@@ -918,7 +918,24 @@ window.triggerPwaInstall = async function() {
     deferredPrompt = null;
 };
 
-// ─── AUTH & LOGIN ───
+window.openChatLink = function(editorId) {
+    if (editorId) {
+        localStorage.setItem('target_editor_id', editorId);
+    } else {
+        localStorage.removeItem('target_editor_id');
+    }
+    
+    try {
+        if (window.location.protocol === 'about:' || window.location.href.includes('blob:')) {
+            window.open('chat.html', '_blank');
+        } else {
+            window.location.href = 'chat.html';
+        }
+    } catch(e) {
+        window.open('chat.html', '_blank');
+    }
+};
+
 async function ensureAuth() {
     return new Promise((resolve) => {
         onAuthStateChanged(auth, user => {
@@ -1021,24 +1038,26 @@ function setSession(role, id, name) {
     sessionStorage.setItem('chat_role', role);
     sessionStorage.setItem('chat_id', id);
     sessionStorage.setItem('chat_name', name);
+    localStorage.setItem('chat_role', role);
+    localStorage.setItem('chat_id', id);
+    localStorage.setItem('chat_name', name);
     currentRole = role;
     currentUserId = id;
     currentUserName = name;
-    
-    document.getElementById('login-input').value = '';
-    document.getElementById('pass-input').value = '';
     
     checkSession();
 }
 
 window.logout = function() {
     sessionStorage.clear();
+    localStorage.removeItem('chat_role');
+    localStorage.removeItem('chat_id');
+    localStorage.removeItem('chat_name');
     currentRole = null; currentUserId = null; currentUserName = null;
     document.getElementById('screen-dashboard').classList.add('hidden');
     document.getElementById('screen-login').classList.remove('hidden');
 };
 
-// ─── TABS & ROUTING ───
 window.switchTab = function(tabName) {
     activeTab = tabName;
     document.querySelectorAll('.tab-segment').forEach(btn => {
@@ -1053,17 +1072,17 @@ function renderSegmentTabs() {
     const container = document.getElementById('dashboard-tabs-container');
     if (currentRole === 'owner') {
         container.innerHTML = `
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-segment flex-1 py-3 text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all active">Главная</button>
-            <button onclick="switchTab('projects')" id="tab-projects" class="tab-segment flex-1 py-3 text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">Проекты</button>
-            <button onclick="switchTab('submissions')" id="tab-submissions" class="tab-segment flex-1 py-3 text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all relative">Приёмка <span id="badge-subs" class="hidden absolute top-2 right-4 w-2 h-2 bg-indigo-500 rounded-full status-led"></span></button>
-            <button onclick="switchTab('requests')" id="tab-requests" class="tab-segment flex-1 py-3 text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all relative">Запросы <span id="badge-reqs" class="hidden absolute top-2 right-4 w-2 h-2 bg-indigo-500 rounded-full status-led"></span></button>
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all active">Главная</button>
+            <button onclick="switchTab('projects')" id="tab-projects" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">Проекты</button>
+            <button onclick="switchTab('submissions')" id="tab-submissions" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all relative">Приёмка <span id="badge-subs" class="hidden absolute top-2 right-4 w-2 h-2 bg-indigo-500 rounded-full status-led"></span></button>
+            <button onclick="switchTab('requests')" id="tab-requests" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all relative">Запросы <span id="badge-reqs" class="hidden absolute top-2 right-4 w-2 h-2 bg-indigo-500 rounded-full status-led"></span></button>
         `;
     } else {
         container.innerHTML = `
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-segment flex-1 py-3 text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all active">Рабочий стол</button>
-            <button onclick="switchTab('projects')" id="tab-projects" class="tab-segment flex-1 py-3 text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">Мои задачи</button>
-            <button onclick="switchTab('finance')" id="tab-finance" class="tab-segment flex-1 py-3 text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">Финансы</button>
-            <button onclick="switchTab('history')" id="tab-history" class="tab-segment flex-1 py-3 text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">История</button>
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all active">Рабочий стол</button>
+            <button onclick="switchTab('projects')" id="tab-projects" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">Задачи</button>
+            <button onclick="switchTab('finance')" id="tab-finance" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">Финансы</button>
+            <button onclick="switchTab('history')" id="tab-history" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">История</button>
         `;
     }
     switchTab(activeTab);
@@ -1083,7 +1102,6 @@ function renderActiveTabContent() {
     }
 }
 
-// ─── ADMIN DASHBOARD ───
 window.filterAdminDashboardByEditor = function(val) {
     selectedDashboardEditorId = val;
     renderAdminDashboard();
@@ -1133,7 +1151,6 @@ function renderAdminDashboard() {
                 </div>
             </div>
 
-            <!-- ИНТЕРАКТИВНЫЙ ФИЛЬТР ПО МОНТАЖЕРАМ НА ГЛАВНОЙ АДМИНА -->
             <div class="mt-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-t border-white/[0.04] pt-6">
                 <div class="space-y-1">
                     <h3 class="text-xs font-space font-bold text-slate-400 uppercase tracking-widest">Проекты на сборке</h3>
@@ -1180,7 +1197,6 @@ function renderAdminDashboard() {
     }
 }
 
-// ─── EDITOR WORKSPACE ───
 function renderEditorDashboard() {
     const vp = document.getElementById('dashboard-viewport');
     const myP = _projects.filter(p => p.editorId === currentUserId);
@@ -1202,17 +1218,17 @@ function renderEditorDashboard() {
             </div>
             
             <div class="grid grid-cols-3 gap-4">
-                <div class="glass-card premium-border p-5 rounded-3xl text-center">
-                    <span class="block text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-2">Задачи в работе</span>
-                    <span class="text-3xl font-black font-space text-white">${activeP.length}</span>
+                <div class="glass-card premium-border p-4 sm:p-5 rounded-3xl text-center">
+                    <span class="block text-[8px] sm:text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-2">В работе</span>
+                    <span class="text-2xl sm:text-3xl font-black font-space text-white">${activeP.length}</span>
                 </div>
-                <div class="glass-card premium-border p-5 rounded-3xl text-center ${deadlinesToday > 0 ? 'border-rose-500/30 bg-rose-950/10' : ''}">
-                    <span class="block text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-2">Дедлайн сегодня</span>
-                    <span class="text-3xl font-black font-space ${deadlinesToday > 0 ? 'text-rose-400' : 'text-slate-300'}">${deadlinesToday}</span>
+                <div class="glass-card premium-border p-4 sm:p-5 rounded-3xl text-center ${deadlinesToday > 0 ? 'border-rose-500/30 bg-rose-950/10' : ''}">
+                    <span class="block text-[8px] sm:text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-2">Сегодня дедлайн</span>
+                    <span class="text-2xl sm:text-3xl font-black font-space ${deadlinesToday > 0 ? 'text-rose-400' : 'text-slate-300'}">${deadlinesToday}</span>
                 </div>
-                <div class="glass-card premium-border p-5 rounded-3xl text-center bg-indigo-955/20 border-indigo-500/20">
-                    <span class="block text-[9px] text-indigo-400 uppercase font-bold tracking-wider mb-2">Ожидаемый оклад</span>
-                    <span class="text-2xl font-black font-mono text-emerald-400 mt-1 block">${formatMoney(expected)}</span>
+                <div class="glass-card premium-border p-4 sm:p-5 rounded-3xl text-center bg-indigo-955/20 border-indigo-500/20">
+                    <span class="block text-[8px] sm:text-[9px] text-indigo-400 uppercase font-bold tracking-wider mb-2">Ожидаемый оклад</span>
+                    <span class="text-lg sm:text-2xl font-black font-mono text-emerald-400 mt-1 block">${formatMoney(expected)}</span>
                 </div>
             </div>
 
@@ -1253,7 +1269,7 @@ function renderEditorFinance() {
         <div class="fade-in-up space-y-6">
             <h3 class="text-xs font-space font-bold text-slate-400 uppercase tracking-widest"><i class="fas fa-wallet mr-2 text-indigo-400"></i> Финансовый кабинет</h3>
             
-            <div class="grid grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div class="glass-card premium-border p-6 rounded-3xl bg-gradient-to-br from-emerald-950/20 to-transparent border-emerald-500/25">
                     <span class="block text-[10px] text-emerald-400/80 uppercase font-bold tracking-wider mb-2">Начислено за месяц</span>
                     <span class="text-4xl font-black font-mono text-emerald-400">${formatMoney(monthTotal)}</span>
@@ -1301,7 +1317,7 @@ function renderEditorHistory() {
                         </div>
                         <div class="text-right space-y-1.5">
                             <span class="block text-xs font-bold font-mono text-emerald-400">${formatMoney(getEditorPayout(p))}</span>
-                            <span class="text-[9px] text-slate-400 flex items-center gap-1 justify-end mt-1"><i class="fas fa-clock text-[8px]"></i> Затрачено времени: ${formatSeconds(p.timeSpent || 0)}</span>
+                            <span class="text-[9px] text-slate-400 flex items-center gap-1 justify-end mt-1"><i class="fas fa-clock text-[8px]"></i> ${formatSeconds(p.timeSpent || 0)}</span>
                         </div>
                     </div>
                 `).join('') || `
@@ -1371,13 +1387,13 @@ function generateProjectCardHTML(p, isAdmin) {
     if (isAdmin) {
         actionUI = `
             <div class="flex gap-2 mt-4 pt-4 border-t border-white/[0.04]">
-                <button onclick="openChatLink('${p.editorId}')" class="pressable flex-1 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] text-indigo-400 hover:bg-white/[0.06] text-[10px] font-bold transition-all"><i class="fas fa-comment-alt mr-1"></i> Контакт</button>
-                <button onclick="openEditProjectModal('${p.id}')" class="pressable flex-1 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] text-slate-300 hover:bg-white/[0.06] text-[10px] font-bold transition-all"><i class="fas fa-edit mr-1"></i> Настройки</button>
+                <button onclick="openChatLink('${p.editorId}')" class="pressable flex-1 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] text-indigo-400 hover:bg-white/[0.06] text-[10px] font-bold transition-all"><i class="fas fa-comment-alt mr-1"></i> Чат</button>
+                <button onclick="openEditProjectModal('${p.id}')" class="pressable flex-1 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] text-slate-300 hover:bg-white/[0.06] text-[10px] font-bold transition-all"><i class="fas fa-edit mr-1"></i> Свойства</button>
             </div>
         `;
     } else {
         if (isChecking) {
-            actionUI = `<span class="mt-4 text-xs text-amber-400 font-bold font-space bg-amber-500/10 px-4 py-3 rounded-xl border border-amber-500/20 w-full text-center block"><i class="fas fa-hourglass-half mr-2 animate-spin"></i> Сдан на ревью. Ожидайте вердикта</span>`;
+            actionUI = `<span class="mt-4 text-[11px] text-amber-400 font-bold font-space bg-amber-500/10 px-4 py-3 rounded-xl border border-amber-500/20 w-full text-center block"><i class="fas fa-hourglass-half mr-2 animate-spin"></i> Сдан на проверку</span>`;
         } else {
             const btnColor = isRunning ? 'bg-rose-500/10 text-rose-400 border-rose-500/15 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/20';
             const icon = isRunning ? 'fa-pause' : 'fa-play';
@@ -1385,15 +1401,15 @@ function generateProjectCardHTML(p, isAdmin) {
 
             actionUI = `
                 <div class="space-y-2.5 mt-4 pt-4 border-t border-white/[0.04]">
-                    <div class="flex items-center gap-3">
-                        <button onclick="toggleTimer('${p.id}')" class="pressable flex-1 py-3 rounded-xl border ${btnColor} text-[11px] font-bold transition-all flex justify-center items-center gap-1.5">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                        <button onclick="toggleTimer('${p.id}')" class="pressable flex-1 py-2.5 sm:py-3 rounded-xl border ${btnColor} text-[10px] sm:text-[11px] font-bold transition-all flex justify-center items-center gap-1.5">
                             <i class="fas ${icon}"></i> ${btnText}
                         </button>
-                        <button onclick="openSubmitProjectModal('${p.id}')" class="pressable flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-[11px] font-bold text-white transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] flex justify-center items-center">
-                            Отправить на проверку
+                        <button onclick="openSubmitProjectModal('${p.id}')" class="pressable flex-1 py-2.5 sm:py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-[10px] sm:text-[11px] font-bold text-white transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] flex justify-center items-center">
+                            Сдать проект
                         </button>
                     </div>
-                    <button onclick="openEditorProjectEditModal('${p.id}')" class="pressable w-full py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.05] text-[11px] font-bold text-indigo-400 flex justify-center items-center gap-1.5">
+                    <button onclick="openEditorProjectEditModal('${p.id}')" class="pressable w-full py-2 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.05] text-[10px] font-bold text-indigo-400 flex justify-center items-center gap-1.5">
                         <i class="fas fa-edit"></i> Редактировать проект
                     </button>
                 </div>
@@ -1410,7 +1426,7 @@ function generateProjectCardHTML(p, isAdmin) {
         budgetDisplayHtml = `
             <div>
                 <span class="text-slate-500 block mb-0.5">Оклад монтажёра:</span>
-                <span class="text-emerald-400 font-bold font-mono text-xs">
+                <span class="text-emerald-400 font-bold font-mono text-[11px] leading-tight block">
                     ${formatMoney(baseSal)}${extraSal ? ` + ${formatMoney(extraSal)} (доп.)` : ''}
                 </span>
             </div>
@@ -1529,7 +1545,6 @@ function startFrontendClock() {
     }, 1000);
 }
 
-// Открытие редактора монтажера
 window.openEditorProjectEditModal = function(id) {
     const p = _projects.find(proj => proj.id === id);
     if (!p) return;
@@ -1562,7 +1577,6 @@ window.openEditorProjectEditModal = function(id) {
     openModal('modal-editor-project');
 };
 
-// Отправка предложенных изменений
 window.submitProjectEditsRequest = async function() {
     const id = document.getElementById('editor-form-project-id').value;
     const p = _projects.find(proj => proj.id === id);
@@ -1702,7 +1716,6 @@ function renderAdminRequests() {
     updateAdminBadges();
 }
 
-// ─── UTILITIES & EVENT HANDLERS ───
 window.updateAdminBadges = function() {
     const subsBadge = document.getElementById('badge-subs');
     const reqsBadge = document.getElementById('badge-reqs');
@@ -1792,7 +1805,6 @@ window.escapeHtml = function(str) {
     return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 };
 
-// Исправленный метод установки статуса работы монтажера
 window.setUserWorkStatus = async function(statusText) {
     try {
         await ensureAuth();
@@ -1818,7 +1830,6 @@ window.setUserWorkStatus = async function(statusText) {
     }
 };
 
-// Открытие модального окна добавления монтажёра
 window.openCreateEditorModal = function() {
     document.getElementById('e-name').value = '';
     document.getElementById('e-login').value = '';
@@ -1826,7 +1837,6 @@ window.openCreateEditorModal = function() {
     openModal('modal-editor');
 };
 
-// Логика создания монтажёра в БД
 window.createEditor = async function() {
     const name = document.getElementById('e-name').value.trim();
     const login = document.getElementById('e-login').value.trim();
@@ -1843,7 +1853,6 @@ window.createEditor = async function() {
     } catch(e) { showToast('Ошибка создания', 'error'); }
 };
 
-// Управление монтажёром: блокировка
 window.toggleBlockEditor = async function() {
     const id = document.getElementById('manage-editor-id').value;
     const ed = _editors.find(e => e.id === id);
@@ -1856,7 +1865,6 @@ window.toggleBlockEditor = async function() {
     } catch(e) { showToast('Ошибка изменения статуса', 'error'); }
 };
 
-// Управление монтажёром: удаление
 window.deleteEditorConfirm = async function() {
     const id = document.getElementById('manage-editor-id').value;
     if (confirm('Вы уверены, что хотите удалить этого монтажера?')) {
@@ -1869,7 +1877,6 @@ window.deleteEditorConfirm = async function() {
     }
 };
 
-// Сохранение изменений в окне управления монтажером (смена пароля)
 window.saveEditorManagement = async function() {
     const id = document.getElementById('manage-editor-id').value;
     const newPass = document.getElementById('manage-new-pass').value;
@@ -2190,7 +2197,6 @@ window.markAllNotificationsRead = async function() {
     } catch(e) {}
 };
 
-// ─── ADMIN SETTINGS & CHECKLIST ───
 window.openAdminSettingsModal = function() {
     renderAdminChecklist();
     openModal('modal-admin-settings');
@@ -2295,12 +2301,12 @@ function renderSidebarEditors() {
 
         return `
             <div class="p-3 bg-white/[0.01] border border-white/[0.03] rounded-2xl flex items-center justify-between gap-3 group hover:bg-white/[0.03] transition-all duration-300">
-                <div class="flex items-center gap-3 min-w-0 cursor-pointer" onclick="${currentRole==='owner'?`openManageEditorModal('${e.id}')`:''}">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-xs font-bold text-white relative border border-white/5 shadow-inner">
+                <div class="flex items-center gap-3 min-w-0 cursor-pointer flex-1" onclick="${currentRole==='owner'?`openManageEditorModal('${e.id}')`:''}">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-xs font-bold text-white relative border border-white/5 shadow-inner flex-shrink-0">
                         ${e.name ? e.name[0].toUpperCase() : '?'}
                         ${isOnline ? '<div class="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#030208] status-led"></div>' : ''}
                     </div>
-                    <div class="min-w-0">
+                    <div class="min-w-0 flex-1">
                         <h4 class="text-xs font-bold text-white font-space truncate">${e.name || e.login}</h4>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-[9px] ${stColor} font-medium truncate max-w-[120px]">${statusText}</span>
