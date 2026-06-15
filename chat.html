@@ -33,14 +33,14 @@
         #main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;}
         #chat-header{
             padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;
-            background:rgba(4,2,18,0.96);backdrop-filter:blur(20px);
+            background:#0c0a14;
             display:flex;align-items:center;gap:12px;
             cursor:pointer;
             transition:background 0.2s;
         }
-        #chat-header:hover{background:rgba(6,3,22,0.98);}
+        #chat-header:hover{background:#100d1a;}
         #messages-wrap{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:2px;}
-        #input-area{flex-shrink:0;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.06);background:rgba(4,2,18,0.96);}
+        #input-area{flex-shrink:0;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.06);background:#0c0a14;}
 
         /* ── REPLY BAR ── */
         #reply-bar{
@@ -58,18 +58,13 @@
         #reply-bar-close:hover{background:rgba(255,255,255,0.1);color:white;}
 
         /* ── AMBIENT ── */
-        .ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
-            background:
-                radial-gradient(ellipse 60% 40% at 10% 20%,rgba(0,198,251,0.015) 0%,transparent 70%),
-                radial-gradient(ellipse 50% 50% at 85% 80%,rgba(139,92,246,0.01) 0%,transparent 70%);}
+        .ambient{display:none;}
 
-        /* ── GLASS ── */
+        /* ── SURFACE (modal/panel) ── */
         .glass{
-            background:linear-gradient(135deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.02) 100%);
-            backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);
-            border-top:1px solid rgba(255,255,255,0.1);border-left:1px solid rgba(255,255,255,0.07);
-            border-right:1px solid rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.01);
-            box-shadow:0 20px 40px rgba(0,0,0,0.5);
+            background:#0f0d18;
+            border:1px solid rgba(255,255,255,0.08);
+            box-shadow:0 4px 24px rgba(0,0,0,0.35);
         }
 
         /* ── CONV ITEM ── */
@@ -80,7 +75,7 @@
             border:1px solid transparent;position:relative;
         }
         .conv-item:hover{background:rgba(255,255,255,0.04);}
-        .conv-item.active{background:rgba(0,198,251,0.06);border-color:rgba(0,198,251,0.12);}
+        .conv-item.active{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.08);}
         .conv-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
         .conv-time{font-size:10px;color:#334155;font-family:'Space Grotesk',sans-serif;}
         .conv-item.active .conv-time{color:rgba(0,198,251,0.4);}
@@ -124,21 +119,21 @@
         }
         /* Telegram-style tails */
         .bubble-mine{
-            background:linear-gradient(145deg,rgba(0,198,251,0.16),rgba(0,82,212,0.14));
-            border:1px solid rgba(0,198,251,0.18);
+            background:#0e3a52;
+            border:1px solid rgba(0,198,251,0.1);
             border-bottom-right-radius:4px;
             color:#e2f8ff;
         }
         .bubble-theirs{
-            background:rgba(255,255,255,0.055);
-            border:1px solid rgba(255,255,255,0.08);
+            background:#15131f;
+            border:1px solid rgba(255,255,255,0.07);
             border-bottom-left-radius:4px;
             color:#e2e8f0;
         }
         .bubble-channel{
-            background:rgba(139,92,246,0.1);
-            border:1px solid rgba(139,92,246,0.2);
-            color:#e9d5ff;align-self:stretch;max-width:100%;border-radius:14px;
+            background:#1c1730;
+            border:1px solid rgba(255,255,255,0.07);
+            color:#d8c8f5;align-self:stretch;max-width:100%;border-radius:14px;
         }
 
         /* ── REPLY QUOTE (inside bubble) ── */
@@ -206,14 +201,13 @@
         /* ── CONTEXT MENU ── */
         #ctx-menu{
             position:fixed;z-index:500;
-            background:rgba(8,4,28,0.97);
+            background:#161320;
             border:1px solid rgba(255,255,255,0.1);
-            border-radius:14px;padding:6px;
-            box-shadow:0 16px 40px rgba(0,0,0,0.7);
+            border-radius:10px;padding:6px;
+            box-shadow:0 4px 16px rgba(0,0,0,0.4);
             min-width:160px;
-            backdrop-filter:blur(30px);
             transform-origin:top left;
-            animation:menuIn 0.15s cubic-bezier(0.16,1,0.3,1);
+            animation:menuIn 0.12s ease-out;
         }
         @keyframes menuIn{from{opacity:0;transform:scale(0.92);}to{opacity:1;transform:scale(1);}}
         .ctx-item{
@@ -236,18 +230,18 @@
             transition:border-color 0.2s;resize:none;
             line-height:1.5;max-height:120px;overflow-y:auto;
         }
-        .msg-input:focus{border-color:rgba(0,198,251,0.25);}
+        .msg-input:focus{border-color:rgba(255,255,255,0.16);}
         .msg-input::placeholder{color:#334155;}
 
         /* ── SEND BTN ── */
         .send-btn{
             width:42px;height:42px;border-radius:13px;flex-shrink:0;
-            background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);
+            background:#0e3a52;border:1px solid rgba(0,198,251,0.18);
             color:#7db5d4;cursor:pointer;
-            transition:all 0.2s;display:flex;align-items:center;justify-content:center;
+            transition:background 0.2s,border-color 0.2s;display:flex;align-items:center;justify-content:center;
         }
-        .send-btn:hover{background:rgba(0,198,251,0.18);transform:scale(1.05);}
-        .send-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+        .send-btn:hover{background:#0f4a68;}
+        .send-btn:disabled{opacity:0.3;cursor:not-allowed;}
 
         /* ── ONLINE STATUS ── */
         .status-online{color:#22c55e;}
@@ -256,20 +250,21 @@
         /* ── TOAST ── */
         #toast{
             position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-            z-index:9999;padding:10px 18px;border-radius:12px;
+            z-index:9999;padding:10px 18px;border-radius:10px;
             font-size:12px;font-weight:600;font-family:'Space Grotesk',sans-serif;
-            backdrop-filter:blur(20px);transition:all 0.3s;
+            transition:opacity 0.2s;
             pointer-events:none;opacity:0;white-space:nowrap;
+            box-shadow:0 4px 16px rgba(0,0,0,0.35);
         }
         #toast.show{opacity:1;}
-        #toast.success{background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;}
-        #toast.error{background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;}
-        #toast.info{background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);color:#93c5d8;}
+        #toast.success{background:#16302a;border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;}
+        #toast.error{background:#33181c;border:1px solid rgba(239,68,68,0.25);color:#fca5a5;}
+        #toast.info{background:#161e26;border:1px solid rgba(0,198,251,0.18);color:#93c5d8;}
 
         /* ── MODAL ── */
-        .modal-bg{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:16px;}
-        .input-dark{background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;color:white;outline:none;transition:border-color 0.2s;width:100%;font-size:13px;font-family:'Inter',sans-serif;}
-        .input-dark:focus{border-color:rgba(0,198,251,0.35);}
+        .modal-bg{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:16px;}
+        .input-dark{background:#0a0814;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;color:white;outline:none;transition:border-color 0.2s;width:100%;font-size:13px;font-family:'Inter',sans-serif;}
+        .input-dark:focus{border-color:rgba(255,255,255,0.18);}
         .sec-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#334155;margin-bottom:8px;}
         .empty-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#334155;gap:8px;}
 
@@ -280,17 +275,17 @@
             text-transform:uppercase;letter-spacing:0.12em;
             margin:10px 0 6px;display:flex;align-items:center;gap:8px;
         }
-        .unread-marker::before,.unread-marker::after{content:'';flex:1;height:1px;background:rgba(0,198,251,0.08);}
-        .unread-marker span{color:rgba(0,198,251,0.4);background:rgba(0,198,251,0.05);border:1px solid rgba(0,198,251,0.1);padding:1px 8px;border-radius:99px;font-size:9px;}
+        .unread-marker::before,.unread-marker::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06);}
+        .unread-marker span{color:#7db5d4;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:1px 8px;border-radius:6px;font-size:9px;}
 
         /* ── SCROLL TO BOTTOM ── */
         #scroll-btn{
             position:absolute;bottom:80px;right:20px;
             width:36px;height:36px;border-radius:50%;
-            background:rgba(8,4,28,0.9);border:1px solid rgba(255,255,255,0.1);
+            background:#161320;border:1px solid rgba(255,255,255,0.1);
             color:#64748b;cursor:pointer;display:none;
             align-items:center;justify-content:center;
-            box-shadow:0 4px 16px rgba(0,0,0,0.5);
+            box-shadow:0 2px 8px rgba(0,0,0,0.3);
             transition:all 0.2s;z-index:10;
         }
         #scroll-btn.show{display:flex;}
@@ -302,22 +297,58 @@
             display:flex;align-items:center;justify-content:center;padding:0 3px;
         }
 
+        /* ── PIN ICON ON CONV ITEM ── */
+        .conv-pin-icon{
+            font-size:10px;color:#475569;flex-shrink:0;
+        }
+        .conv-item.active .conv-pin-icon{color:rgba(0,198,251,0.4);}
+
+        /* ── SWIPE ACTIONS (mobile) ── */
+        .conv-item-swipe{
+            position:relative;overflow:hidden;border-radius:12px;
+        }
+        .conv-item-swipe .conv-item{
+            position:relative;z-index:2;background:#010008;
+            transition:transform 0.2s cubic-bezier(0.16,1,0.3,1);
+            touch-action:pan-y;
+        }
+        .conv-item-swipe.swiped .conv-item{transform:translateX(-128px);}
+        .conv-item-actions{
+            position:absolute;top:0;right:0;bottom:0;z-index:1;
+            display:flex;align-items:stretch;
+        }
+        .conv-action-btn{
+            width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+            gap:3px;border:none;cursor:pointer;font-size:10px;font-weight:700;
+            font-family:'Space Grotesk',sans-serif;color:white;
+        }
+        .conv-action-btn i{font-size:15px;}
+        .conv-action-read{background:#0f6fa8;}
+        .conv-action-archive{background:#3a3f4b;}
+
         /* ── MOBILE ── */
         #sidebar-toggle{display:none;}
         @media(max-width:700px){
-            /* Sidebar slides in as overlay */
+            /* Two full-screen panels: sidebar (chat list) and main (chat) */
+            #app{overflow:hidden;}
             #sidebar{
-                position:fixed;left:0;top:0;bottom:0;z-index:200;
-                width:min(300px, 88vw);
-                transform:translateX(-100%);
-                box-shadow:8px 0 40px rgba(0,0,0,0.6);
+                position:fixed;left:0;top:0;bottom:0;right:0;z-index:200;
+                width:100%;
+                transform:translateX(0);
+                transition:transform 0.28s cubic-bezier(0.16,1,0.3,1);
             }
-            #sidebar.open{transform:translateX(0);}
-            #sidebar-overlay{
-                display:none;position:fixed;inset:0;z-index:199;
-                background:rgba(0,0,0,0.55);backdrop-filter:blur(2px);
+            #main{
+                position:fixed;left:0;top:0;bottom:0;right:0;z-index:201;
+                width:100%;
+                transform:translateX(100%);
+                transition:transform 0.28s cubic-bezier(0.16,1,0.3,1);
+                background:#010008;
             }
-            #sidebar-overlay.open{display:block;}
+            /* When a chat is open, slide main in and sidebar out */
+            #app.chat-open #sidebar{transform:translateX(-30%);}
+            #app.chat-open #main{transform:translateX(0);}
+
+            #sidebar-overlay{display:none;}
             #sidebar-toggle{display:flex;}
 
             /* Header */
@@ -413,8 +444,8 @@
 
         /* ── INLINE EDIT ── */
         .edit-textarea{
-            width:100%;background:rgba(0,0,0,0.5);
-            border:1px solid rgba(0,198,251,0.25);
+            width:100%;background:#0a0814;
+            border:1px solid rgba(255,255,255,0.12);
             border-radius:10px;padding:7px 10px;
             color:white;font-size:13.5px;outline:none;
             font-family:'Inter',sans-serif;
@@ -425,10 +456,10 @@
         .edit-actions{display:flex;gap:6px;margin-top:6px;justify-content:flex-end;}
         .edit-btn{
             padding:4px 12px;border-radius:8px;font-size:11px;font-weight:700;
-            font-family:'Space Grotesk',sans-serif;cursor:pointer;border:none;transition:all 0.15s;
+            font-family:'Space Grotesk',sans-serif;cursor:pointer;border:none;transition:background 0.15s;
         }
-        .edit-btn-save{background:rgba(0,198,251,0.14);border:1px solid rgba(0,198,251,0.25);color:#7db5d4;}
-        .edit-btn-save:hover{background:rgba(0,198,251,0.22);}
+        .edit-btn-save{background:#0e3a52;border:1px solid rgba(0,198,251,0.18);color:#7db5d4;}
+        .edit-btn-save:hover{background:#0f4a68;}
         .edit-btn-cancel{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#64748b;}
         .edit-btn-cancel:hover{background:rgba(255,255,255,0.1);color:white;}
 
@@ -486,9 +517,7 @@
         #chat-search-bar{
             display:none;padding:8px 16px;
             border-bottom:1px solid rgba(255,255,255,0.05);
-            background:rgba(4,2,18,0.95);
-            align-items:center;gap:8px;
-            flex-shrink:0;
+            background:#0c0a14;
         }
         #chat-search-bar.show{display:flex;}
         #chat-search-input{
@@ -499,7 +528,7 @@
             font-family:'Inter',sans-serif;
             transition:border-color 0.2s;
         }
-        #chat-search-input:focus{border-color:rgba(0,198,251,0.2);}
+        #chat-search-input:focus{border-color:rgba(255,255,255,0.18);}
         #chat-search-input::placeholder{color:#334155;}
         .chat-search-nav-btn{
             width:28px;height:28px;border-radius:8px;flex-shrink:0;
@@ -584,8 +613,8 @@
     <div id="main" style="position:relative;">
         <!-- Header -->
         <div id="chat-header" onclick="onHeaderClick()">
-            <button id="sidebar-toggle" onclick="event.stopPropagation();toggleSidebar()" class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 mr-1 flex-shrink-0">
-                <i class="fas fa-bars text-xs"></i>
+            <button id="sidebar-toggle" onclick="event.stopPropagation();closeSidebar()" class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 mr-1 flex-shrink-0">
+                <i class="fas fa-arrow-left text-xs"></i>
             </button>
             <div style="position:relative;flex-shrink:0;">
                 <div id="chat-avatar" class="avatar" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#64748b;font-size:18px;">
@@ -668,9 +697,7 @@
 
 <!-- My Profile -->
 <div id="modal-profile" class="modal-bg hidden">
-    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
-        <div style="position:relative;z-index:2;">
+    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">        <div style="position:relative;z-index:2;">
             <div class="flex items-center justify-between px-7 pt-7 pb-0">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);">
@@ -710,7 +737,7 @@
                     </div>
                     <div class="flex gap-3 pt-2">
                         <button onclick="closeModal('modal-profile')" class="flex-1 py-3 rounded-2xl border border-white/8 text-slate-500 text-sm hover:border-white/15 transition font-space font-bold">Отмена</button>
-                        <button onclick="saveProfile()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#2a85a8 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Сохранить</button>
+                        <button onclick="saveProfile()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#2a85a8 100%);color:white;">Сохранить</button>
                     </div>
                 </div>
             </div>
@@ -720,9 +747,7 @@
 
 <!-- Editor Profile (admin) -->
 <div id="modal-editor-profile" class="modal-bg hidden">
-    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
-        <div style="position:relative;z-index:2;">
+    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">        <div style="position:relative;z-index:2;">
             <div class="flex items-center justify-between px-7 pt-7 pb-0">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);">
@@ -759,7 +784,7 @@
                             <i class="fas fa-trash mr-1"></i>Удалить
                         </button>
                     </div>
-                    <button onclick="epSavePass()" class="w-full py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#2a85a8 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                    <button onclick="epSavePass()" class="w-full py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#0052d4 0%,#2a85a8 100%);color:white;">
                         <i class="fas fa-save mr-1.5"></i>Сохранить изменения
                     </button>
                 </div>
@@ -770,9 +795,7 @@
 
 <!-- Create channel -->
 <div id="modal-create-channel" class="modal-bg hidden">
-    <div class="glass w-full max-w-md overflow-hidden" style="border-radius:32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
-        <div style="position:relative;z-index:2;">
+    <div class="glass w-full max-w-md overflow-hidden" style="border-radius:32px;position:relative;">        <div style="position:relative;z-index:2;">
             <div class="flex items-center justify-between px-7 pt-7 pb-0">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);">
@@ -801,7 +824,7 @@
                     </div>
                     <div class="flex gap-3 pt-2">
                         <button onclick="closeModal('modal-create-channel')" class="flex-1 py-3 rounded-2xl border border-white/8 text-slate-500 text-sm hover:border-white/15 transition font-space font-bold">Отмена</button>
-                        <button onclick="createChannel()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#5b21b6 0%,#8b5cf6 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                        <button onclick="createChannel()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#5b21b6 0%,#8b5cf6 100%);color:white;">
                             <i class="fas fa-plus mr-1.5"></i>Создать
                         </button>
                     </div>
@@ -813,10 +836,8 @@
 
 <!-- Channel settings -->
 <div id="modal-channel-settings" class="modal-bg hidden">
-    <div class="glass w-full max-w-md max-h-[90vh] overflow-y-auto" style="border-radius:32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
-        <div style="position:relative;z-index:2;">
-            <div class="flex items-center justify-between px-7 pt-7 pb-0 sticky top-0" style="background:rgba(4,2,18,0.8);backdrop-filter:blur(20px);">
+    <div class="glass w-full max-w-md max-h-[90vh] overflow-y-auto" style="border-radius:32px;position:relative;">        <div style="position:relative;z-index:2;">
+            <div class="flex items-center justify-between px-7 pt-7 pb-0 sticky top-0" style="background:#0f0d18;">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);">
                         <i class="fas fa-gear text-violet-400 text-sm"></i>
@@ -847,7 +868,7 @@
                         <button onclick="deleteChannel()" class="flex-1 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs font-bold font-space hover:bg-rose-500/20 transition">
                             <i class="fas fa-trash mr-1"></i>Удалить канал
                         </button>
-                        <button onclick="saveChannelSettings()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#5b21b6 0%,#8b5cf6 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                        <button onclick="saveChannelSettings()" class="flex-1 py-3 rounded-2xl text-sm font-bold font-space transition" style="background:linear-gradient(135deg,#5b21b6 0%,#8b5cf6 100%);color:white;">
                             <i class="fas fa-save mr-1.5"></i>Сохранить
                         </button>
                     </div>
@@ -898,11 +919,8 @@ const openEditorId = sessionStorage.getItem('chat_open_editor');
 if (!myRole || !myId) {
     document.body.innerHTML = `
     <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;background:#010008;position:relative;overflow:hidden;">
-        <div style="position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 30% 20%,rgba(0,198,251,0.06) 0%,transparent 70%),radial-gradient(ellipse 50% 50% at 75% 80%,rgba(79,172,254,0.05) 0%,transparent 70%);"></div>
         <div style="position:relative;z-index:1;width:100%;max-width:380px;">
-            <div style="background:linear-gradient(160deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.015) 100%);backdrop-filter:blur(50px);-webkit-backdrop-filter:blur(50px);border-top:1px solid rgba(255,255,255,0.13);border-left:1px solid rgba(255,255,255,0.09);border-right:1px solid rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.02);box-shadow:0 30px 60px rgba(0,0,0,0.6),inset 0 1px 1px rgba(255,255,255,0.1);border-radius:32px;overflow:hidden;position:relative;">
-                <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 60%);pointer-events:none;z-index:1;"></div>
-                <div style="position:relative;z-index:2;padding:28px;">
+            <div style="background:#0f0d18;border:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 24px rgba(0,0,0,0.35);border-radius:20px;overflow:hidden;position:relative;">                <div style="position:relative;z-index:2;padding:28px;">
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
                         <div style="width:36px;height:36px;border-radius:12px;background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                             <i class="fas fa-comments" style="color:#5ba3c9;font-size:14px;"></i>
@@ -919,7 +937,7 @@ if (!myRole || !myId) {
                         <h4 style="font-size:18px;font-family:'Space Grotesk',sans-serif;font-weight:900;color:white;margin-bottom:8px;">Нет активной сессии</h4>
                         <p style="font-size:12px;color:#475569;line-height:1.6;">Для доступа к чату войдите через <span style="color:#5ba3c9;font-weight:600;">montage.html</span></p>
                     </div>
-                    <a href="montage.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,#0052d4 0%,#2a85a8 100%);color:white;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;text-shadow:0 1px 3px rgba(0,0,0,0.3);transition:all 0.3s;">
+                    <a href="montage.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,#0052d4 0%,#2a85a8 100%);color:white;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;text-decoration:none;transition:all 0.3s;">
                         <i class="fas fa-arrow-right-to-bracket"></i>Перейти к входу
                     </a>
                     <p style="text-align:center;font-size:10px;color:#1e293b;margin-top:16px;font-family:'Space Grotesk',sans-serif;">Экосистема Space 1.0</p>
@@ -1115,6 +1133,55 @@ function renderMyHeader() {
 // ─── CONVERSATIONS STATE ───────────────────────────────────────────
 let _conversations = [];
 let _activeConvId  = null;
+
+// ─── PINNED / ARCHIVED CHATS (per-user, stored locally) ─────────────
+function _pinStorageKey() { return 'space_chat_pins_' + myId; }
+function _archiveStorageKey() { return 'space_chat_archive_' + myId; }
+function loadPinnedChats() {
+    try { return JSON.parse(localStorage.getItem(_pinStorageKey())) || []; } catch(e){ return []; }
+}
+function savePinnedChats(arr) {
+    try { localStorage.setItem(_pinStorageKey(), JSON.stringify(arr)); } catch(e){}
+}
+function loadArchivedChats() {
+    try { return JSON.parse(localStorage.getItem(_archiveStorageKey())) || []; } catch(e){ return []; }
+}
+function saveArchivedChats(arr) {
+    try { localStorage.setItem(_archiveStorageKey(), JSON.stringify(arr)); } catch(e){}
+}
+window.toggleChatPin = function(convId) {
+    let pins = loadPinnedChats();
+    if (pins.includes(convId)) {
+        pins = pins.filter(id => id !== convId);
+    } else {
+        pins.push(convId);
+    }
+    savePinnedChats(pins);
+    closeCtxMenu();
+    renderSidebar(document.getElementById('search-input').value);
+};
+window.toggleChatArchive = function(convId) {
+    let arch = loadArchivedChats();
+    if (arch.includes(convId)) {
+        arch = arch.filter(id => id !== convId);
+    } else {
+        arch.push(convId);
+    }
+    saveArchivedChats(arch);
+    renderSidebar(document.getElementById('search-input').value);
+};
+window.markChatRead = async function(conv) {
+    try {
+        await ensureAuth();
+        if (conv.type === 'dm') {
+            const field = myRole === 'owner' ? 'unreadOwner' : 'unreadEditor';
+            await setDoc(doc(db, ...BASE('chats'), conv.id, 'meta', 'info'), { [field]: 0 }, { merge: true });
+        }
+        conv.unread = 0;
+        renderSidebar(document.getElementById('search-input').value);
+    } catch(e){}
+};
+
 let _activeConvType = null;
 let _msgUnsub = null;
 let _allEditors = [];
@@ -1200,12 +1267,30 @@ function formatConvTime(isoOrTs) {
     return d.toLocaleDateString('ru',{day:'2-digit',month:'2-digit'});
 }
 
+let _showArchived = false;
+
 function renderSidebar(filter) {
     const list = document.getElementById('sidebar-list');
     const q = (filter || '').toLowerCase();
-    const convs = _conversations.filter(c => !q || c.name.toLowerCase().includes(q));
+    const pins = loadPinnedChats();
+    const archived = loadArchivedChats();
 
-    if (!convs.length) {
+    let convs = _conversations.filter(c => !q || c.name.toLowerCase().includes(q));
+
+    // Split archived vs active (only relevant when not searching)
+    const archivedConvs = q ? [] : convs.filter(c => archived.includes(c.id));
+    if (!q) convs = convs.filter(c => !archived.includes(c.id));
+
+    // Sort: pinned first (by lastAt desc within pinned), then unpinned by lastAt desc
+    const ts = c => c.lastAt ? new Date(c.lastAt).getTime() : 0;
+    const sortFn = (a,b) => {
+        const aPinned = pins.includes(a.id), bPinned = pins.includes(b.id);
+        if (aPinned !== bPinned) return aPinned ? -1 : 1;
+        return ts(b) - ts(a);
+    };
+    convs.sort(sortFn);
+
+    if (!convs.length && !archivedConvs.length) {
         list.innerHTML = `<div class="text-center py-8 text-slate-700 text-xs font-space">Нет чатов</div>`;
         return;
     }
@@ -1216,16 +1301,29 @@ function renderSidebar(filter) {
     let html = '';
     if (dms.length) {
         html += `<div class="sec-lbl-sidebar">Личные чаты</div>`;
-        html += dms.map(c => renderConvItem(c)).join('');
+        html += dms.map(c => renderConvItem(c, pins.includes(c.id))).join('');
     }
     if (channels.length) {
         html += `<div class="sec-lbl-sidebar mt-2">Каналы</div>`;
-        html += channels.map(c => renderConvItem(c)).join('');
+        html += channels.map(c => renderConvItem(c, pins.includes(c.id))).join('');
+    }
+    if (archivedConvs.length) {
+        html += `<div class="sec-lbl-sidebar mt-2" style="cursor:pointer;display:flex;align-items:center;gap:6px;" onclick="toggleArchiveSection()">
+            <i class="fas fa-chevron-${_showArchived?'down':'right'}" style="font-size:8px;"></i> Архив (${archivedConvs.length})
+        </div>`;
+        if (_showArchived) {
+            html += archivedConvs.sort(sortFn).map(c => renderConvItem(c, pins.includes(c.id))).join('');
+        }
     }
     list.innerHTML = html;
 }
 
-function renderConvItem(c) {
+window.toggleArchiveSection = function() {
+    _showArchived = !_showArchived;
+    renderSidebar(document.getElementById('search-input').value);
+};
+
+function renderConvItem(c, isPinned) {
     const isActive = c.id === _activeConvId;
     const initials = c.type === 'channel' ? (c.name[0]||'#') : (c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?');
     const color = c.type === 'channel' ? 'violet' : (c.color || 'cyan');
@@ -1260,7 +1358,9 @@ function renderConvItem(c) {
         ? `<span class="draft-dot">✏</span><span class="draft-indicator">Черновик: ${escapeHtml(c.draft.slice(0,30))}${c.draft.length > 30 ? '…' : ''}</span>`
         : `${checksHtml}<span class="conv-lastmsg">${escapeHtml(lastMsgTrunc)}</span>`;
 
-    return `<div class="conv-item ${isActive?'active':''}" onclick="openConversation('${c.id}','${c.type}')" data-editor-id="${editorId||''}">
+    const pinIconHtml = isPinned ? `<i class="fas fa-thumbtack conv-pin-icon"></i>` : '';
+
+    const itemHtml = `<div class="conv-item ${isActive?'active':''}" onclick="onConvItemClick(event,'${c.id}','${c.type}')" oncontextmenu="onConvItemContext(event,'${c.id}')" data-editor-id="${editorId||''}" data-conv-id="${c.id}">
         <div style="position:relative;flex-shrink:0;">
             <div class="avatar" style="background:${cp.bg};border:1px solid ${cp.border};color:${cp.text};">
                 ${c.type==='channel' ? '<i class="fas fa-bullhorn" style="font-size:15px;"></i>' : initials}
@@ -1270,7 +1370,10 @@ function renderConvItem(c) {
         <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between gap-1">
                 <p class="text-[13px] font-bold font-space text-white truncate">${c.name}</p>
-                ${time ? `<span class="conv-time" style="flex-shrink:0;">${time}</span>` : ''}
+                <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                    ${pinIconHtml}
+                    ${time ? `<span class="conv-time">${time}</span>` : ''}
+                </div>
             </div>
             <div class="flex items-center justify-between gap-1 mt-0.5">
                 <div class="conv-lastmsg-wrap">
@@ -1280,7 +1383,109 @@ function renderConvItem(c) {
             </div>
         </div>
     </div>`;
+
+    // Wrap in swipe container (mobile swipe actions)
+    return `<div class="conv-item-swipe" data-conv-id="${c.id}">
+        ${itemHtml}
+        <div class="conv-item-actions">
+            <button class="conv-action-btn conv-action-read" onclick="event.stopPropagation();onSwipeMarkRead('${c.id}')"><i class="fas fa-check-double"></i>Прочитано</button>
+            <button class="conv-action-btn conv-action-archive" onclick="event.stopPropagation();onSwipeArchive('${c.id}')"><i class="fas fa-box-archive"></i>Архив</button>
+        </div>
+    </div>`;
 }
+
+// ─── CONV ITEM CLICK / CONTEXT MENU ─────────────────────────────────
+window.onConvItemClick = function(e, convId, type) {
+    // If item is swiped open, tapping closes the swipe instead of opening chat
+    const wrap = e.currentTarget.closest('.conv-item-swipe');
+    if (wrap && wrap.classList.contains('swiped')) {
+        wrap.classList.remove('swiped');
+        return;
+    }
+    openConversation(convId, type);
+};
+
+window.onConvItemContext = function(e, convId) {
+    e.preventDefault();
+    showConvContextMenu(e.clientX, e.clientY, convId);
+};
+
+function showConvContextMenu(x, y, convId) {
+    const pins = loadPinnedChats();
+    const isPinned = pins.includes(convId);
+    const archived = loadArchivedChats();
+    const isArchived = archived.includes(convId);
+    const menu = document.getElementById('ctx-menu');
+    menu.innerHTML = `
+        <div class="ctx-item" onclick="toggleChatPin('${convId}')"><i class="fas fa-thumbtack"></i>${isPinned?'Открепить':'Закрепить'}</div>
+        <div class="ctx-item" onclick="toggleChatArchive('${convId}');closeCtxMenu();"><i class="fas fa-box-archive"></i>${isArchived?'Разархивировать':'Архивировать'}</div>
+    `;
+    menu.style.display = 'block';
+    menu.style.left = '0'; menu.style.top = '0';
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const mw = menu.offsetWidth, mh = menu.offsetHeight;
+    let px = x, py = y;
+    if (px + mw > vw - 8) px = vw - mw - 8;
+    if (px < 8) px = 8;
+    if (py + mh > vh - 8) py = vh - mh - 8;
+    if (py < 8) py = 8;
+    menu.style.left = px + 'px';
+    menu.style.top = py + 'px';
+}
+function closeCtxMenu() { hideCtxMenu(); }
+
+// ─── SWIPE ACTIONS (touch handling) ─────────────────────────────────
+window.onSwipeMarkRead = function(convId) {
+    const conv = _conversations.find(c => c.id === convId);
+    if (conv) markChatRead(conv);
+    document.querySelectorAll('.conv-item-swipe.swiped').forEach(el => el.classList.remove('swiped'));
+};
+window.onSwipeArchive = function(convId) {
+    toggleChatArchive(convId);
+};
+// ─── LONG-PRESS FOR MOBILE CONTEXT MENU ─────────────────────────────
+(function initLongPress(){
+    const list = document.getElementById('sidebar-list');
+    let pressTimer = null, startX=0, startY=0;
+    list.addEventListener('touchstart', e => {
+        const item = e.target.closest('.conv-item');
+        if (!item) return;
+        const wrap = item.closest('.conv-item-swipe');
+        const convId = wrap?.dataset.convId;
+        if (!convId) return;
+        startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+        pressTimer = setTimeout(() => {
+            showConvContextMenu(startX, startY, convId);
+        }, 500);
+    }, {passive:true});
+    list.addEventListener('touchmove', () => clearTimeout(pressTimer), {passive:true});
+    list.addEventListener('touchend', () => clearTimeout(pressTimer), {passive:true});
+})();
+
+(function initListSwipe(){
+    const list = document.getElementById('sidebar-list');
+    let startX=0, startY=0, curWrap=null, tracking=false;
+    list.addEventListener('touchstart', e => {
+        const wrap = e.target.closest('.conv-item-swipe');
+        if (!wrap) return;
+        // close any other open swipe
+        document.querySelectorAll('.conv-item-swipe.swiped').forEach(el => { if(el!==wrap) el.classList.remove('swiped'); });
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        curWrap = wrap;
+        tracking = true;
+    }, {passive:true});
+    list.addEventListener('touchmove', e => {
+        if (!tracking || !curWrap) return;
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        if (Math.abs(dy) > Math.abs(dx)) { tracking=false; return; }
+        if (dx < -30) curWrap.classList.add('swiped');
+        else if (dx > 20) curWrap.classList.remove('swiped');
+    }, {passive:true});
+    list.addEventListener('touchend', () => { tracking=false; curWrap=null; });
+})();
+
 
 // ─── OPEN CONVERSATION ─────────────────────────────────────────────
 window.openConversation = async function(convId, type) {
@@ -1362,7 +1567,7 @@ window.openConversation = async function(convId, type) {
 
     renderSidebar(document.getElementById('search-input').value);
     await resetUnread(conv);
-    closeSidebar();
+    openChatPanel();
 
     // Subscribe typing
     if (conv.type === 'dm') subscribeTyping(convId);
@@ -2436,13 +2641,40 @@ window.autoResizeInput = function(el) {
 };
 
 window.toggleSidebar = function() {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('sidebar-overlay').classList.toggle('open');
+    // Used on mobile to open the chat-list panel (go back from chat)
+    document.getElementById('app').classList.remove('chat-open');
 };
 window.closeSidebar = function() {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebar-overlay').classList.remove('open');
+    // Used to navigate back to the chat-list panel on mobile
+    document.getElementById('app').classList.remove('chat-open');
 };
+window.openChatPanel = function() {
+    // Navigate forward to the chat panel on mobile
+    document.getElementById('app').classList.add('chat-open');
+};
+
+// ─── SWIPE-BACK GESTURE (mobile: swipe right on #main to go back to chat list) ──
+(function initSwipeBack(){
+    const main = document.getElementById('main');
+    let startX = 0, startY = 0, tracking = false;
+    main.addEventListener('touchstart', e => {
+        if (window.innerWidth > 700) return;
+        if (e.touches.length !== 1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        tracking = startX < 40; // only from left edge
+    }, {passive:true});
+    main.addEventListener('touchmove', e => {
+        if (!tracking) return;
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        if (dx > 60 && Math.abs(dy) < 50) {
+            tracking = false;
+            closeSidebar();
+        }
+    }, {passive:true});
+    main.addEventListener('touchend', () => { tracking = false; });
+})();
 
 document.getElementById('search-input').addEventListener('input', e => renderSidebar(e.target.value));
 
@@ -2592,9 +2824,7 @@ document.head.appendChild(cjsScript);
 </script>
 <!-- Edit History Modal (admin only) -->
 <div id="modal-edit-history" class="modal-bg hidden">
-    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0) 55%);pointer-events:none;z-index:1;"></div>
-        <div style="position:relative;z-index:2;">
+    <div class="glass w-full max-w-sm overflow-hidden" style="border-radius:32px;position:relative;">        <div style="position:relative;z-index:2;">
             <div class="flex items-center justify-between px-7 pt-7 pb-0">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,198,251,0.1);border:1px solid rgba(0,198,251,0.2);">

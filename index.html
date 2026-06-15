@@ -193,6 +193,28 @@
             #cursor-dot { display: none !important; }
             .apple-liquid-glass { backdrop-filter: blur(8px) !important; }
             .portfolio-item:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important; transform: none !important; }
+
+            /* ========== FAST-SCROLL PERFORMANCE MODE (мобильные) ========== */
+            /* Во время активного быстрого скролла приостанавливаем декоративные
+               CSS-анимации и дорогие backdrop-filter эффекты, не меняя layout
+               и не скрывая элементы — визуально просто "замораживаем" кадр. */
+            body.fast-scrolling .logo-title-style,
+            body.fast-scrolling .logo-subtitle-style,
+            body.fast-scrolling .bg-astronaut,
+            body.fast-scrolling .premium-sweep,
+            body.fast-scrolling [class*="sweepShine"],
+            body.fast-scrolling .hyperdrive-mode {
+                animation-play-state: paused !important;
+            }
+            /* backdrop-filter blur пересчитывается при каждом кадре скролла —
+               временно отключаем без изменения видимого вида карточек
+               (фон у них тёмный, поэтому потеря блюра на 150-250мс незаметна) */
+            body.fast-scrolling .apple-liquid-glass {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+            /* canvas со звёздами/кометами — последний кадр остаётся видимым,
+               браузер просто не получает новых отрисовок (см. JS: animateBg) */
         }
 
         .editable-active { outline: 1px dashed rgba(0, 198, 251, 0.7) !important; cursor: pointer !important; transition: outline 0.3s; }
@@ -1508,14 +1530,18 @@
         }
 
         function animateBg() {
-            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-            stars.forEach(star => { star.update(); star.draw(); });
-            if (comet && comet.active) { comet.update(); comet.draw(); }
-            
-            window.extraComets.forEach((c, i) => {
-                if (c.active) { c.update(); c.draw(); } 
-                else window.extraComets.splice(i, 1);
-            });
+            // Во время активного быстрого скролла на мобильных — не перерисовываем фон,
+            // просто оставляем последний нарисованный кадр (canvas не очищается).
+            if (!window._scrollFreezeEffects) {
+                bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+                stars.forEach(star => { star.update(); star.draw(); });
+                if (comet && comet.active) { comet.update(); comet.draw(); }
+
+                window.extraComets.forEach((c, i) => {
+                    if (c.active) { c.update(); c.draw(); }
+                    else window.extraComets.splice(i, 1);
+                });
+            }
 
             requestAnimationFrame(animateBg);
         }
@@ -1605,6 +1631,52 @@
                 scrollTicking = true;
             }
         }, { passive: true });
+
+        // ========== МОБИЛЬНАЯ ОПТИМИЗАЦИЯ: пауза эффектов во время быстрого скролла ==========
+        // Логика: пока пользователь активно скроллит на мобильном устройстве,
+        // временно ставим на паузу декоративные CSS-анимации, фон-канвас (звёзды/кометы)
+        // и backdrop-filter блюр. Через 150-250мс после остановки скролла —
+        // плавно возобновляем все эффекты. Десктоп не затрагивается.
+        (function () {
+            const isMobileUA = window.innerWidth <= 768
+                || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (!isMobileUA) return; // только мобильные устройства
+
+            const RESUME_DELAY = 200; // мс, в диапазоне 150-250мс по требованиям
+            let scrollResumeTimeout = null;
+            let scrollRafId = null;
+            let isFrozen = false;
+
+            function freezeEffects() {
+                if (isFrozen) return;
+                isFrozen = true;
+                window._scrollFreezeEffects = true;
+                document.body.classList.add('fast-scrolling');
+            }
+
+            function resumeEffects() {
+                isFrozen = false;
+                window._scrollFreezeEffects = false;
+                document.body.classList.remove('fast-scrolling');
+            }
+
+            window.addEventListener('scroll', () => {
+                // Помечаем "идёт скролл" и ставим эффекты на паузу немедленно.
+                freezeEffects();
+
+                // Сбрасываем предыдущий таймер ожидания остановки скролла.
+                if (scrollResumeTimeout) clearTimeout(scrollResumeTimeout);
+
+                // Через RESUME_DELAY мс без новых scroll-событий — считаем,
+                // что скролл остановился, и плавно возвращаем все эффекты.
+                scrollResumeTimeout = setTimeout(() => {
+                    if (scrollRafId) cancelAnimationFrame(scrollRafId);
+                    // requestAnimationFrame — чтобы возобновление совпало с
+                    // началом кадра рендера, без визуального "скачка"/мерцания.
+                    scrollRafId = requestAnimationFrame(resumeEffects);
+                }, RESUME_DELAY);
+            }, { passive: true });
+        })();
 
         window.addEventListener('resize', resizeCanvas);
         
