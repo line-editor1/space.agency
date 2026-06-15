@@ -7,6 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- PWA Meta tags -->
+    <meta name="theme-color" content="#030208">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/png" href="1000002719.png">
+    <link rel="apple-touch-icon" href="1000002719.png">
+
     <style>
         * {
             box-sizing: border-box;
@@ -432,8 +440,8 @@
 <!-- ══ ЭКРАН ВХОДА В ЛИЧНЫЙ КАБИНЕТ (АВТОРИЗАЦИОННЫЙ ШЛЮЗ) ══ -->
 <div id="auth-gate-screen" class="hidden">
     <div class="glass w-full max-w-sm rounded-3xl p-6 text-center space-y-5">
-        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto">
-            <i class="fas fa-lock text-indigo-400 text-lg"></i>
+        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto overflow-hidden">
+            <img src="1000002719.png" alt="SPACE Logo" class="w-8 h-8 rounded-lg">
         </div>
         <div class="space-y-1">
             <p class="text-[9px] text-indigo-400 uppercase tracking-[0.2em] font-space font-bold">SPACE Video Agency</p>
@@ -765,10 +773,17 @@ const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Ролевая модель и сессия (проверяется динамически)
-let myRole = sessionStorage.getItem('chat_role');
-let myId   = sessionStorage.getItem('chat_id');
-let myNameSaved = sessionStorage.getItem('chat_name');
+// Ролевая модель и сессия (проверяется динамически с проверкой localStorage во избежание бесконечного цикла авторизации)
+let myRole = sessionStorage.getItem('chat_role') || localStorage.getItem('chat_role');
+let myId   = sessionStorage.getItem('chat_id') || localStorage.getItem('chat_id');
+let myNameSaved = sessionStorage.getItem('chat_name') || localStorage.getItem('chat_name');
+
+// Если данные сессии были найдены в localStorage, дублируем их в sessionStorage для корректной работы всех модулей
+if (myRole && !sessionStorage.getItem('chat_role')) {
+    sessionStorage.setItem('chat_role', myRole);
+    sessionStorage.setItem('chat_id', myId);
+    sessionStorage.setItem('chat_name', myNameSaved);
+}
 
 // ─── СТАНДАРТНЫЕ НАБОРЫ СМАЙЛИКОВ ───
 const EMOJI_PACK = [
@@ -877,18 +892,13 @@ function getPresenceText(presence) {
     const minutes = pad(lastSeenDate.getMinutes());
     
     const isToday = lastSeenDate.getDate() === now.getDate() && lastSeenDate.getMonth() === now.getMonth() && lastSeenDate.getFullYear() === now.getFullYear();
-    if (isToday) return `⚫ Был(а) сегодня в ${hours}:${minutes}`;
+    if (isToday) return `Сегодня в ${hours}:${minutes}`;
+    if (isYesterday) return `Вчера в ${hours}:${minutes}`;
     
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-    const isYesterday = lastSeenDate.getDate() === yesterday.getDate() && lastSeenDate.getMonth() === yesterday.getMonth() && lastSeenDate.getFullYear() === yesterday.getFullYear();
-    if (isYesterday) return `⚫ Был(а) вчера в ${hours}:${minutes}`;
-    
-    return `⚫ Был(а) ${pad(lastSeenDate.getDate())}.${pad(lastSeenDate.getMonth() + 1)} в ${hours}:${minutes}`;
+    return `${pad(date.getDate())}.${pad(date.getMonth() + 1)} в ${hours}:${minutes}`;
 }
 
 function updatePresenceUI() {
-    // Обновляем статусы в списке диалогов
     document.querySelectorAll('.conv-item[data-editor-id]').forEach(el => {
         const edId = el.getAttribute('data-editor-id');
         const p = _presenceData[edId];
@@ -896,21 +906,20 @@ function updatePresenceUI() {
         if (dot) {
             if (p?.online) {
                 dot.style.display = 'block';
-                dot.style.backgroundColor = '#10b981'; // Зелёный
+                dot.style.backgroundColor = '#10b981';
             } else {
                 const diffMs = new Date() - new Date(p?.lastSeen);
                 const diffMins = Math.floor(diffMs / 60000);
                 if (diffMins < 5) {
                     dot.style.display = 'block';
-                    dot.style.backgroundColor = '#f59e0b'; // Жёлтый (был недавно)
+                    dot.style.backgroundColor = '#f59e0b';
                 } else {
-                    dot.style.display = 'none'; // Офлайн
+                    dot.style.display = 'none';
                 }
             }
         }
     });
 
-    // Обновляем статус активного собеседника в шапке чата
     if (_activeConvId && _activeConvType === 'dm') {
         const conv = _conversations.find(c => c.id === _activeConvId);
         if (conv && conv.editorId) {
@@ -945,7 +954,6 @@ async function loadMyProfile() {
     window.addEventListener('beforeunload', () => setMyPresence(false));
     setInterval(() => setMyPresence(true), 25000);
 
-    // Загружаем черновики из localStorage
     try {
         const savedDrafts = localStorage.getItem('space_drafts_' + myId);
         if (savedDrafts) _drafts = JSON.parse(savedDrafts);
@@ -1057,6 +1065,7 @@ let _conversations = [];
 let _activeConvId = null;
 let _activeConvType = null;
 let _msgUnsub = null;
+let _unreadIncomingCount = 0; // Объявляем переменную для предотвращения ReferenceError в строгом режиме модулей
 
 async function loadSidebar() {
     await loadProjectsFromCabinet();
@@ -1233,8 +1242,8 @@ function playNotificationSound() {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // Ре (D5)
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // Ля (A5)
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); 
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); 
         gain.gain.setValueAtTime(0.08, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
         osc.connect(gain);
@@ -1243,9 +1252,6 @@ function playNotificationSound() {
         osc.stop(ctx.currentTime + 0.25);
     } catch(e){}
 }
-
-// ─── ОТКРЫТИЕ ДИАЛОГА И СИНХРОНИЗАЦИЯ ПРОЕКТА ───
-let _unreadIncomingCount = 0;
 
 window.openConversation = async function(convId, type) {
     if (_activeConvId && _activeConvId !== convId) {
@@ -1294,7 +1300,6 @@ window.openConversation = async function(convId, type) {
     _msgUnsub = onSnapshot(q, snap => {
         const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         
-        // Умные уведомления и отметка о прочтении в реальном времени
         let hasNewIncoming = false;
         let lastIncomingMsg = null;
 
@@ -1353,7 +1358,6 @@ window.onHeaderClick = function() {
     }
 };
 
-// Отслеживание скролла для скрытия/отображения кнопки "Вниз / Новые сообщения"
 const messagesWrap = document.getElementById('messages-wrap');
 messagesWrap.addEventListener('scroll', () => {
     const isAtBottom = messagesWrap.scrollHeight - messagesWrap.scrollTop - messagesWrap.clientHeight < 120;
@@ -1470,7 +1474,6 @@ window.addReaction = async function(msgId, emoji) {
     } catch(e) { showToast('Не удалось обновить реакцию', 'error'); }
 };
 
-// ─── РЕНДЕР СООБЩЕНИЙ С ГРУППИРОВКОЙ, РЕАКЦИЯМИ И ЦИТАТАМИ ───
 function renderAllMessages(msgs, conv) {
     const wrap = document.getElementById('messages-wrap');
     if (!msgs.length) {
@@ -2107,7 +2110,6 @@ window.showToast = function(msg, type = 'info') {
     _toastTimeout = setTimeout(() => { el.className = type; }, 2500);
 };
 
-// Запуск
 (async () => {
     await ensureAuth();
     checkAuthSession();
