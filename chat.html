@@ -441,7 +441,7 @@
         </div>
         <p class="text-xs text-slate-400 leading-relaxed px-2">Для доступа к чату SPACE необходимо пройти авторизацию во внешней системе.</p>
         
-        <a href="montage-7-2-fixed.html" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-space text-xs transition duration-200 block text-center">
+        <a href="montage.html" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-space text-xs transition duration-200 block text-center">
             <i class="fas fa-arrow-right-to-bracket mr-1.5"></i>Войти в личный кабинет
         </a>
     </div>
@@ -481,7 +481,7 @@
 
         <!-- Кнопки внизу сайдбара -->
         <div class="p-3 border-t border-white/[0.04] flex flex-col gap-2">
-            <a id="back-to-cabinet-link" href="montage-7-2-fixed.html" class="flex items-center justify-center gap-2 py-2 rounded-xl border border-white/[0.04] bg-white/[0.01] text-xs font-bold text-slate-400 hover:bg-white/[0.03] transition">
+            <a id="back-to-cabinet-link" href="montage.html" class="flex items-center justify-center gap-2 py-2 rounded-xl border border-white/[0.04] bg-white/[0.01] text-xs font-bold text-slate-400 hover:bg-white/[0.03] transition">
                 <i class="fas fa-arrow-left text-[9px]"></i>
                 <span id="back-link-text">Личный кабинет</span>
             </a>
@@ -678,7 +678,7 @@
                 <p class="text-xs text-slate-400 bg-black/10 p-3 rounded-xl border border-white/[0.02]" id="proj-det-notes">—</p>
             </div>
 
-            <a id="proj-det-open-cabinet" href="montage-7-2-fixed.html" class="w-full py-2.5 rounded-xl bg-indigo-600 text-center text-white text-xs font-bold block hover:bg-indigo-500 transition">Открыть в Кабинете</a>
+            <a id="proj-det-open-cabinet" href="montage.html" class="w-full py-2.5 rounded-xl bg-indigo-600 text-center text-white text-xs font-bold block hover:bg-indigo-500 transition">Открыть в Кабинете</a>
         </div>
     </div>
 </div>
@@ -734,6 +734,9 @@
         </div>
     </div>
 </div>
+
+<!-- Подключаем скрипт премиальных анимаций (Apple & Telegram style) -->
+<script src="chatanim.js"></script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -2110,6 +2113,5 @@ window.showToast = function(msg, type = 'info') {
     checkAuthSession();
 })();
 </script>
-    <script src="chatanim.js" defer></script>
 </body>
 </html>
