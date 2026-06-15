@@ -403,6 +403,12 @@
                     <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Доп. услуги монтажёра (₽)</label>
                     <input type="text" id="ed-p-editor-extra-salary" class="w-full bg-black/50 border border-white/5 opacity-60 rounded-xl p-3 font-mono text-xs text-slate-400 cursor-not-allowed" disabled readonly>
                 </div>
+                <div class="col-span-1 md:col-span-2 space-y-1.5">
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase">Доп. услуги монтажёра</label>
+                    <div id="ed-p-extra-services-display" class="space-y-1.5">
+                        <!-- Будет динамически наполняться списком услуг только для чтения -->
+                    </div>
+                </div>
                 <div>
                     <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Наименование бонуса</label>
                     <input type="text" id="ed-p-editor-bonus-name" class="w-full bg-black/50 border border-white/5 opacity-60 rounded-xl p-3 text-xs text-slate-400 cursor-not-allowed" disabled readonly>
@@ -500,10 +506,20 @@
                     <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Оклад монтажёра за проект (₽)</label>
                     <input type="number" id="p-editor-salary" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="2000">
                 </div>
-                <div>
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Доп. услуги монтажёра (₽)</label>
-                    <input type="number" id="p-editor-extra-salary" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="0">
+                
+                <div class="col-span-1 md:col-span-2 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[9px] text-slate-500 font-bold uppercase">Доп. услуги монтажёра</label>
+                        <button type="button" onclick="addExtraServiceRow()" class="pressable px-2 py-1 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 text-[9px] font-bold rounded-lg transition-all flex items-center gap-1">
+                            <i class="fas fa-plus text-[8px]"></i> Добавить услугу
+                        </button>
+                    </div>
+                    <div id="p-extra-services-container" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                        <!-- Сюда динамически будут добавляться строки услуг -->
+                    </div>
+                    <input type="hidden" id="p-editor-extra-salary" value="0">
                 </div>
+                
                 <div>
                     <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Наименование бонуса</label>
                     <input type="text" id="p-editor-bonus-name" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Например: За скорость">
@@ -757,6 +773,30 @@ let _editRequests = [];
 let _editRequestsArchive = [];
 let _globalChecklist = ["Проверить цветокоррекцию", "Проверить звук", "Проверить субтитры", "Проверить орфографию", "Проверить настройки экспорта"];
 
+window.addExtraServiceRow = function(name = '', price = '') {
+    const container = document.getElementById('p-extra-services-container');
+    if (!container) return;
+    const rowId = 'es-row-' + Date.now() + Math.random().toString(36).substr(2, 5);
+    const row = document.createElement('div');
+    row.className = "flex gap-2 items-center";
+    row.id = rowId;
+    row.innerHTML = `
+        <input type="text" class="es-name-input flex-1 bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500/30 placeholder:text-slate-600" placeholder="Наименование услуги" value="${escapeHtml(name)}">
+        <input type="number" class="es-price-input w-24 bg-black/40 border border-white/5 rounded-xl p-2.5 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30 placeholder:text-slate-600" placeholder="Цена ₽" value="${price}" oninput="recalculateExtraSalaryTotal()">
+        <button type="button" onclick="document.getElementById('${rowId}').remove(); recalculateExtraSalaryTotal();" class="pressable w-8 h-8 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center flex-shrink-0 transition-all"><i class="fas fa-trash text-[10px]"></i></button>
+    `;
+    container.appendChild(row);
+};
+
+window.recalculateExtraSalaryTotal = function() {
+    const prices = document.querySelectorAll('.es-price-input');
+    let sum = 0;
+    prices.forEach(p => {
+        sum += parseFloat(p.value) || 0;
+    });
+    document.getElementById('p-editor-extra-salary').value = sum;
+};
+
 const spaceQuotes = [
     "Каждая склейка — это новая траектория полёта.",
     "Создаём визуальные миры из звёздной пыли исходников.",
@@ -790,7 +830,10 @@ window.getEditorPayout = function(p) {
         return (parseFloat(p.baseSalary) || 0) + (parseFloat(p.extraSalary) || 0);
     }
     const base = parseFloat(p.editorSalary) || 0;
-    const extra = parseFloat(p.editorExtraSalary) || 0;
+    let extra = parseFloat(p.editorExtraSalary) || 0;
+    if (p.editorExtraServices && Array.isArray(p.editorExtraServices)) {
+        extra = p.editorExtraServices.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+    }
     const bVal = parseFloat(p.editorBonusValue) || 0;
     let bonus = 0;
     if (p.editorBonusType === 'percent') {
@@ -1422,7 +1465,12 @@ function generateProjectCardHTML(p, isAdmin) {
         budgetDisplayHtml = `<div><span class="text-slate-500 block mb-0.5">${budgetLabel}</span><span class="text-emerald-400 font-bold font-mono text-xs">${formatMoney(budgetVal)}</span></div>`;
     } else {
         const baseSal = p.editorSalary || 0;
-        const extraSal = p.editorExtraSalary || 0;
+        let extraSal = 0;
+        if (p.editorExtraServices && Array.isArray(p.editorExtraServices)) {
+            extraSal = p.editorExtraServices.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+        } else {
+            extraSal = p.editorExtraSalary || 0;
+        }
         budgetDisplayHtml = `
             <div>
                 <span class="text-slate-500 block mb-0.5">Оклад монтажёра:</span>
@@ -1564,7 +1612,31 @@ window.openEditorProjectEditModal = function(id) {
     document.getElementById('ed-p-deadline').value = deadlineStr;
     
     document.getElementById('ed-p-editor-salary').value = p.editorSalary ? `${p.editorSalary} ₽` : '0 ₽';
-    document.getElementById('ed-p-editor-extra-salary').value = p.editorExtraSalary ? `${p.editorExtraSalary} ₽` : '0 ₽';
+    
+    const displayContainer = document.getElementById('ed-p-extra-services-display');
+    displayContainer.innerHTML = '';
+    if (p.editorExtraServices && Array.isArray(p.editorExtraServices) && p.editorExtraServices.length > 0) {
+        p.editorExtraServices.forEach(item => {
+            const row = document.createElement('div');
+            row.className = "flex justify-between items-center bg-black/30 border border-white/[0.02] p-2.5 rounded-xl text-[11px]";
+            row.innerHTML = `
+                <span class="text-slate-300 font-medium">${escapeHtml(item.name)}</span>
+                <span class="text-emerald-400 font-mono font-bold">${formatMoney(item.price)}</span>
+            `;
+            displayContainer.appendChild(row);
+        });
+    } else if (p.editorExtraSalary) {
+        const row = document.createElement('div');
+        row.className = "flex justify-between items-center bg-black/30 border border-white/[0.02] p-2.5 rounded-xl text-[11px]";
+        row.innerHTML = `
+            <span class="text-slate-300 font-medium">Дополнительные услуги</span>
+            <span class="text-emerald-400 font-mono font-bold">${formatMoney(p.editorExtraSalary)}</span>
+        `;
+        displayContainer.appendChild(row);
+    } else {
+        displayContainer.innerHTML = `<div class="text-[10px] text-slate-500 italic">Нет дополнительных услуг</div>`;
+    }
+    
     document.getElementById('ed-p-editor-bonus-name').value = p.editorBonusName || 'Нет бонуса';
     document.getElementById('ed-p-editor-bonus-type').value = p.editorBonusType === 'percent' ? 'Процент (%)' : 'Фиксированный (₽)';
     document.getElementById('ed-p-editor-bonus-value').value = p.editorBonusValue ? `${p.editorBonusValue}` : '0';
@@ -1593,6 +1665,7 @@ window.submitProjectEditsRequest = async function() {
         extraSalary: parseInt(p.extraSalary) || 0,
         
         editorExtraSalary: parseInt(p.editorExtraSalary) || 0,
+        editorExtraServices: p.editorExtraServices || [],
         editorSalary: parseInt(p.editorSalary) || 0,
         editorBonusName: p.editorBonusName || '',
         editorBonusType: p.editorBonusType || 'rub',
@@ -1928,7 +2001,8 @@ window.openCreateProjectModal = function() {
     document.getElementById('p-extra-salary').value = '';
     
     document.getElementById('p-editor-salary').value = '';
-    document.getElementById('p-editor-extra-salary').value = '';
+    document.getElementById('p-extra-services-container').innerHTML = '';
+    document.getElementById('p-editor-extra-salary').value = '0';
     document.getElementById('p-editor-bonus-name').value = '';
     document.getElementById('p-editor-bonus-type').value = 'rub';
     document.getElementById('p-editor-bonus-value').value = '';
@@ -1960,7 +2034,18 @@ window.openEditProjectModal = function(id) {
     document.getElementById('p-extra-salary').value = p.extraSalary || '';
     
     document.getElementById('p-editor-salary').value = p.editorSalary || '';
-    document.getElementById('p-editor-extra-salary').value = p.editorExtraSalary || '';
+    
+    const container = document.getElementById('p-extra-services-container');
+    container.innerHTML = '';
+    if (p.editorExtraServices && Array.isArray(p.editorExtraServices)) {
+        p.editorExtraServices.forEach(item => {
+            addExtraServiceRow(item.name, item.price);
+        });
+    } else if (p.editorExtraSalary) {
+        addExtraServiceRow('Дополнительные услуги', p.editorExtraSalary);
+    }
+    document.getElementById('p-editor-extra-salary').value = p.editorExtraSalary || 0;
+    
     document.getElementById('p-editor-bonus-name').value = p.editorBonusName || '';
     document.getElementById('p-editor-bonus-type').value = p.editorBonusType || 'rub';
     document.getElementById('p-editor-bonus-value').value = p.editorBonusValue || '';
@@ -1979,6 +2064,17 @@ window.openEditProjectModal = function(id) {
 window.saveProject = async function() {
     const id = document.getElementById('form-project-id').value;
     const editorId = document.getElementById('p-editor-id').value;
+    
+    const extraServices = [];
+    const rows = document.querySelectorAll('#p-extra-services-container > div');
+    rows.forEach(row => {
+        const name = row.querySelector('.es-name-input').value.trim();
+        const price = parseFloat(row.querySelector('.es-price-input').value) || 0;
+        if (name) {
+            extraServices.push({ name, price });
+        }
+    });
+
     const projData = {
         projectName: document.getElementById('p-name').value.trim(),
         clientName: document.getElementById('p-client').value.trim(),
@@ -1988,7 +2084,8 @@ window.saveProject = async function() {
         extraSalary: parseInt(document.getElementById('p-extra-salary').value) || 0,
         
         editorSalary: parseInt(document.getElementById('p-editor-salary').value) || 0,
-        editorExtraSalary: parseInt(document.getElementById('p-editor-extra-salary').value) || 0,
+        editorExtraServices: extraServices,
+        editorExtraSalary: parseFloat(document.getElementById('p-editor-extra-salary').value) || 0,
         editorBonusName: document.getElementById('p-editor-bonus-name').value.trim(),
         editorBonusType: document.getElementById('p-editor-bonus-type').value,
         editorBonusValue: parseInt(document.getElementById('p-editor-bonus-value').value) || 0,
@@ -2398,6 +2495,9 @@ async function checkSession() {
             document.getElementById('admin-site-panel-btn').classList.remove('hidden'); 
             document.getElementById('status-fast-changer').classList.add('hidden');
             
+            // Скрыть верхний мигающий статус для администратора
+            document.getElementById('top-user-container').classList.add('hidden');
+            
             const led = document.getElementById('my-status-dot');
             const topLed = document.getElementById('top-user-status-dot');
             led.className = "w-2 h-2 rounded-full bg-indigo-500 status-led";
@@ -2410,6 +2510,9 @@ async function checkSession() {
             document.getElementById('admin-settings-btn').classList.add('hidden');
             document.getElementById('admin-site-panel-btn').classList.add('hidden'); 
             document.getElementById('status-fast-changer').classList.remove('hidden');
+            
+            // Показать верхний мигающий статус для монтажеров
+            document.getElementById('top-user-container').classList.remove('hidden');
             
             getDoc(doc(db, ...BASE('profiles'), currentUserId)).then(snap => {
                 const status = snap.exists() ? (snap.data().statusText || 'Свободен — жду проекты') : 'Свободен — жду проекты';
