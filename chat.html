@@ -440,14 +440,14 @@
 <!-- ══ ЭКРАН ВХОДА В ЛИЧНЫЙ КАБИНЕТ (АВТОРИЗАЦИОННЫЙ ШЛЮЗ) ══ -->
 <div id="auth-gate-screen" class="hidden">
     <div class="glass w-full max-w-sm rounded-3xl p-6 text-center space-y-5">
-        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto overflow-hidden">
-            <img src="1000002719.png" alt="SPACE Logo" class="w-8 h-8 rounded-lg">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto overflow-hidden">
+            <img src="1000002719.png" alt="SPACE Logo" class="w-12 h-12 rounded-xl object-cover">
         </div>
         <div class="space-y-1">
             <p class="text-[9px] text-indigo-400 uppercase tracking-[0.2em] font-space font-bold">SPACE Video Agency</p>
-            <h3 class="text-base font-space font-black text-white">Войдите в личный кабинет монтажёра</h3>
+            <h3 class="text-base font-space font-black text-white">Войдите в личный кабинет</h3>
         </div>
-        <p class="text-xs text-slate-400 leading-relaxed px-2">Для доступа к чату SPACE необходимо пройти авторизацию во внешней системе.</p>
+        <p class="text-xs text-slate-400 leading-relaxed px-2">Чат SPACE использует общую авторизацию с личным кабинетом. Войдите один раз — чат откроется автоматически.</p>
         
         <a href="montage.html" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-space text-xs transition duration-200 block text-center">
             <i class="fas fa-arrow-right-to-bracket mr-1.5"></i>Войти в личный кабинет
@@ -773,19 +773,103 @@ const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Ролевая модель и сессия (проверяется динамически с проверкой localStorage во избежание бесконечного цикла авторизации)
-let myRole = sessionStorage.getItem('chat_role') || localStorage.getItem('chat_role');
-let myId   = sessionStorage.getItem('chat_id') || localStorage.getItem('chat_id');
-let myNameSaved = sessionStorage.getItem('chat_name') || localStorage.getItem('chat_name');
+// ══════════════════════════════════════════════════════════════════
+// ЕДИНАЯ СИСТЕМА АВТОРИЗАЦИИ (SPACE SESSION)
+// Тот же механизм, что и в admin.html / editor.html (montage.html):
+// один ключ, один формат, синхронизация localStorage + sessionStorage.
+// Это устраняет «циклическую авторизацию» между кабинетом и чатом —
+// чат больше не запрашивает повторный вход, если пользователь уже
+// авторизован в личном кабинете.
+// ══════════════════════════════════════════════════════════════════
+const SESSION_KEY = 'space_session';
 
-// Если данные сессии были найдены в localStorage, дублируем их в sessionStorage для корректной работы всех модулей
-if (myRole && !sessionStorage.getItem('chat_role')) {
-    sessionStorage.setItem('chat_role', myRole);
-    sessionStorage.setItem('chat_id', myId);
-    sessionStorage.setItem('chat_name', myNameSaved);
+function readSpaceSession() {
+    let raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+
+    if (!raw) {
+        // Миграция со старого разрозненного формата (chat_role/chat_id/chat_name)
+        const role = localStorage.getItem('chat_role') || sessionStorage.getItem('chat_role');
+        const id   = localStorage.getItem('chat_id')   || sessionStorage.getItem('chat_id');
+        const name = localStorage.getItem('chat_name') || sessionStorage.getItem('chat_name');
+        if (role && id) {
+            raw = JSON.stringify({ role, id, name: name || '', ts: Date.now() });
+        }
+    }
+
+    if (!raw) return null;
+
+    try {
+        const session = JSON.parse(raw);
+        if (!session || !session.role || !session.id) return null;
+        localStorage.setItem(SESSION_KEY, raw);
+        sessionStorage.setItem(SESSION_KEY, raw);
+        return session;
+    } catch (e) {
+        return null;
+    }
 }
 
-// ─── СТАНДАРТНЫЕ НАБОРЫ СМАЙЛИКОВ ───
+function writeSpaceSession(role, id, name) {
+    const session = { role, id, name: name || '', ts: Date.now() };
+    const raw = JSON.stringify(session);
+    localStorage.setItem(SESSION_KEY, raw);
+    sessionStorage.setItem(SESSION_KEY, raw);
+    ['chat_role', 'chat_id', 'chat_name'].forEach(k => {
+        localStorage.removeItem(k);
+        sessionStorage.removeItem(k);
+    });
+    return session;
+}
+
+// Ролевая модель и сессия
+let _spaceSession = readSpaceSession();
+let myRole = _spaceSession ? _spaceSession.role : null;
+let myId   = _spaceSession ? _spaceSession.id : null;
+let myNameSaved = _spaceSession ? _spaceSession.name : null;
+
+// ─── Резервная передача сессии через URL-параметры ───
+// admin.html / editor.html при переходе в чат передают session_role,
+// session_id, session_name в адресной строке. Это защищает от потери
+// авторизации, даже если storage не общий между страницами.
+(function applySessionFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlRole = urlParams.get('session_role');
+    const urlId = urlParams.get('session_id');
+    if (urlRole && urlId) {
+        const urlName = urlParams.get('session_name') || myNameSaved || '';
+        writeSpaceSession(urlRole, urlId, urlName);
+        myRole = urlRole;
+        myId = urlId;
+        myNameSaved = urlName;
+    }
+    // Убираем технические параметры сессии из адресной строки,
+    // чтобы они не утекали при копировании ссылки
+    if (urlRole || urlId || urlParams.get('session_name')) {
+        urlParams.delete('session_role');
+        urlParams.delete('session_id');
+        urlParams.delete('session_name');
+        const qs = urlParams.toString();
+        const cleanUrl = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+        window.history.replaceState({}, '', cleanUrl);
+    }
+})();
+
+// ─── Целевой диалог (передаётся из кабинета при клике "Чат" у проекта) ───
+let _pendingTargetEditorId = null;
+(function captureTargetEditor() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlEditor = urlParams.get('editor');
+    if (urlEditor) {
+        _pendingTargetEditorId = urlEditor;
+        urlParams.delete('editor');
+        const qs = urlParams.toString();
+        const cleanUrl = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+        window.history.replaceState({}, '', cleanUrl);
+    } else {
+        const stored = localStorage.getItem('target_editor_id');
+        if (stored) _pendingTargetEditorId = stored;
+    }
+})();
 const EMOJI_PACK = [
     '😀', '😂', '🥰', '😍', '😎', '😡', 
     '😮', '😢', '👍', '🔥', '🚀', '💻', 
@@ -1189,6 +1273,18 @@ function renderSidebar() {
         `;
     }).join('');
     updatePresenceUI();
+
+    // Если из кабинета был передан конкретный монтажёр (клик "Чат" у проекта) —
+    // открываем диалог с ним автоматически, без лишних действий пользователя.
+    if (_pendingTargetEditorId && !_activeConvId) {
+        const target = _conversations.find(c => c.type === 'dm' && c.editorId === _pendingTargetEditorId);
+        if (target) {
+            localStorage.removeItem('target_editor_id');
+            _pendingTargetEditorId = null;
+            openConversation(target.id, target.type);
+            return;
+        }
+    }
 }
 
 // ─── УМНОЕ ФОРМАТИРОВАНИЕ ВРЕМЕНИ СООБЩЕНИЙ ───

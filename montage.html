@@ -160,6 +160,54 @@
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
         }
+
+        /* ══════════════════════════════════════════════════════════
+           МОБИЛЬНАЯ АДАПТАЦИЯ
+           Не просто масштабирование вниз — увеличиваем элементы
+           управления для удобной работы пальцем на телефоне.
+           ══════════════════════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            /* Текст: минимально комфортный размер для чтения на телефоне */
+            .text-\[8px\], .text-\[9px\], .text-\[10px\] { font-size: 12px !important; }
+            .text-\[11px\] { font-size: 13px !important; }
+
+            /* Поля ввода, textarea, select — крупнее, и без авто-зума iOS Safari */
+            input[type="text"], input[type="number"], input[type="password"],
+            input[type="email"], input[type="datetime-local"], input[type="search"],
+            textarea, select {
+                font-size: 16px !important;
+                min-height: 48px;
+                padding-top: 12px !important;
+                padding-bottom: 12px !important;
+            }
+            textarea { min-height: 100px; }
+
+            /* Узкие служебные поля (цена доп. услуги, прогресс и т.п.) — оставляем компактными */
+            .es-price-input, input[type="range"] {
+                font-size: 13px !important;
+                min-height: 40px;
+            }
+
+            /* Кнопки и кликабельные элементы — удобный размер для пальца */
+            button, .pressable, a.pressable {
+                min-height: 44px;
+            }
+            .pressable.w-8.h-8, .pressable.w-12.h-12 {
+                min-height: 0; /* квадратные иконки-кнопки оставляем как есть */
+            }
+
+            /* Карточки проектов и панели — больше воздуха */
+            .glass-card.premium-border {
+                padding: 1.25rem !important;
+                border-radius: 1.5rem !important;
+            }
+
+            /* Модальные окна на мобильных занимают почти весь экран */
+            .modal-bg > div.glass-card {
+                max-height: 94vh;
+                border-radius: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body class="relative min-h-screen bg-space-aurora selection:bg-indigo-500/30 selection:text-white">
@@ -169,7 +217,12 @@
 <div id="pwa-install-banner" class="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-[9998] p-5 rounded-2xl hidden transform translate-y-10 opacity-0 transition-all duration-500 ease-out">
     <div class="flex items-start gap-4">
         <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-            <img src="1000002719.png" alt="SPACE Logo" class="w-6 h-6 rounded-md">
+            <!-- PWA banner icon: Film reel -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+            </svg>
         </div>
         <div class="space-y-1.5 flex-1">
             <h4 class="text-xs font-bold text-white font-space tracking-wide uppercase">Установите SPACE</h4>
@@ -184,10 +237,12 @@
 
 <div id="screen-loader" class="fixed inset-0 bg-[#030208] z-[9999] flex flex-col items-center justify-center p-6 transition-all duration-700 ease-out opacity-0 pointer-events-none">
     <div class="w-full max-w-sm flex flex-col items-center text-center space-y-6">
-        <div class="relative w-16 h-16 flex items-center justify-center">
+        <div class="relative w-20 h-20 flex items-center justify-center">
             <div class="absolute inset-0 rounded-full border border-indigo-500/20 animate-[spin_4s_linear_infinite]"></div>
-            <div class="absolute w-12 h-12 rounded-full border-t border-b border-indigo-400 animate-[spin_1.5s_linear_infinite]"></div>
-            <img src="1000002719.png" alt="SPACE Logo" class="w-8 h-8 rounded-lg animate-pulse">
+            <div class="absolute w-16 h-16 rounded-full border-t border-b border-indigo-400 animate-[spin_1.5s_linear_infinite]"></div>
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden animate-pulse" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3)">
+                <img src="1000002719.png" alt="SPACE Logo" class="w-9 h-9 rounded-lg object-cover">
+            </div>
         </div>
         
         <div class="space-y-2">
@@ -209,10 +264,12 @@
         <div class="absolute -top-16 -left-16 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
 
         <div class="flex items-center gap-3 justify-center text-center sm:text-left">
-            <img src="1000002719.png" alt="SPACE Logo" class="w-10 h-10 rounded-2xl border border-indigo-500/20 shadow-inner">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden" style="background:linear-gradient(135deg,rgba(99,102,241,0.18) 0%,rgba(139,92,246,0.1) 100%);border:1px solid rgba(99,102,241,0.25);box-shadow:0 0 16px rgba(99,102,241,0.12)">
+                <img src="1000002719.png" alt="SPACE Logo" class="w-10 h-10 rounded-xl object-cover">
+            </div>
             <div>
                 <p class="text-[9px] text-indigo-400 uppercase tracking-[0.25em] font-space font-bold">SPACE Video Agency</p>
-                <h3 class="text-xs sm:text-sm font-space font-black text-white tracking-wide">Центр Управления SPACE</h3>
+                <h3 class="text-xs sm:text-sm font-space font-black text-white tracking-wide">Вход для монтажёров</h3>
             </div>
         </div>
 
@@ -247,7 +304,9 @@
     <nav class="border-b border-white/[0.04] bg-[#030208]/80 sticky top-0 backdrop-blur-xl z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
             <div class="flex items-center gap-2 sm:gap-4">
-                <img src="1000002719.png" alt="SPACE Logo" class="w-6 h-6 sm:w-7 sm:h-7 rounded-md">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden" style="background:rgba(99,102,241,0.14);border:1px solid rgba(99,102,241,0.2)">
+                    <img src="1000002719.png" alt="SPACE Logo" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg object-cover">
+                </div>
                 <span class="font-space font-black tracking-[0.15em] sm:tracking-[0.2em] text-white text-xs sm:text-base" id="brand-header">SPACE TEAM</span>
                 <span id="user-nav-role" class="text-[8px] sm:text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded font-bold font-space uppercase tracking-wider hidden md:inline-block">Личный Кабинет</span>
                 <div id="top-user-container" class="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-medium font-space text-slate-300 ml-2 hidden sm:flex">
@@ -275,6 +334,9 @@
                 
                 <button id="admin-site-panel-btn" onclick="window.open('admin.html', '_blank')" class="pressable hidden px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-[9px] sm:text-xs font-bold text-indigo-300 hover:bg-indigo-500/20 transition-all flex items-center gap-1 sm:gap-2">
                     <i class="fas fa-shield-halved text-indigo-400 text-[9px] sm:text-xs"></i><span class="hidden sm:inline">Админка</span>
+                </button>
+                <button id="header-pwa-install-btn" onclick="triggerPwaInstall()" class="pressable hidden flex px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-[9px] sm:text-xs font-bold text-indigo-300 hover:bg-indigo-500/20 transition-all items-center gap-1 sm:gap-2">
+                    <i class="fas fa-download text-[9px] sm:text-xs"></i><span class="hidden sm:inline">Установить</span>
                 </button>
                 <button onclick="openChatLink()" class="pressable px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-white/[0.04] bg-white/[0.02] text-[9px] sm:text-xs font-bold text-slate-300 hover:bg-white/[0.06] transition-all flex items-center gap-1 sm:gap-2">
                     <i class="fas fa-comments text-indigo-400 text-[9px] sm:text-xs"></i><span class="hidden sm:inline">Чат</span>
@@ -725,6 +787,17 @@
 
             <div class="space-y-2 max-h-52 overflow-y-auto pr-1" id="admin-checklist-items">
             </div>
+
+            <div class="space-y-2 pt-3 border-t border-white/[0.05]">
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider"><i class="fas fa-layer-group mr-1"></i> Справочник дополнительных услуг</label>
+                <p class="text-[10px] text-slate-500 leading-relaxed">Единый список для редактора проекта, кабинета монтажёра и публичного калькулятора.</p>
+                <div class="flex gap-2">
+                    <input type="text" id="new-service-name" class="flex-1 bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Название услуги">
+                    <input type="number" id="new-service-price" class="w-24 bg-black/40 border border-white/5 rounded-xl p-3 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Цена ₽">
+                    <button onclick="addServiceCatalogItem()" class="pressable px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition-all"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="space-y-2 max-h-52 overflow-y-auto pr-1" id="admin-services-catalog-items"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -754,16 +827,68 @@ const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// State Synchronization
-let currentRole = sessionStorage.getItem('chat_role') || localStorage.getItem('chat_role');
-let currentUserId = sessionStorage.getItem('chat_id') || localStorage.getItem('chat_id');
-let currentUserName = sessionStorage.getItem('chat_name') || localStorage.getItem('chat_name');
+// ══════════════════════════════════════════════════════════════════
+// ЕДИНАЯ СИСТЕМА АВТОРИЗАЦИИ (SPACE SESSION)
+// Один формат, один ключ, общий для admin/editor-кабинета и чата.
+// Хранится одновременно в localStorage (переживает закрытие вкладки)
+// и sessionStorage (быстрый доступ в рамках вкладки), всегда зеркально.
+// ══════════════════════════════════════════════════════════════════
+const SESSION_KEY = 'space_session';
 
-if (currentRole && !sessionStorage.getItem('chat_role')) {
-    sessionStorage.setItem('chat_role', currentRole);
-    sessionStorage.setItem('chat_id', currentUserId);
-    sessionStorage.setItem('chat_name', currentUserName);
+function readSpaceSession() {
+    let raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+
+    if (!raw) {
+        // Миграция со старого разрозненного формата (chat_role/chat_id/chat_name)
+        const role = localStorage.getItem('chat_role') || sessionStorage.getItem('chat_role');
+        const id   = localStorage.getItem('chat_id')   || sessionStorage.getItem('chat_id');
+        const name = localStorage.getItem('chat_name') || sessionStorage.getItem('chat_name');
+        if (role && id) {
+            raw = JSON.stringify({ role, id, name: name || '', ts: Date.now() });
+        }
+    }
+
+    if (!raw) return null;
+
+    try {
+        const session = JSON.parse(raw);
+        if (!session || !session.role || !session.id) return null;
+        // Зеркалим в оба хранилища, чтобы любая страница (admin/editor/chat)
+        // всегда находила одну и ту же сессию без повторного входа.
+        localStorage.setItem(SESSION_KEY, raw);
+        sessionStorage.setItem(SESSION_KEY, raw);
+        return session;
+    } catch (e) {
+        return null;
+    }
 }
+
+function writeSpaceSession(role, id, name) {
+    const session = { role, id, name: name || '', ts: Date.now() };
+    const raw = JSON.stringify(session);
+    localStorage.setItem(SESSION_KEY, raw);
+    sessionStorage.setItem(SESSION_KEY, raw);
+    // Удаляем устаревшие отдельные ключи, чтобы не было рассинхронизации
+    ['chat_role', 'chat_id', 'chat_name'].forEach(k => {
+        localStorage.removeItem(k);
+        sessionStorage.removeItem(k);
+    });
+    return session;
+}
+
+function destroySpaceSession() {
+    [SESSION_KEY, 'chat_role', 'chat_id', 'chat_name'].forEach(k => {
+        localStorage.removeItem(k);
+        sessionStorage.removeItem(k);
+    });
+}
+
+const _initialSession = readSpaceSession();
+
+// State Synchronization
+let currentRole = _initialSession ? _initialSession.role : null;
+let currentUserId = _initialSession ? _initialSession.id : null;
+let currentUserName = _initialSession ? _initialSession.name : null;
 
 let _editors = [];
 let _projects = [];
@@ -780,12 +905,38 @@ window.addExtraServiceRow = function(name = '', price = '') {
     const row = document.createElement('div');
     row.className = "flex gap-2 items-center";
     row.id = rowId;
+
+    // Сопоставляем старую запись (свободный текст) с услугой из справочника по названию
+    const matched = _servicesCatalog.find(s => s.name === name);
+
+    let optionsHtml = '<option value="">Выберите услугу...</option>';
+    if (name && !matched) {
+        // Старая (legacy) запись, не найденная в справочнике — отображаем как есть
+        optionsHtml += `<option value="__custom__" data-name="${escapeHtml(name)}" data-price="${parseFloat(price) || 0}" selected>${escapeHtml(name)} (старая запись)</option>`;
+    }
+    optionsHtml += _servicesCatalog.map(s =>
+        `<option value="${s.id}" data-name="${escapeHtml(s.name)}" data-price="${s.price}" ${matched && matched.id === s.id ? 'selected' : ''}>${escapeHtml(s.name)} — ${formatMoney(s.price)}</option>`
+    ).join('');
+
+    const currentPrice = matched ? matched.price : (parseFloat(price) || 0);
+
     row.innerHTML = `
-        <input type="text" class="es-name-input flex-1 bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500/30 placeholder:text-slate-600" placeholder="Наименование услуги" value="${escapeHtml(name)}">
-        <input type="number" class="es-price-input w-24 bg-black/40 border border-white/5 rounded-xl p-2.5 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30 placeholder:text-slate-600" placeholder="Цена ₽" value="${price}" oninput="recalculateExtraSalaryTotal()">
+        <select class="es-service-select flex-1 bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500/30" onchange="onExtraServiceSelectChange(this)">
+            ${optionsHtml}
+        </select>
+        <input type="number" class="es-price-input w-24 bg-black/30 border border-white/5 rounded-xl p-2.5 font-mono text-xs text-slate-400 cursor-not-allowed" placeholder="Цена ₽" value="${currentPrice}" readonly tabindex="-1">
         <button type="button" onclick="document.getElementById('${rowId}').remove(); recalculateExtraSalaryTotal();" class="pressable w-8 h-8 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center flex-shrink-0 transition-all"><i class="fas fa-trash text-[10px]"></i></button>
     `;
     container.appendChild(row);
+};
+
+// Стоимость подставляется автоматически при выборе услуги из справочника
+window.onExtraServiceSelectChange = function(selectEl) {
+    const row = selectEl.closest('div');
+    const priceInput = row.querySelector('.es-price-input');
+    const opt = selectEl.options[selectEl.selectedIndex];
+    priceInput.value = (opt && opt.dataset.price) ? opt.dataset.price : 0;
+    recalculateExtraSalaryTotal();
 };
 
 window.recalculateExtraSalaryTotal = function() {
@@ -796,6 +947,73 @@ window.recalculateExtraSalaryTotal = function() {
     });
     document.getElementById('p-editor-extra-salary').value = sum;
 };
+
+// ══════════════════════════════════════════════════════════════════
+// ЕДИНЫЙ СПРАВОЧНИК ДОПОЛНИТЕЛЬНЫХ УСЛУГ
+// Один источник данных для:
+//  - Редактора проекта (Админ выбирает услуги из списка)
+//  - Личного кабинета монтажёра (просмотр услуг и итоговой суммы)
+//  - calc.html (публичный калькулятор для клиентов)
+// Хранится в Firestore: calc_config/main -> extraServicesCatalog
+// и кэшируется в localStorage под ключом 'space_services_catalog',
+// чтобы не было дублирования и расхождения данных между файлами.
+// ══════════════════════════════════════════════════════════════════
+const SERVICES_CATALOG_KEY = 'space_services_catalog';
+
+const DEFAULT_SERVICES_CATALOG = [
+    { id: 'subtitles', name: 'Субтитры',               price: 500 },
+    { id: 'color',     name: 'Цветокоррекция',         price: 1500 },
+    { id: 'motion',    name: 'Motion Design',          price: 2000 },
+    { id: 'sound',     name: 'Sound Design',           price: 1000 },
+    { id: 'ai',        name: 'AI Обработка',           price: 800 },
+    { id: 'vertical',  name: 'Вертикальная адаптация', price: 700 },
+    { id: 'shorts',    name: 'Shorts',                 price: 600 },
+    { id: 'preview',   name: 'Превью',                 price: 400 }
+];
+
+let _servicesCatalog = [];
+
+function loadServicesCatalogFromCache() {
+    try {
+        const saved = localStorage.getItem(SERVICES_CATALOG_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length) {
+                _servicesCatalog = parsed;
+                return;
+            }
+        }
+    } catch(e) {}
+    _servicesCatalog = JSON.parse(JSON.stringify(DEFAULT_SERVICES_CATALOG));
+}
+
+async function loadServicesCatalog() {
+    loadServicesCatalogFromCache();
+    try {
+        await ensureAuth();
+        const snap = await getDoc(doc(db, ...BASE('calc_config'), 'main'));
+        if (snap.exists() && Array.isArray(snap.data().extraServicesCatalog) && snap.data().extraServicesCatalog.length) {
+            _servicesCatalog = snap.data().extraServicesCatalog;
+            localStorage.setItem(SERVICES_CATALOG_KEY, JSON.stringify(_servicesCatalog));
+        } else if (currentRole === 'owner') {
+            // Инициализируем справочник значениями по умолчанию в облаке,
+            // чтобы calc.html и кабинет монтажёра получили те же данные.
+            await setDoc(doc(db, ...BASE('calc_config'), 'main'), { extraServicesCatalog: _servicesCatalog }, { merge: true });
+        }
+    } catch(e) { console.warn('Не удалось загрузить справочник услуг:', e); }
+}
+
+async function saveServicesCatalog() {
+    localStorage.setItem(SERVICES_CATALOG_KEY, JSON.stringify(_servicesCatalog));
+    try {
+        await ensureAuth();
+        await setDoc(doc(db, ...BASE('calc_config'), 'main'), { extraServicesCatalog: _servicesCatalog }, { merge: true });
+        showToast('Справочник услуг сохранён', 'success');
+    } catch(e) {
+        showToast('Не удалось сохранить справочник (офлайн-кэш обновлён)', 'error');
+    }
+}
+window.saveServicesCatalog = saveServicesCatalog;
 
 const spaceQuotes = [
     "Каждая склейка — это новая траектория полёта.",
@@ -855,7 +1073,9 @@ function setupPWA() {
     const manifestObj = {
         "name": "SPACE — Личный Кабинет",
         "short_name": "SPACE",
+        "description": "Личный кабинет команды SPACE Video Agency",
         "start_url": ".",
+        "scope": ".",
         "display": "standalone",
         "background_color": "#030208",
         "theme_color": "#030208",
@@ -863,9 +1083,27 @@ function setupPWA() {
         "icons": [
             {
                 "src": "1000002719.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any"
+            },
+            {
+                "src": "1000002719.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "maskable"
+            },
+            {
+                "src": "1000002719.png",
                 "sizes": "512x512",
                 "type": "image/png",
-                "purpose": "any maskable"
+                "purpose": "any"
+            },
+            {
+                "src": "1000002719.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "maskable"
             }
         ]
     };
@@ -906,6 +1144,9 @@ function setupPWA() {
         const installSection = document.getElementById('profile-pwa-install-section');
         if (installSection) installSection.classList.remove('hidden');
 
+        const headerBtn = document.getElementById('header-pwa-install-btn');
+        if (headerBtn) headerBtn.classList.remove('hidden');
+
         const pwaDismissedAt = localStorage.getItem('pwa_dismissed_at');
         const now = Date.now();
         const dismissedDiff = pwaDismissedAt ? now - parseInt(pwaDismissedAt) : Infinity;
@@ -920,6 +1161,8 @@ function setupPWA() {
         hidePwaInstallBanner();
         const installSection = document.getElementById('profile-pwa-install-section');
         if (installSection) installSection.classList.add('hidden');
+        const headerBtn = document.getElementById('header-pwa-install-btn');
+        if (headerBtn) headerBtn.classList.add('hidden');
         localStorage.setItem('pwa_installed_permanently', 'true');
         showToast('SPACE успешно установлен как приложение!', 'success');
     });
@@ -927,6 +1170,8 @@ function setupPWA() {
     if (window.matchMedia('(display-mode: standalone)').matches || localStorage.getItem('pwa_installed_permanently')) {
         const installSection = document.getElementById('profile-pwa-install-section');
         if (installSection) installSection.classList.add('hidden');
+        const headerBtn = document.getElementById('header-pwa-install-btn');
+        if (headerBtn) headerBtn.classList.add('hidden');
     }
 }
 
@@ -967,15 +1212,33 @@ window.openChatLink = function(editorId) {
     } else {
         localStorage.removeItem('target_editor_id');
     }
-    
+
+    // ─── Передача сессии в чат через URL-параметры ───
+    // Это резервный (но основной по надёжности) механизм передачи
+    // авторизации между кабинетом и чатом. Он устраняет «циклическую
+    // авторизацию», возникающую, когда localStorage/sessionStorage
+    // не используются как общее хранилище между страницами (например,
+    // при открытии в новой вкладке, изоляции песочницы и т.п.).
+    // Чат, получив эти параметры, сам запишет единую сессию (SESSION_KEY)
+    // и больше не будет показывать экран «Войдите в личный кабинет».
+    const params = new URLSearchParams();
+    if (currentRole && currentUserId) {
+        params.set('session_role', currentRole);
+        params.set('session_id', currentUserId);
+        params.set('session_name', currentUserName || '');
+    }
+    if (editorId) params.set('editor', editorId);
+
+    const target = 'chat.html' + (params.toString() ? ('?' + params.toString()) : '');
+
     try {
         if (window.location.protocol === 'about:' || window.location.href.includes('blob:')) {
-            window.open('chat.html', '_blank');
+            window.open(target, '_blank');
         } else {
-            window.location.href = 'chat.html';
+            window.location.href = target;
         }
     } catch(e) {
-        window.open('chat.html', '_blank');
+        window.open(target, '_blank');
     }
 };
 
@@ -1078,24 +1341,16 @@ window.executeLogin = async function() {
 };
 
 function setSession(role, id, name) {
-    sessionStorage.setItem('chat_role', role);
-    sessionStorage.setItem('chat_id', id);
-    sessionStorage.setItem('chat_name', name);
-    localStorage.setItem('chat_role', role);
-    localStorage.setItem('chat_id', id);
-    localStorage.setItem('chat_name', name);
-    currentRole = role;
-    currentUserId = id;
-    currentUserName = name;
-    
+    const s = writeSpaceSession(role, id, name);
+    currentRole = s.role;
+    currentUserId = s.id;
+    currentUserName = s.name;
+
     checkSession();
 }
 
 window.logout = function() {
-    sessionStorage.clear();
-    localStorage.removeItem('chat_role');
-    localStorage.removeItem('chat_id');
-    localStorage.removeItem('chat_name');
+    destroySpaceSession();
     currentRole = null; currentUserId = null; currentUserName = null;
     document.getElementById('screen-dashboard').classList.add('hidden');
     document.getElementById('screen-login').classList.remove('hidden');
@@ -1117,6 +1372,7 @@ function renderSegmentTabs() {
         container.innerHTML = `
             <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all active">Главная</button>
             <button onclick="switchTab('projects')" id="tab-projects" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">Проекты</button>
+            <button onclick="switchTab('clients')" id="tab-clients" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all">Клиенты</button>
             <button onclick="switchTab('submissions')" id="tab-submissions" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all relative">Приёмка <span id="badge-subs" class="hidden absolute top-2 right-4 w-2 h-2 bg-indigo-500 rounded-full status-led"></span></button>
             <button onclick="switchTab('requests')" id="tab-requests" class="tab-segment flex-1 py-2 sm:py-3 px-1 sm:px-3 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all relative">Запросы <span id="badge-reqs" class="hidden absolute top-2 right-4 w-2 h-2 bg-indigo-500 rounded-full status-led"></span></button>
         `;
@@ -1135,6 +1391,7 @@ function renderActiveTabContent() {
     if (currentRole === 'owner') {
         if (activeTab === 'dashboard') renderAdminDashboard();
         else if (activeTab === 'projects') renderAdminProjects();
+        else if (activeTab === 'clients') renderAdminClients();
         else if (activeTab === 'submissions') renderAdminSubmissions();
         else if (activeTab === 'requests') renderAdminRequests();
     } else {
@@ -1796,6 +2053,208 @@ window.updateAdminBadges = function() {
     if (reqsBadge) reqsBadge.classList.toggle('hidden', _editRequests.filter(r => r.status === 'pending').length === 0);
 };
 
+// ═══════════════════════════════════════════════════════════════
+//  ВКЛАДКА КЛИЕНТЫ — Перенесена из admin.html в ЛК Администратора
+// ═══════════════════════════════════════════════════════════════
+function renderAdminClients() {
+    const vp = document.getElementById('dashboard-viewport');
+    const editorsOptions = _editors.map(e =>
+        `<option value="${e.id}" class="bg-slate-900 text-white">${escapeHtml(e.name || e.login)}${e.login ? ' (' + escapeHtml(e.login) + ')' : ''}</option>`
+    ).join('');
+
+    vp.innerHTML = `
+        <div class="fade-in-up space-y-6">
+
+            <div class="relative overflow-hidden rounded-3xl border border-white/[0.05] p-6" style="background: linear-gradient(135deg, rgba(99,102,241,0.07) 0%, rgba(139,92,246,0.04) 100%);">
+                <div class="absolute top-0 right-0 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <p class="text-[10px] text-indigo-400 uppercase tracking-[0.2em] font-space font-bold mb-1">CRM — Личные кабинеты</p>
+                        <h3 class="text-xl font-space font-black text-white mb-1">Управление клиентами</h3>
+                        <p class="text-slate-400 text-xs">Создавайте кабинеты, назначайте монтажёров, отслеживайте проекты</p>
+                    </div>
+                    <div class="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-full">
+                        <span class="text-indigo-400 text-xs font-bold font-space">${_projects.length} проектов</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3 flex items-center gap-2">
+                    <i class="fas fa-list text-indigo-400"></i> Активные кабинеты
+                </p>
+                <div class="rounded-2xl border border-white/[0.04] overflow-hidden" style="background:rgba(255,255,255,0.015)">
+                    <div class="space-y-0 max-h-[420px] overflow-y-auto" id="crm-clients-list">
+                        ${renderCrmClientsList(_projects)}
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-3xl border border-indigo-500/15 p-6 space-y-5" style="background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(139,92,246,0.03) 100%);">
+                <div class="flex items-center gap-3 border-b border-white/[0.05] pb-4">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25)">
+                        <i class="fas fa-user-plus text-indigo-400 text-xs"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-white font-space">Новый клиент</p>
+                        <p class="text-[10px] text-slate-500">Зарегистрировать проект и создать личный кабинет</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Код доступа клиента</label>
+                        <input type="text" id="crm-new-code" placeholder="client777"
+                            class="w-full bg-white/[0.04] border border-indigo-500/20 text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/50 font-mono font-bold transition placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Имя клиента</label>
+                        <input type="text" id="crm-new-name" placeholder="Алексей"
+                            class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Дедлайн</label>
+                        <input type="date" id="crm-new-deadline" min="${new Date().toISOString().slice(0,10)}" max="2100-12-31"
+                            class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Название проекта</label>
+                        <input type="text" id="crm-new-project" placeholder="Продуктовый ролик 60 сек."
+                            class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Стоимость для клиента (₽)</label>
+                        <input type="number" id="crm-new-price" placeholder="3000"
+                            class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 font-mono transition placeholder-slate-600">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space flex items-center gap-1.5">
+                        <i class="fas fa-cut text-indigo-400"></i> Привязать к монтажёру
+                    </label>
+                    <select id="crm-new-editor"
+                        class="w-full text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/50 transition appearance-none cursor-pointer"
+                        style="background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.2);">
+                        <option value="" class="bg-slate-900 text-slate-400">— не назначен —</option>
+                        ${editorsOptions}
+                    </select>
+                </div>
+
+                <button onclick="crmCreateClientProject()"
+                    class="pressable w-full py-4 font-bold rounded-2xl text-xs font-space uppercase tracking-wider transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                    style="background:linear-gradient(135deg,rgba(99,102,241,0.35) 0%,rgba(139,92,246,0.2) 100%);border-top:1px solid rgba(255,255,255,0.2);border-left:1px solid rgba(255,255,255,0.1);color:white;box-shadow:0 4px 20px rgba(99,102,241,0.2);">
+                    <i class="fas fa-satellite-dish"></i> Создать кабинет & Ключ доступа
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function renderCrmClientsList(projects) {
+    if (!projects || projects.length === 0) {
+        return `<div class="p-8 text-center text-xs text-slate-500 font-space">
+            <i class="fas fa-folder-open text-2xl mb-3 block opacity-30"></i>
+            Кабинеты клиентов не найдены. Создайте первый ниже.
+        </div>`;
+    }
+    const stageMap = { brief: 'ТЗ & Бриф', edit: 'Черновик', effects: 'Звук & FX', color: 'Цвет', done: 'Сдача' };
+    const stageColor = { brief: 'text-slate-400', edit: 'text-blue-400', effects: 'text-purple-400', color: 'text-amber-400', done: 'text-emerald-400' };
+
+    return projects.map(p => {
+        const editor = _editors.find(e => e.id === p.editorId);
+        const stageLbl = stageMap[p.stage] || p.stage || '—';
+        const stageClr = stageColor[p.stage] || 'text-slate-400';
+        const budget = parseInt(p.baseSalary) || parseInt(p.basePrice) || 0;
+        const deadlineStr = p.deadline ? new Date(p.deadline).toLocaleDateString('ru-RU') : 'Не задан';
+        const isExpired = p.deadline && new Date(p.deadline) < new Date() && p.stage !== 'done';
+
+        return `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-b border-white/[0.03] last:border-0 hover:bg-white/[0.015] transition-colors group">
+                <div class="flex items-start gap-4 min-w-0 flex-1">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm font-space text-white"
+                         style="background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.15));border:1px solid rgba(99,102,241,0.2)">
+                        ${escapeHtml((p.clientName || '?')[0].toUpperCase())}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2 mb-0.5">
+                            <span class="text-sm font-bold text-white font-space truncate">${escapeHtml(p.clientName || 'Без имени')}</span>
+                            <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${stageClr}" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)">${stageLbl}</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 truncate">${escapeHtml(p.projectName || '—')}</p>
+                        <div class="flex flex-wrap gap-3 mt-1.5 text-[9px] text-slate-600 font-space">
+                            <span><i class="fas fa-user-circle mr-1 text-indigo-500/60"></i>${editor ? escapeHtml(editor.name || editor.login) : 'Не назначен'}</span>
+                            <span class="${isExpired ? 'text-rose-500' : ''}"><i class="far fa-clock mr-1"></i>${deadlineStr}${isExpired ? ' — просрочен!' : ''}</span>
+                            ${budget ? `<span><i class="fas fa-ruble-sign mr-1 text-emerald-500/60"></i>${formatMoney(budget)}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="text-[9px] text-slate-500 font-mono hidden sm:block">${p.progress || 0}%</span>
+                    <button onclick="crmDeleteClientProject('${p.id}')"
+                        class="pressable opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-all duration-200">
+                        <i class="fas fa-trash text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.crmCreateClientProject = async function() {
+    const rawCode   = (document.getElementById('crm-new-code')?.value || '').trim();
+    const name      = (document.getElementById('crm-new-name')?.value || '').trim();
+    const project   = (document.getElementById('crm-new-project')?.value || '').trim();
+    const deadline  = document.getElementById('crm-new-deadline')?.value || '';
+    const basePrice = parseFloat(document.getElementById('crm-new-price')?.value) || 0;
+    const editorId  = document.getElementById('crm-new-editor')?.value || '';
+    const editorName = editorId ? (_editors.find(e => e.id === editorId)?.name || '') : '';
+
+    if (!rawCode || !name || !project) {
+        showToast('Заполните Код доступа, Имя клиента и Проект', 'error');
+        return;
+    }
+
+    const data = {
+        clientName: name,
+        projectName: project,
+        deadline: deadline,
+        baseSalary: basePrice,
+        basePrice: basePrice,
+        editorId: editorId,
+        editorName: editorName,
+        stage: 'brief',
+        progress: 10,
+        addons: [],
+        notes: 'Кабинет клиента настроен. Ожидаем материалы.',
+        accessCode: rawCode.toLowerCase(),
+        createdAt: new Date().toISOString()
+    };
+
+    try {
+        await ensureAuth();
+        await addDoc(collection(db, ...BASE('projects')), data);
+        showToast('Кабинет клиента создан!', 'success');
+        ['crm-new-code','crm-new-name','crm-new-project','crm-new-price','crm-new-deadline'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = '';
+        });
+        const sel = document.getElementById('crm-new-editor');
+        if (sel) sel.value = '';
+    } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
+};
+
+window.crmDeleteClientProject = async function(id) {
+    if (!confirm('Удалить кабинет клиента? Это необратимо.')) return;
+    try {
+        await ensureAuth();
+        await deleteDoc(doc(db, ...BASE('projects'), id));
+        showToast('Кабинет удалён', 'info');
+    } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
+};
+
 window.rejectEditRequest = async function(id) {
     try {
         await ensureAuth();
@@ -2068,11 +2527,17 @@ window.saveProject = async function() {
     const extraServices = [];
     const rows = document.querySelectorAll('#p-extra-services-container > div');
     rows.forEach(row => {
-        const name = row.querySelector('.es-name-input').value.trim();
-        const price = parseFloat(row.querySelector('.es-price-input').value) || 0;
-        if (name) {
-            extraServices.push({ name, price });
-        }
+        const select = row.querySelector('.es-service-select');
+        if (!select) return;
+        const opt = select.options[select.selectedIndex];
+        if (!opt || !opt.value) return;
+        const name = opt.dataset.name || opt.textContent.trim();
+        const price = parseFloat(opt.dataset.price) || 0;
+        extraServices.push({
+            serviceId: opt.value !== '__custom__' ? opt.value : null,
+            name,
+            price
+        });
     });
 
     const projData = {
@@ -2296,6 +2761,7 @@ window.markAllNotificationsRead = async function() {
 
 window.openAdminSettingsModal = function() {
     renderAdminChecklist();
+    renderServicesCatalogAdmin();
     openModal('modal-admin-settings');
 };
 
@@ -2330,6 +2796,47 @@ async function saveChecklist() {
         await setDoc(doc(db, ...BASE('site_config'), 'main'), { qualityChecklist: _globalChecklist }, { merge: true });
     } catch(e) { showToast('Ошибка сохранения стандартов', 'error'); }
 }
+
+// ─── СПРАВОЧНИК ДОПОЛНИТЕЛЬНЫХ УСЛУГ (Админ) ───
+function renderServicesCatalogAdmin() {
+    const c = document.getElementById('admin-services-catalog-items');
+    if (!c) return;
+    c.innerHTML = _servicesCatalog.map((s, idx) => `
+        <div class="flex items-center gap-2 bg-black/40 border border-white/5 p-2.5 rounded-xl group transition-all duration-200">
+            <input type="text" value="${escapeHtml(s.name)}" oninput="updateServiceCatalogField(${idx}, 'name', this.value)" class="flex-1 bg-transparent text-xs text-slate-300 font-light focus:outline-none">
+            <input type="number" value="${s.price}" oninput="updateServiceCatalogField(${idx}, 'price', this.value)" class="w-20 bg-transparent text-right text-xs text-emerald-400 font-mono font-bold focus:outline-none">
+            <span class="text-[10px] text-slate-500">₽</span>
+            <button onclick="removeServiceCatalogItem(${idx})" class="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-trash-can text-[10px]"></i></button>
+        </div>
+    `).join('') + `
+        <button onclick="saveServicesCatalog()" class="pressable w-full mt-2 py-2.5 rounded-xl bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 text-xs font-bold transition-all">
+            <i class="fas fa-cloud-arrow-up mr-1.5"></i>Сохранить справочник
+        </button>
+    `;
+}
+
+window.updateServiceCatalogField = function(idx, field, value) {
+    if (!_servicesCatalog[idx]) return;
+    _servicesCatalog[idx][field] = field === 'price' ? (parseFloat(value) || 0) : value;
+};
+
+window.addServiceCatalogItem = function() {
+    const nameInput = document.getElementById('new-service-name');
+    const priceInput = document.getElementById('new-service-price');
+    const name = nameInput.value.trim();
+    const price = parseFloat(priceInput.value) || 0;
+    if (!name) return;
+    const id = 'svc_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+    _servicesCatalog.push({ id, name, price });
+    nameInput.value = '';
+    priceInput.value = '';
+    renderServicesCatalogAdmin();
+};
+
+window.removeServiceCatalogItem = function(idx) {
+    _servicesCatalog.splice(idx, 1);
+    renderServicesCatalogAdmin();
+};
 
 function updateAnalyticsGrid() {
     const grid = document.getElementById('consolidated-analytics-grid');
@@ -2464,6 +2971,16 @@ function subscribeData() {
             _globalChecklist = doc.data().qualityChecklist;
         }
     });
+
+    // Единый справочник доп. услуг — синхронизация в реальном времени
+    // с calc.html и редактором проекта (без дублирования данных).
+    onSnapshot(doc(db, ...BASE('calc_config'), 'main'), snap => {
+        if (snap.exists() && Array.isArray(snap.data().extraServicesCatalog) && snap.data().extraServicesCatalog.length) {
+            _servicesCatalog = snap.data().extraServicesCatalog;
+            localStorage.setItem(SERVICES_CATALOG_KEY, JSON.stringify(_servicesCatalog));
+            if (typeof renderServicesCatalogAdmin === 'function') renderServicesCatalogAdmin();
+        }
+    });
 }
 
 async function checkSession() {
@@ -2471,6 +2988,7 @@ async function checkSession() {
         document.getElementById('screen-login').classList.add('hidden');
         await ensureAuth();
         subscribeData();
+        loadServicesCatalog();
         startFrontendClock();
         setupPWA();
         
