@@ -449,7 +449,7 @@
         </div>
         <p class="text-xs text-slate-400 leading-relaxed px-2">Чат SPACE использует общую авторизацию с личным кабинетом. Войдите один раз — чат откроется автоматически.</p>
         
-        <a href="montage.html" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-space text-xs transition duration-200 block text-center">
+        <a id="auth-gate-cabinet-link" href="space_team.html" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-space text-xs transition duration-200 block text-center">
             <i class="fas fa-arrow-right-to-bracket mr-1.5"></i>Войти в личный кабинет
         </a>
     </div>
@@ -489,7 +489,7 @@
 
         <!-- Кнопки внизу сайдбара -->
         <div class="p-3 border-t border-white/[0.04] flex flex-col gap-2">
-            <a id="back-to-cabinet-link" href="montage.html" class="flex items-center justify-center gap-2 py-2 rounded-xl border border-white/[0.04] bg-white/[0.01] text-xs font-bold text-slate-400 hover:bg-white/[0.03] transition">
+            <a id="back-to-cabinet-link" href="space_team.html" class="flex items-center justify-center gap-2 py-2 rounded-xl border border-white/[0.04] bg-white/[0.01] text-xs font-bold text-slate-400 hover:bg-white/[0.03] transition">
                 <i class="fas fa-arrow-left text-[9px]"></i>
                 <span id="back-link-text">Личный кабинет</span>
             </a>
@@ -686,7 +686,7 @@
                 <p class="text-xs text-slate-400 bg-black/10 p-3 rounded-xl border border-white/[0.02]" id="proj-det-notes">—</p>
             </div>
 
-            <a id="proj-det-open-cabinet" href="montage.html" class="w-full py-2.5 rounded-xl bg-indigo-600 text-center text-white text-xs font-bold block hover:bg-indigo-500 transition">Открыть в Кабинете</a>
+            <a id="proj-det-open-cabinet" href="space_team.html" class="w-full py-2.5 rounded-xl bg-indigo-600 text-center text-white text-xs font-bold block hover:bg-indigo-500 transition">Открыть в Кабинете</a>
         </div>
     </div>
 </div>
@@ -750,7 +750,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
-    getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+    getFirestore, initializeFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
     collection, getDocs, query, where, orderBy, onSnapshot,
     serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -771,11 +771,17 @@ const BASE = (col) => ['artifacts', APP_ID, 'public', 'data', col];
 
 const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
-const db = getFirestore(app);
+// ВАЖНО: автоопределение длинного поллинга — то же исправление, что и в
+// личных кабинетах (space_team.html / space_control.html), чтобы чат
+// не зависал без ошибок на мобильных/ограниченных сетях.
+const db = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+    useFetchStreams: false
+});
 
 // ══════════════════════════════════════════════════════════════════
 // ЕДИНАЯ СИСТЕМА АВТОРИЗАЦИИ (SPACE SESSION)
-// Тот же механизм, что и в admin.html / editor.html (montage.html):
+// Тот же механизм, что и в space_team.html / space_control.html:
 // один ключ, один формат, синхронизация localStorage + sessionStorage.
 // Это устраняет «циклическую авторизацию» между кабинетом и чатом —
 // чат больше не запрашивает повторный вход, если пользователь уже
@@ -828,9 +834,9 @@ let myId   = _spaceSession ? _spaceSession.id : null;
 let myNameSaved = _spaceSession ? _spaceSession.name : null;
 
 // ─── Резервная передача сессии через URL-параметры ───
-// admin.html / editor.html при переходе в чат передают session_role,
-// session_id, session_name в адресной строке. Это защищает от потери
-// авторизации, даже если storage не общий между страницами.
+// space_team.html / space_control.html при переходе в чат передают
+// session_role, session_id, session_name в адресной строке. Это защищает
+// от потери авторизации, даже если storage не общий между страницами.
 (function applySessionFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     const urlRole = urlParams.get('session_role');
@@ -853,6 +859,33 @@ let myNameSaved = _spaceSession ? _spaceSession.name : null;
         window.history.replaceState({}, '', cleanUrl);
     }
 })();
+
+// ─── Куда вести "Войти в личный кабинет" / "Личный кабинет" ───
+// Раньше эти кнопки были жёстко привязаны к несуществующему файлу
+// montage.html, из-за чего после клика "Войти" пользователь попадал
+// в никуда, возвращался в реальный кабинет вручную, и при повторном
+// клике на "Чат" история повторялась — получался бесконечный цикл.
+// Теперь ссылка выбирается по роли из сессии, а если сессии нет —
+// по подсказке space_last_cabinet, которую кабинет записывает при
+// каждом своём открытии.
+function getCabinetUrl() {
+    if (myRole === 'owner' || myRole === 'manager') return 'space_control.html';
+    if (myRole === 'editor') return 'space_team.html';
+    try {
+        const last = localStorage.getItem('space_last_cabinet');
+        if (last === 'space_team.html' || last === 'space_control.html') return last;
+    } catch(e) {}
+    return 'space_team.html';
+}
+
+function applyCabinetLinks() {
+    const url = getCabinetUrl();
+    ['auth-gate-cabinet-link', 'back-to-cabinet-link', 'proj-det-open-cabinet'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('href', url);
+    });
+}
+applyCabinetLinks();
 
 // ─── Целевой диалог (передаётся из кабинета при клике "Чат" у проекта) ───
 let _pendingTargetEditorId = null;
