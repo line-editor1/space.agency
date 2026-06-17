@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="scroll-smooth" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="space-auth.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- PWA Meta tags -->
@@ -276,11 +277,11 @@
         <div class="space-y-3.5">
             <div class="relative">
                 <i class="fas fa-user-shield absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-                <input type="text" id="login-input" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600" placeholder="Логин Администратора" value="spaceowner">
+                <input type="text" id="login-input" autocomplete="username" autocapitalize="none" autocorrect="off" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600" placeholder="Логин Администратора">
             </div>
             <div class="relative">
                 <i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-                <input type="password" id="pass-input" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600" placeholder="Пароль" onkeydown="if(event.key==='Enter') executeLogin()">
+                <input type="password" id="pass-input" autocomplete="current-password" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600" placeholder="Пароль" onkeydown="if(event.key==='Enter') executeLogin()">
             </div>
         </div>
 
@@ -825,6 +826,16 @@
             </div>
 
             <div class="space-y-2 max-h-52 overflow-y-auto pr-1" id="admin-checklist-items"></div>
+
+            <div class="space-y-2 border-t border-white/[0.05] pt-4">
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider">Доступ Администратора</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="admin-login-input" autocomplete="username" class="bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Новый логин">
+                    <input type="password" id="admin-pass-input" autocomplete="new-password" class="bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Новый пароль">
+                </div>
+                <button onclick="updateAdminCredentials()" class="pressable w-full py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-[10px] font-bold uppercase tracking-wider transition-all">Сохранить доступ администратора</button>
+                <p class="text-[10px] text-slate-500 leading-relaxed">Заполняйте оба поля только если хотите их изменить. При первом запуске задайте логин и пароль здесь — без них вход в панель невозможен.</p>
+            </div>
         </div>
     </div>
 </div>
@@ -850,10 +861,17 @@ let FB_CONFIG = {
 const APP_ID = 'space-video-agency';
 const BASE = (col) => ['artifacts', APP_ID, 'public', 'data', col];
 
+// Единая система авторизации SPACE — все функции сессии вынесены в
+// общий модуль space-auth.js, подключённый в <head>. Это устраняет
+// расхождения логики между chat.html / space_team.html / space_control.html.
+const { withTimeout, readSession: readSpaceSession, writeSession: writeSpaceSession,
+        clearSession: destroySpaceSession, consumeUrlSessionFallback,
+        rememberCabinet, navigateWithSession } = window.SpaceAuth;
+
 // Подсказка для chat.html: запоминаем, из какого личного кабинета пришёл
 // пользователь, чтобы кнопка "Войти в личный кабинет" в чате вела на
 // правильный файл, а не на несуществующую/чужую страницу.
-try { localStorage.setItem('space_last_cabinet', 'space_control.html'); } catch(e) {}
+try { rememberCabinet('space_control.html'); } catch(e) {}
 
 const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
@@ -865,46 +883,9 @@ const db = initializeFirestore(app, {
     useFetchStreams: false
 });
 
-// Оборачивает промис в тайм-аут, чтобы сетевые зависания (частые на мобильном интернете)
-// не оставляли пользователя навечно смотреть на надпись "Подключение к SPACE..."
-function withTimeout(promise, ms, message) {
-    return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error(message || 'Превышено время ожидания соединения')), ms);
-        promise.then(
-            (val) => { clearTimeout(timer); resolve(val); },
-            (err) => { clearTimeout(timer); reject(err); }
-        );
-    });
-}
-
-const SESSION_KEY = 'space_session';
-
-function readSpaceSession() {
-    let raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    try {
-        const session = JSON.parse(raw);
-        if (!session || !session.role || !session.id) return null;
-        localStorage.setItem(SESSION_KEY, raw);
-        sessionStorage.setItem(SESSION_KEY, raw);
-        return session;
-    } catch (e) { return null; }
-}
-
-function writeSpaceSession(role, id, name) {
-    const session = { role, id, name: name || '', ts: Date.now() };
-    const raw = JSON.stringify(session);
-    localStorage.setItem(SESSION_KEY, raw);
-    sessionStorage.setItem(SESSION_KEY, raw);
-    return session;
-}
-
-function destroySpaceSession() {
-    [SESSION_KEY, 'chat_role', 'chat_id', 'chat_name'].forEach(k => {
-        localStorage.removeItem(k);
-        sessionStorage.removeItem(k);
-    });
-}
+// Приём сессии из URL-параметров (резервный канал, например от
+// "Войти от имени монтажёра" или возврата с auth-gate чата).
+consumeUrlSessionFallback();
 
 const _initialSession = readSpaceSession();
 
@@ -975,19 +956,12 @@ function checkSession() {
         currentRole = session.role;
         currentUserId = session.id;
         currentUserName = session.name;
-        // П2: Возврат в чат после auth-gate
+        // Возврат в чат после auth-gate
         const _rtParams = new URLSearchParams(window.location.search);
         const _returnTo = _rtParams.get('returnTo');
         if (_returnTo === 'chat.html') {
-            const _cp = new URLSearchParams();
-            _cp.set('session_role', currentRole);
-            _cp.set('session_id', currentUserId);
-            _cp.set('session_name', currentUserName || '');
             const _et = _rtParams.get('editor');
-            if (_et) _cp.set('editor', _et);
-            const _chatUrl = 'chat.html?' + _cp.toString();
-            console.log('[space_control] checkSession returnTo → редирект в чат:', _chatUrl);
-            window.location.href = _chatUrl;
+            navigateWithSession('chat.html', currentRole, currentUserId, currentUserName, _et ? { editor: _et } : {});
             return;
         }
         document.getElementById('screen-login').classList.add('hidden');
@@ -1159,29 +1133,29 @@ window.openChatLink = function(editorId) {
     if (editorId) { localStorage.setItem('target_editor_id', editorId); }
     else { localStorage.removeItem('target_editor_id'); }
 
-    const params = new URLSearchParams();
-    if (currentRole && currentUserId) {
-        params.set('session_role', currentRole);
-        params.set('session_id', currentUserId);
-        params.set('session_name', currentUserName || '');
-    }
-    if (editorId) params.set('editor', editorId);
+    const extra = {};
+    if (editorId) extra.editor = editorId;
 
-    const target = 'chat.html?' + params.toString();
-    console.log('[space_control] openChatLink → переход в чат:', target);
-    window.location.href = target;
+    if (currentRole && currentUserId) {
+        navigateWithSession('chat.html', currentRole, currentUserId, currentUserName, extra);
+    } else {
+        const params = new URLSearchParams(extra);
+        window.location.href = 'chat.html?' + params.toString();
+    }
 };
 
+// "Войти от имени монтажёра" — доступно только уже аутентифицированному
+// администратору (owner). Сессия монтажёра передаётся через тот же
+// защищённый одноразовый токен, что и остальные переходы между кабинетами,
+// а не открытым текстом в адресной строке.
 window.loginAsEditor = function(id) {
+    if (currentRole !== 'owner') {
+        showToast('Недостаточно прав для этого действия', 'error');
+        return;
+    }
     const ed = _editors.find(e => e.id === id);
     const edName = ed ? (ed.name || ed.login || '') : '';
-    const p = new URLSearchParams();
-    p.set('session_role', 'editor');
-    p.set('session_id', id);
-    p.set('session_name', edName);
-    const target = 'space_team.html?' + p.toString();
-    console.log('[space_control] loginAsEditor → переход в кабинет монтажёра:', target);
-    window.location.href = target;
+    navigateWithSession('space_team.html', 'editor', id, edName);
 };
 
 async function ensureAuth() {
@@ -1243,18 +1217,30 @@ window.executeLogin = async function() {
         showToast('Подключение к SPACE...', 'info');
 
         await withTimeout(ensureAuth(), 12000, 'Не удалось установить соединение');
-        const configSnap = await withTimeout(
-            getDoc(doc(db, ...BASE('site_config'), 'main')),
-            12000,
-            'Сервер не отвечает'
-        );
-        let expectedLogin = 'spaceowner';
-        let expectedHash = CryptoJS.SHA256('Space2026!').toString();
-        
-        if (configSnap.exists()) {
-            expectedLogin = configSnap.data().ownerLogin || expectedLogin;
-            expectedHash = configSnap.data().adminPassHash || expectedHash;
+        const configRef = doc(db, ...BASE('site_config'), 'main');
+        const configSnap = await withTimeout(getDoc(configRef), 12000, 'Сервер не отвечает');
+
+        // Учётные данные администратора берутся только из Firestore, без
+        // дефолтного логина/пароля в коде. Если конфигурация ещё не задана
+        // (первый запуск системы), то логин и пароль, введённые здесь,
+        // сохраняются как первые учётные данные администратора — это
+        // единственный момент, когда это происходит автоматически.
+        const hasCredentials = configSnap.exists() && configSnap.data().ownerLogin && configSnap.data().adminPassHash;
+
+        if (!hasCredentials) {
+            await withTimeout(
+                setDoc(configRef, { ownerLogin: login, adminPassHash: hash }, { merge: true }),
+                12000,
+                'Не удалось сохранить учётные данные'
+            );
+            await triggerLoader('Администратор');
+            setSession('owner', 'owner', 'Администратор SPACE');
+            showToast('Учётные данные администратора заданы', 'success');
+            return;
         }
+
+        const expectedLogin = configSnap.data().ownerLogin;
+        const expectedHash = configSnap.data().adminPassHash;
 
         if (login === expectedLogin && hash === expectedHash) {
             await triggerLoader('Администратор');
@@ -1275,23 +1261,13 @@ function setSession(role, id, name) {
     currentRole = s.role;
     currentUserId = s.id;
     currentUserName = s.name;
-    // П1: проверяем что localStorage['space_session'] корректно записался
-    const _dbgSess = JSON.parse(localStorage.getItem('space_session') || 'null');
-    console.log('[space_control] setSession → space_session:', _dbgSess);
-    console.log('[space_control] role=' + _dbgSess?.role + ', id=' + _dbgSess?.id + ', name=' + _dbgSess?.name);
-    // П2: Возврат в чат после auth-gate
+
+    // Возврат в чат после auth-gate
     const _rtParams = new URLSearchParams(window.location.search);
     const _returnTo = _rtParams.get('returnTo');
     if (_returnTo === 'chat.html') {
-        const _cp = new URLSearchParams();
-        _cp.set('session_role', currentRole);
-        _cp.set('session_id', currentUserId);
-        _cp.set('session_name', currentUserName || '');
         const _et = _rtParams.get('editor');
-        if (_et) _cp.set('editor', _et);
-        const _chatUrl = 'chat.html?' + _cp.toString();
-        console.log('[space_control] setSession returnTo → редирект в чат:', _chatUrl);
-        window.location.href = _chatUrl;
+        navigateWithSession('chat.html', currentRole, currentUserId, currentUserName, _et ? { editor: _et } : {});
         return;
     }
     document.getElementById('screen-login').classList.add('hidden');
@@ -2951,6 +2927,38 @@ async function saveChecklist() {
         showToast('Ошибка сохранения чек-листа', 'error');
     }
 }
+
+// Смена логина/пароля администратора. Учётные данные хранятся только в
+// Firestore (site_config), никакого дефолтного пароля в коде нет.
+// При первом запуске именно здесь задаётся первая пара логин/пароль.
+window.updateAdminCredentials = async function() {
+    const loginEl = document.getElementById('admin-login-input');
+    const passEl = document.getElementById('admin-pass-input');
+    const newLogin = loginEl.value.trim();
+    const newPass = passEl.value;
+
+    if (!newLogin && !newPass) {
+        showToast('Заполните логин и/или пароль для изменения', 'error');
+        return;
+    }
+    if (newPass && newPass.length < 6) {
+        showToast('Пароль должен быть не короче 6 символов', 'error');
+        return;
+    }
+
+    const update = {};
+    if (newLogin) update.ownerLogin = newLogin;
+    if (newPass) update.adminPassHash = CryptoJS.SHA256(newPass).toString();
+
+    try {
+        await setDoc(doc(db, ...BASE('site_config'), 'main'), update, { merge: true });
+        loginEl.value = '';
+        passEl.value = '';
+        showToast('Доступ администратора обновлён', 'success');
+    } catch(e) {
+        showToast('Ошибка сохранения учётных данных', 'error');
+    }
+};
 
 // Global textareas counter handler
 document.addEventListener('input', (e) => {
