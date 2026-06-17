@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SPACE — Чат</title>
+    <script>
+        // ВРЕМЕННАЯ ДИАГНОСТИКА: ловим вообще любую JS-ошибку на странице,
+        // даже если она происходит раньше основного модуля. Удалить вместе
+        // с остальным диагностическим кодом, когда проблема будет найдена.
+        window._spaceLastError = null;
+        window.addEventListener('error', function(e) {
+            window._spaceLastError = (e.message || 'неизвестная ошибка') + ' (' + (e.filename || '') + ':' + (e.lineno || '') + ')';
+            try {
+                var box = document.getElementById('auth-gate-debug');
+                if (box) box.innerHTML += '<br><span style="color:#f87171">Раннняя JS ошибка: ' + window._spaceLastError + '</span>';
+            } catch(_e) {}
+        });
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -452,6 +465,9 @@
         <a id="auth-gate-cabinet-link" href="space_team.html" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-space text-xs transition duration-200 block text-center">
             <i class="fas fa-arrow-right-to-bracket mr-1.5"></i>Войти в личный кабинет
         </a>
+
+        <!-- ВРЕМЕННАЯ ДИАГНОСТИКА — можно удалить после того, как разберёмся с проблемой входа в чат -->
+        <div id="auth-gate-debug" class="text-left text-[9px] font-mono text-slate-500 bg-black/30 rounded-xl p-3 break-all leading-relaxed"></div>
     </div>
 </div>
 
@@ -2178,7 +2194,25 @@ async function checkAuthSession() {
         initEmojiPicker();
     } else {
         document.getElementById('auth-gate-screen').classList.remove('hidden');
+        renderAuthGateDebug();
     }
+}
+
+// ВРЕМЕННАЯ ДИАГНОСТИКА — показывает, что именно увидела страница:
+// какие параметры пришли в адресной строке и что лежит в localStorage.
+// Удалить этот блок и вызовы renderAuthGateDebug()/window.onerror после
+// того, как разберёмся, почему сессия не подхватывается.
+function renderAuthGateDebug() {
+    const box = document.getElementById('auth-gate-debug');
+    if (!box) return;
+    let storedRaw = '(нет)';
+    try { storedRaw = localStorage.getItem(SESSION_KEY) || '(нет)'; } catch(e) { storedRaw = '(ошибка чтения: ' + e.message + ')'; }
+    box.innerHTML =
+        'URL: ' + (window.location.href) + '<br>' +
+        'search: ' + (window.location.search || '(пусто)') + '<br>' +
+        'myRole/myId: ' + myRole + ' / ' + myId + '<br>' +
+        'localStorage[space_session]: ' + storedRaw +
+        (window._spaceLastError ? ('<br><span style="color:#f87171">JS ошибка: ' + window._spaceLastError + '</span>') : '');
 }
 
 // ─── ВСПОМОГАТЕЛЬНЫЕ UX ФУНКЦИИ ───

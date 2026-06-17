@@ -127,6 +127,16 @@
             100% { transform: scale(2.4); opacity: 0; }
         }
 
+        @keyframes attentionShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .attention-shake {
+            animation: attentionShake 0.4s ease-in-out;
+            border-color: rgba(244, 63, 94, 0.6) !important;
+        }
+
         .bg-space-aurora {
             background-color: #030208 !important;
             background-image: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.08), transparent 50%),
@@ -1125,19 +1135,77 @@ function setupPWA() {
     manifestLink.href = URL.createObjectURL(blob);
     document.head.appendChild(manifestLink);
 
+    // Регистрируем service worker — без него многие браузеры (особенно
+    // Android Chrome) не считают сайт «устанавливаемым» и beforeinstallprompt
+    // никогда не срабатывает.
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(err => {
+            console.warn('Не удалось зарегистрировать service worker:', err);
+        });
+    }
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandalone) return;
+
+    let dismissedAt = 0;
+    try { dismissedAt = parseInt(localStorage.getItem('pwa_install_dismissed_at') || '0', 10); } catch(e) {}
+    const dismissedRecently = dismissedAt && (Date.now() - dismissedAt < 1000 * 60 * 60 * 24 * 7); // 7 дней
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         const installSection = document.getElementById('profile-pwa-install-section');
         if (installSection) installSection.classList.remove('hidden');
+        const headerBtn = document.getElementById('header-pwa-install-btn');
+        if (headerBtn) headerBtn.classList.remove('hidden');
+        if (!dismissedRecently) showPwaInstallBanner();
+    });
+
+    const ua = window.navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+    if (isIOS && isSafari && !dismissedRecently) {
+        showPwaInstallBanner(true);
+    }
+}
+
+function showPwaInstallBanner(isIOSManual) {
+    const banner = document.getElementById('pwa-install-banner');
+    if (!banner) return;
+
+    if (isIOSManual) {
+        const titleEl = banner.querySelector('h4');
+        const descEl = banner.querySelector('p');
+        const installBtn = banner.querySelector('button[onclick="triggerPwaInstall()"]');
+        if (titleEl) titleEl.textContent = 'Установите SPACE';
+        if (descEl) descEl.innerHTML = 'Нажмите <i class="fas fa-arrow-up-from-bracket"></i> «Поделиться» внизу экрана, затем «На экран «Домой»».';
+        if (installBtn) installBtn.classList.add('hidden');
+    }
+
+    banner.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        banner.classList.remove('translate-y-10', 'opacity-0');
     });
 }
+
+window.dismissPwaInstall = function() {
+    const banner = document.getElementById('pwa-install-banner');
+    if (!banner) return;
+    banner.classList.add('translate-y-10', 'opacity-0');
+    setTimeout(() => banner.classList.add('hidden'), 500);
+    try { localStorage.setItem('pwa_install_dismissed_at', String(Date.now())); } catch(e) {}
+};
 
 window.triggerPwaInstall = async function() {
     if (!deferredPrompt) { return; }
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     deferredPrompt = null;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) {
+        banner.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => banner.classList.add('hidden'), 500);
+    }
 };
 
 window.openChatLink = function(editorId) {
@@ -1157,7 +1225,7 @@ window.openChatLink = function(editorId) {
 };
 
 window.loginAsEditor = function(id) {
-    window.open(`index.html?auth_id=${id}`, '_blank');
+    window.open(`space_team.html?auth_id=${id}`, '_blank');
 };
 
 async function ensureAuth() {
@@ -2773,28 +2841,48 @@ window.submitReview = async function(isApproved) {
     const rating = parseInt(document.getElementById('review-rating-val').value) || 0;
     const reply = document.getElementById('review-admin-reply').value.trim();
     
-    if (isApproved && rating === 0) { showToast('Установите оценку качества проекта', 'error'); return; }
-    if (!isApproved && !reply) { showToast('Укажите замечания для доработки', 'error'); return; }
+    if (isApproved && rating === 0) {
+        showToast('Установите оценку качества проекта', 'error');
+        const ratingBox = document.getElementById('admin-star-rating');
+        if (ratingBox) {
+            ratingBox.classList.add('attention-shake');
+            setTimeout(() => ratingBox.classList.remove('attention-shake'), 500);
+        }
+        return;
+    }
+    if (!isApproved && !reply) {
+        showToast('Укажите замечания для доработки', 'error');
+        const replyBox = document.getElementById('review-admin-reply');
+        if (replyBox) {
+            replyBox.classList.add('attention-shake');
+            replyBox.focus();
+            setTimeout(() => replyBox.classList.remove('attention-shake'), 500);
+        }
+        return;
+    }
 
     try {
-        await ensureAuth();
+        await withTimeout(ensureAuth(), 12000, 'Не удалось установить соединение');
         const subRef = doc(db, ...BASE('submissions'), subId);
         const projRef = doc(db, ...BASE('projects'), projId);
         const projName = _projects.find(p => p.id === projId)?.projectName;
 
         if (isApproved) {
-            await updateDoc(subRef, { status: 'approved', adminReply: reply, rating, resolvedAt: new Date().toISOString() });
-            await updateDoc(projRef, { progress: 100, stage: 'done', rating });
+            await withTimeout(updateDoc(subRef, { status: 'approved', adminReply: reply, rating, resolvedAt: new Date().toISOString() }), 12000, 'Сервер не отвечает');
+            await withTimeout(updateDoc(projRef, { progress: 100, stage: 'done', rating }), 12000, 'Сервер не отвечает');
             sendNotification(edId, 'Проект принят!', `Ваша работа по проекту "${projName}" успешно принята. Выплата зачислена.`);
             showToast('Проект принят и архивирован', 'success');
         } else {
-            await updateDoc(subRef, { status: 'rejected', adminReply: reply, resolvedAt: new Date().toISOString() });
-            await updateDoc(projRef, { progress: 80, stage: 'edit' });
+            await withTimeout(updateDoc(subRef, { status: 'rejected', adminReply: reply, resolvedAt: new Date().toISOString() }), 12000, 'Сервер не отвечает');
+            await withTimeout(updateDoc(projRef, { progress: 80, stage: 'edit' }), 12000, 'Сервер не отвечает');
             sendNotification(edId, 'Корректировки проекта', `Проект "${projName}" отправлен на доработку. Замечания: ${reply}`);
             showToast('Возвращено в доработку', 'info');
         }
         closeModal('modal-review-submission');
-    } catch(e) { showToast('Ошибка фиксации статуса', 'error'); }
+    } catch(e) {
+        console.error('Ошибка фиксации статуса проверки:', e);
+        showToast('Не удалось сохранить решение. Проверьте интернет-соединение и попробуйте снова.', 'error');
+    }
 };
 
 window.toggleNotifications = function() {
