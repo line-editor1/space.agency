@@ -722,8 +722,7 @@ function destroySpaceSession() {
 
 // ─── Приём сессии из URL-параметров ───
 // space_control.html передаёт session_role/session_id/session_name когда
-// администратор нажимает «Войти в кабинет» у монтажёра. Записываем сессию
-// в storage, чтобы checkSession() сразу нашёл её без ввода пароля.
+// администратор нажимает «Войти в кабинет» у монтажёра.
 (function applySessionFromUrl() {
     const p = new URLSearchParams(window.location.search);
     const urlRole = p.get('session_role');
@@ -731,7 +730,6 @@ function destroySpaceSession() {
     if (urlRole && urlId) {
         const urlName = p.get('session_name') || '';
         writeSpaceSession(urlRole, urlId, urlName);
-        // Убираем параметры из адресной строки
         p.delete('session_role'); p.delete('session_id'); p.delete('session_name');
         const qs = p.toString();
         window.history.replaceState({}, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
@@ -2058,13 +2056,13 @@ async function checkSession() {
         const _rtParams = new URLSearchParams(window.location.search);
         const _returnTo = _rtParams.get('returnTo');
         if (_returnTo === 'chat.html') {
-            const _chatParams = new URLSearchParams();
-            _chatParams.set('session_role', currentRole);
-            _chatParams.set('session_id', currentUserId);
-            _chatParams.set('session_name', currentUserName || '');
-            const _editorTarget = _rtParams.get('editor');
-            if (_editorTarget) _chatParams.set('editor', _editorTarget);
-            window.location.href = 'chat.html?' + _chatParams.toString();
+            const _cp = new URLSearchParams();
+            _cp.set('session_role', currentRole);
+            _cp.set('session_id', currentUserId);
+            _cp.set('session_name', currentUserName || '');
+            const _et = _rtParams.get('editor');
+            if (_et) _cp.set('editor', _et);
+            window.location.href = 'chat.html?' + _cp.toString();
             return;
         }
         document.getElementById('screen-dashboard').classList.remove('hidden');

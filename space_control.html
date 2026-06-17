@@ -979,13 +979,13 @@ function checkSession() {
         const _rtParams = new URLSearchParams(window.location.search);
         const _returnTo = _rtParams.get('returnTo');
         if (_returnTo === 'chat.html') {
-            const _chatParams = new URLSearchParams();
-            _chatParams.set('session_role', currentRole);
-            _chatParams.set('session_id', currentUserId);
-            _chatParams.set('session_name', currentUserName || '');
-            const _editorTarget = _rtParams.get('editor');
-            if (_editorTarget) _chatParams.set('editor', _editorTarget);
-            window.location.href = 'chat.html?' + _chatParams.toString();
+            const _cp = new URLSearchParams();
+            _cp.set('session_role', currentRole);
+            _cp.set('session_id', currentUserId);
+            _cp.set('session_name', currentUserName || '');
+            const _et = _rtParams.get('editor');
+            if (_et) _cp.set('editor', _et);
+            window.location.href = 'chat.html?' + _cp.toString();
             return;
         }
         document.getElementById('screen-login').classList.add('hidden');
@@ -1170,14 +1170,13 @@ window.openChatLink = function(editorId) {
 };
 
 window.loginAsEditor = function(id) {
-    // Находим монтажёра в локальном массиве для передачи имени
     const ed = _editors.find(e => e.id === id);
     const edName = ed ? (ed.name || ed.login || '') : '';
-    const params = new URLSearchParams();
-    params.set('session_role', 'editor');
-    params.set('session_id', id);
-    params.set('session_name', edName);
-    window.location.href = 'space_team.html?' + params.toString();
+    const p = new URLSearchParams();
+    p.set('session_role', 'editor');
+    p.set('session_id', id);
+    p.set('session_name', edName);
+    window.location.href = 'space_team.html?' + p.toString();
 };
 
 async function ensureAuth() {
@@ -1275,13 +1274,13 @@ function setSession(role, id, name) {
     const _rtParams = new URLSearchParams(window.location.search);
     const _returnTo = _rtParams.get('returnTo');
     if (_returnTo === 'chat.html') {
-        const _chatParams = new URLSearchParams();
-        _chatParams.set('session_role', currentRole);
-        _chatParams.set('session_id', currentUserId);
-        _chatParams.set('session_name', currentUserName || '');
-        const _editorTarget = _rtParams.get('editor');
-        if (_editorTarget) _chatParams.set('editor', _editorTarget);
-        window.location.href = 'chat.html?' + _chatParams.toString();
+        const _cp = new URLSearchParams();
+        _cp.set('session_role', currentRole);
+        _cp.set('session_id', currentUserId);
+        _cp.set('session_name', currentUserName || '');
+        const _et = _rtParams.get('editor');
+        if (_et) _cp.set('editor', _et);
+        window.location.href = 'chat.html?' + _cp.toString();
         return;
     }
     document.getElementById('screen-login').classList.add('hidden');

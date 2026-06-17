@@ -880,14 +880,14 @@ function getCabinetUrl() {
 
 function applyCabinetLinks() {
     const url = getCabinetUrl();
-    // auth-gate: добавляем returnTo=chat.html, чтобы кабинет после логина
-    // вернул пользователя обратно в чат с передачей сессии через URL.
+    // auth-gate получает returnTo=chat.html — кабинет после логина вернёт
+    // пользователя обратно в чат с сессией через URL-параметры.
     const authGateEl = document.getElementById('auth-gate-cabinet-link');
     if (authGateEl) {
-        const returnParams = new URLSearchParams({ returnTo: 'chat.html' });
+        const rp = new URLSearchParams({ returnTo: 'chat.html' });
         const pendingEditor = localStorage.getItem('target_editor_id');
-        if (pendingEditor) returnParams.set('editor', pendingEditor);
-        authGateEl.setAttribute('href', url + '?' + returnParams.toString());
+        if (pendingEditor) rp.set('editor', pendingEditor);
+        authGateEl.setAttribute('href', url + '?' + rp.toString());
     }
     ['back-to-cabinet-link', 'proj-det-open-cabinet'].forEach(id => {
         const el = document.getElementById(id);
