@@ -906,81 +906,19 @@ function setupPWA() {
     manifestLink.href = URL.createObjectURL(blob);
     document.head.appendChild(manifestLink);
 
-    // Регистрируем service worker — без него многие браузеры (особенно
-    // Android Chrome) не считают сайт «устанавливаемым» и beforeinstallprompt
-    // никогда не срабатывает.
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(err => {
-            console.warn('Не удалось зарегистрировать service worker:', err);
-        });
-    }
-
-    // Если приложение уже установлено и открыто как standalone — банner не нужен.
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    if (isStandalone) return;
-
-    // Не показываем повторно, если пользователь недавно нажал "Позже"
-    let dismissedAt = 0;
-    try { dismissedAt = parseInt(localStorage.getItem('pwa_install_dismissed_at') || '0', 10); } catch(e) {}
-    const dismissedRecently = dismissedAt && (Date.now() - dismissedAt < 1000 * 60 * 60 * 24 * 7); // 7 дней
-
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         const installSection = document.getElementById('profile-pwa-install-section');
         if (installSection) installSection.classList.remove('hidden');
-        const headerBtn = document.getElementById('header-pwa-install-btn');
-        if (headerBtn) headerBtn.classList.remove('hidden');
-        if (!dismissedRecently) showPwaInstallBanner();
-    });
-
-    // iOS Safari никогда не вызывает beforeinstallprompt — показываем
-    // собственную подсказку с инструкцией "Поделиться → На экран Домой".
-    const ua = window.navigator.userAgent;
-    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
-    if (isIOS && isSafari && !dismissedRecently) {
-        showPwaInstallBanner(true);
-    }
-}
-
-function showPwaInstallBanner(isIOSManual) {
-    const banner = document.getElementById('pwa-install-banner');
-    if (!banner) return;
-
-    if (isIOSManual) {
-        const titleEl = banner.querySelector('h4');
-        const descEl = banner.querySelector('p');
-        const installBtn = banner.querySelector('button[onclick="triggerPwaInstall()"]');
-        if (titleEl) titleEl.textContent = 'Установите SPACE';
-        if (descEl) descEl.innerHTML = 'Нажмите <i class="fas fa-arrow-up-from-bracket"></i> «Поделиться» внизу экрана, затем «На экран «Домой»».';
-        if (installBtn) installBtn.classList.add('hidden');
-    }
-
-    banner.classList.remove('hidden');
-    requestAnimationFrame(() => {
-        banner.classList.remove('translate-y-10', 'opacity-0');
     });
 }
-
-window.dismissPwaInstall = function() {
-    const banner = document.getElementById('pwa-install-banner');
-    if (!banner) return;
-    banner.classList.add('translate-y-10', 'opacity-0');
-    setTimeout(() => banner.classList.add('hidden'), 500);
-    try { localStorage.setItem('pwa_install_dismissed_at', String(Date.now())); } catch(e) {}
-};
 
 window.triggerPwaInstall = async function() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     deferredPrompt = null;
-    const banner = document.getElementById('pwa-install-banner');
-    if (banner) {
-        banner.classList.add('translate-y-10', 'opacity-0');
-        setTimeout(() => banner.classList.add('hidden'), 500);
-    }
 };
 
 window.openChatLink = function(editorId) {
@@ -996,7 +934,7 @@ window.openChatLink = function(editorId) {
     if (editorId) params.set('editor', editorId);
 
     const target = 'chat.html?' + params.toString();
-    window.open(target, '_blank');
+    window.location.href = target;
 };
 
 async function triggerLoader(welcomeName) {
@@ -1255,7 +1193,7 @@ function renderEditorDashboard() {
                     <span class="text-2xl sm:text-3xl font-black ${deadlinesToday > 0 ? 'text-rose-400' : 'text-slate-300'}">${deadlinesToday}</span>
                 </div>
                 <div class="glass-card premium-border p-4 sm:p-5 rounded-3xl text-center">
-                    <span class="block text-[8px] sm:text-[9px] text-indigo-400 uppercase font-bold mb-2" style="letter-spacing:0.05em; text-indent:0.025em;">Ожидаемый оклад</span>
+                    <span class="block text-[8px] sm:text-[9px] text-indigo-400 uppercase font-bold tracking-wider mb-2">Ожидаемый оклад</span>
                     <span class="text-lg sm:text-2xl font-black font-mono text-emerald-400 mt-1 block">${formatMoney(expected)}</span>
                 </div>
             </div>
@@ -2098,6 +2036,20 @@ async function checkSession() {
             updateStatusButtonsUI(status);
         });
 
+        // ─── Возврат в чат после auth-gate ───
+        const _rtParams = new URLSearchParams(window.location.search);
+        const _returnTo = _rtParams.get('returnTo');
+        if (_returnTo === 'chat.html') {
+            const _chatParams = new URLSearchParams();
+            _chatParams.set('session_role', currentRole);
+            _chatParams.set('session_id', currentUserId);
+            _chatParams.set('session_name', currentUserName || '');
+            const _editorTarget = _rtParams.get('editor');
+            if (_editorTarget) _chatParams.set('editor', _editorTarget);
+            window.location.href = 'chat.html?' + _chatParams.toString();
+            return;
+        }
+
         document.getElementById('screen-dashboard').classList.remove('hidden');
         renderSegmentTabs();
     } else {
@@ -2106,52 +2058,7 @@ async function checkSession() {
     }
 }
 
-// Автовход по ссылке от администратора (раздел "Монтажёры" → "Войти в кабинет").
-// Открывает личный кабинет монтажёра напрямую, без пароля, так как сама ссылка
-// уже выдаётся только из защищённой панели администратора.
-async function tryAutoLoginFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const authId = params.get('auth_id');
-    if (!authId) return;
-
-    try {
-        showToast('Подключение к SPACE...', 'info');
-        await withTimeout(ensureAuth(), 12000, 'Не удалось установить соединение');
-        const edSnap = await withTimeout(
-            getDoc(doc(db, ...BASE('editors'), authId)),
-            12000,
-            'Сервер не отвечает'
-        );
-
-        if (!edSnap.exists()) {
-            showToast('Монтажёр не найден', 'error');
-            return;
-        }
-        const edData = edSnap.data();
-        if (edData.isBlocked) {
-            showToast('Этот аккаунт заблокирован', 'error');
-            return;
-        }
-
-        await triggerLoader(edData.name || edData.login);
-        writeSpaceSession('editor', edSnap.id, edData.name || edData.login);
-    } catch(e) {
-        console.error('Автовход по ссылке администратора не удался:', e);
-        showToast('Не удалось войти в кабинет монтажёра', 'error');
-    } finally {
-        // Убираем auth_id из адресной строки, чтобы обновление страницы
-        // не пыталось повторно авторизоваться по той же ссылке
-        const cleanParams = new URLSearchParams(window.location.search);
-        if (cleanParams.has('auth_id')) {
-            cleanParams.delete('auth_id');
-            const qs = cleanParams.toString();
-            window.history.replaceState({}, '', window.location.pathname + (qs ? '?' + qs : ''));
-        }
-    }
-}
-
-window.onload = async function() {
-    await tryAutoLoginFromUrl();
+window.onload = function() {
     checkSession();
 };
 
