@@ -1170,7 +1170,14 @@ window.openChatLink = function(editorId) {
 };
 
 window.loginAsEditor = function(id) {
-    window.open(`index.html?auth_id=${id}`, '_blank');
+    // Находим монтажёра в локальном массиве для передачи имени
+    const ed = _editors.find(e => e.id === id);
+    const edName = ed ? (ed.name || ed.login || '') : '';
+    const params = new URLSearchParams();
+    params.set('session_role', 'editor');
+    params.set('session_id', id);
+    params.set('session_name', edName);
+    window.location.href = 'space_team.html?' + params.toString();
 };
 
 async function ensureAuth() {

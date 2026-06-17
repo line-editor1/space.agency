@@ -720,6 +720,24 @@ function destroySpaceSession() {
     });
 }
 
+// ─── Приём сессии из URL-параметров ───
+// space_control.html передаёт session_role/session_id/session_name когда
+// администратор нажимает «Войти в кабинет» у монтажёра. Записываем сессию
+// в storage, чтобы checkSession() сразу нашёл её без ввода пароля.
+(function applySessionFromUrl() {
+    const p = new URLSearchParams(window.location.search);
+    const urlRole = p.get('session_role');
+    const urlId   = p.get('session_id');
+    if (urlRole && urlId) {
+        const urlName = p.get('session_name') || '';
+        writeSpaceSession(urlRole, urlId, urlName);
+        // Убираем параметры из адресной строки
+        p.delete('session_role'); p.delete('session_id'); p.delete('session_name');
+        const qs = p.toString();
+        window.history.replaceState({}, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+    }
+})();
+
 const _initialSession = readSpaceSession();
 
 let currentRole = _initialSession ? _initialSession.role : null;
@@ -2049,7 +2067,6 @@ async function checkSession() {
             window.location.href = 'chat.html?' + _chatParams.toString();
             return;
         }
-
         document.getElementById('screen-dashboard').classList.remove('hidden');
         renderSegmentTabs();
     } else {

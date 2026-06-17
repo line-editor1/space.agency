@@ -880,13 +880,11 @@ function getCabinetUrl() {
 
 function applyCabinetLinks() {
     const url = getCabinetUrl();
-    // Для auth-gate: добавляем returnTo=chat.html, чтобы кабинет после логина
-    // вернул пользователя обратно в чат с передачей сессии через URL-параметры.
-    // Для остальных кнопок — обычная ссылка без returnTo.
+    // auth-gate: добавляем returnTo=chat.html, чтобы кабинет после логина
+    // вернул пользователя обратно в чат с передачей сессии через URL.
     const authGateEl = document.getElementById('auth-gate-cabinet-link');
     if (authGateEl) {
         const returnParams = new URLSearchParams({ returnTo: 'chat.html' });
-        // Если был pending editor — передаём его в кабинет, чтобы сохранился
         const pendingEditor = localStorage.getItem('target_editor_id');
         if (pendingEditor) returnParams.set('editor', pendingEditor);
         authGateEl.setAttribute('href', url + '?' + returnParams.toString());
