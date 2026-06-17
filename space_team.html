@@ -720,9 +720,7 @@ function destroySpaceSession() {
     });
 }
 
-// ─── Приём сессии из URL-параметров ───
-// space_control.html передаёт session_role/session_id/session_name когда
-// администратор нажимает «Войти в кабинет» у монтажёра.
+// П2: Приём сессии из URL-параметров (от loginAsEditor в space_control)
 (function applySessionFromUrl() {
     const p = new URLSearchParams(window.location.search);
     const urlRole = p.get('session_role');
@@ -733,6 +731,8 @@ function destroySpaceSession() {
         p.delete('session_role'); p.delete('session_id'); p.delete('session_name');
         const qs = p.toString();
         window.history.replaceState({}, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+        const _dbg = JSON.parse(localStorage.getItem('space_session') || 'null');
+        console.log('[space_team] applySessionFromUrl → space_session:', _dbg);
     }
 })();
 
@@ -950,6 +950,7 @@ window.openChatLink = function(editorId) {
     if (editorId) params.set('editor', editorId);
 
     const target = 'chat.html?' + params.toString();
+    console.log('[space_team] openChatLink → переход в чат:', target);
     window.location.href = target;
 };
 
@@ -1043,6 +1044,10 @@ window.executeLogin = async function() {
         currentRole = session.role;
         currentUserId = session.id;
         currentUserName = session.name;
+        // П1: проверяем что localStorage['space_session'] корректно записался
+        const _dbgSess = JSON.parse(localStorage.getItem('space_session') || 'null');
+        console.log('[space_team] writeSpaceSession → space_session:', _dbgSess);
+        console.log('[space_team] role=' + _dbgSess?.role + ', id=' + _dbgSess?.id + ', name=' + _dbgSess?.name);
         
         await checkSession();
     } catch(e) { 
@@ -2052,7 +2057,7 @@ async function checkSession() {
             updateStatusButtonsUI(status);
         });
 
-        // ─── Возврат в чат после auth-gate ───
+        // П2: Возврат в чат после auth-gate
         const _rtParams = new URLSearchParams(window.location.search);
         const _returnTo = _rtParams.get('returnTo');
         if (_returnTo === 'chat.html') {
@@ -2062,7 +2067,9 @@ async function checkSession() {
             _cp.set('session_name', currentUserName || '');
             const _et = _rtParams.get('editor');
             if (_et) _cp.set('editor', _et);
-            window.location.href = 'chat.html?' + _cp.toString();
+            const _chatUrl = 'chat.html?' + _cp.toString();
+            console.log('[space_team] checkSession returnTo → редирект в чат:', _chatUrl);
+            window.location.href = _chatUrl;
             return;
         }
         document.getElementById('screen-dashboard').classList.remove('hidden');

@@ -847,6 +847,10 @@ let myNameSaved = _spaceSession ? _spaceSession.name : null;
         myRole = urlRole;
         myId = urlId;
         myNameSaved = urlName;
+        // П1+П2: проверяем что сессия реально записалась
+        const _dbg = JSON.parse(localStorage.getItem('space_session') || 'null');
+        console.log('[chat.html] applySessionFromUrl → space_session:', _dbg);
+        console.log('[chat.html] myRole=' + myRole + ', myId=' + myId);
     }
     // Убираем технические параметры сессии из адресной строки,
     // чтобы они не утекали при копировании ссылки
@@ -880,14 +884,16 @@ function getCabinetUrl() {
 
 function applyCabinetLinks() {
     const url = getCabinetUrl();
-    // auth-gate получает returnTo=chat.html — кабинет после логина вернёт
-    // пользователя обратно в чат с сессией через URL-параметры.
+    // П2: auth-gate получает returnTo=chat.html — кабинет после логина
+    // вернёт пользователя обратно в чат с сессией через URL-параметры.
     const authGateEl = document.getElementById('auth-gate-cabinet-link');
     if (authGateEl) {
         const rp = new URLSearchParams({ returnTo: 'chat.html' });
         const pendingEditor = localStorage.getItem('target_editor_id');
         if (pendingEditor) rp.set('editor', pendingEditor);
-        authGateEl.setAttribute('href', url + '?' + rp.toString());
+        const authUrl = url + '?' + rp.toString();
+        authGateEl.setAttribute('href', authUrl);
+        console.log('[chat.html] applyCabinetLinks → auth-gate href:', authUrl);
     }
     ['back-to-cabinet-link', 'proj-det-open-cabinet'].forEach(id => {
         const el = document.getElementById(id);

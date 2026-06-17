@@ -975,7 +975,7 @@ function checkSession() {
         currentRole = session.role;
         currentUserId = session.id;
         currentUserName = session.name;
-        // ─── Возврат в чат после auth-gate ───
+        // П2: Возврат в чат после auth-gate
         const _rtParams = new URLSearchParams(window.location.search);
         const _returnTo = _rtParams.get('returnTo');
         if (_returnTo === 'chat.html') {
@@ -985,7 +985,9 @@ function checkSession() {
             _cp.set('session_name', currentUserName || '');
             const _et = _rtParams.get('editor');
             if (_et) _cp.set('editor', _et);
-            window.location.href = 'chat.html?' + _cp.toString();
+            const _chatUrl = 'chat.html?' + _cp.toString();
+            console.log('[space_control] checkSession returnTo → редирект в чат:', _chatUrl);
+            window.location.href = _chatUrl;
             return;
         }
         document.getElementById('screen-login').classList.add('hidden');
@@ -1166,6 +1168,7 @@ window.openChatLink = function(editorId) {
     if (editorId) params.set('editor', editorId);
 
     const target = 'chat.html?' + params.toString();
+    console.log('[space_control] openChatLink → переход в чат:', target);
     window.location.href = target;
 };
 
@@ -1176,7 +1179,9 @@ window.loginAsEditor = function(id) {
     p.set('session_role', 'editor');
     p.set('session_id', id);
     p.set('session_name', edName);
-    window.location.href = 'space_team.html?' + p.toString();
+    const target = 'space_team.html?' + p.toString();
+    console.log('[space_control] loginAsEditor → переход в кабинет монтажёра:', target);
+    window.location.href = target;
 };
 
 async function ensureAuth() {
@@ -1270,7 +1275,11 @@ function setSession(role, id, name) {
     currentRole = s.role;
     currentUserId = s.id;
     currentUserName = s.name;
-    // ─── Возврат в чат после auth-gate ───
+    // П1: проверяем что localStorage['space_session'] корректно записался
+    const _dbgSess = JSON.parse(localStorage.getItem('space_session') || 'null');
+    console.log('[space_control] setSession → space_session:', _dbgSess);
+    console.log('[space_control] role=' + _dbgSess?.role + ', id=' + _dbgSess?.id + ', name=' + _dbgSess?.name);
+    // П2: Возврат в чат после auth-gate
     const _rtParams = new URLSearchParams(window.location.search);
     const _returnTo = _rtParams.get('returnTo');
     if (_returnTo === 'chat.html') {
@@ -1280,7 +1289,9 @@ function setSession(role, id, name) {
         _cp.set('session_name', currentUserName || '');
         const _et = _rtParams.get('editor');
         if (_et) _cp.set('editor', _et);
-        window.location.href = 'chat.html?' + _cp.toString();
+        const _chatUrl = 'chat.html?' + _cp.toString();
+        console.log('[space_control] setSession returnTo → редирект в чат:', _chatUrl);
+        window.location.href = _chatUrl;
         return;
     }
     document.getElementById('screen-login').classList.add('hidden');
