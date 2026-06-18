@@ -7,6 +7,58 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="space-auth.js"></script>
+    <script>
+        // Предотвращение падения приложения, если space-auth.js не загрузился в песочнице браузера
+        if (!window.SpaceAuth) {
+            const SESSION_KEY = 'space_session';
+            const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+            window.SpaceAuth = {
+                SESSION_KEY,
+                readSession: () => {
+                    try {
+                        const raw = localStorage.getItem(SESSION_KEY);
+                        if (!raw) return null;
+                        const session = JSON.parse(raw);
+                        if (!session || !session.role || !session.id) return null;
+                        if (Date.now() - session.ts > SESSION_TTL_MS) {
+                            localStorage.removeItem(SESSION_KEY);
+                            return null;
+                        }
+                        return session;
+                    } catch(e) { return null; }
+                },
+                // Имя намеренно не сохраняется в сессии — оно загружается из Firestore
+                writeSession: (role, id) => {
+                    const session = { role, id, ts: Date.now() };
+                    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch(e) {}
+                    return session;
+                },
+                clearSession: () => {
+                    try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+                },
+                getCabinetUrl: (role) => {
+                    if (role === 'owner' || role === 'manager') return 'space_control.html';
+                    return 'space_team.html';
+                },
+                rememberCabinet: (fileName) => {
+                    try { localStorage.setItem('space_last_cabinet', fileName); } catch(e) {}
+                },
+                withTimeout: (promise, ms, message) => {
+                    return new Promise((resolve, reject) => {
+                        const timer = setTimeout(() => reject(new Error(message || 'Превышено время ожидания')), ms);
+                        promise.then((val) => { clearTimeout(timer); resolve(val); }, (err) => { clearTimeout(timer); reject(err); });
+                    });
+                },
+                // Передача сессии только через localStorage, без st-параметра в URL
+                navigateWithSession: (targetFile, role, id, _nameIgnored, extraParams) => {
+                    window.SpaceAuth.writeSession(role, id);
+                    const params = new URLSearchParams(extraParams || {});
+                    const qs = params.toString();
+                    window.location.href = targetFile + (qs ? '?' + qs : '');
+                }
+            };
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- PWA Meta tags -->
@@ -24,7 +76,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* Safe Area и динамическая высота под клавиатуру */
         :root {
             --vh: 1vh;
             --safe-top: env(safe-area-inset-top, 0px);
@@ -33,7 +84,7 @@
 
         html, body {
             font-family: 'Inter', sans-serif;
-            background: #08070F; /* Матовый Space Dark */
+            background: #08070F;
             color: #f8fafc;
             height: 100%;
             height: calc(var(--vh, 1vh) * 100);
@@ -43,7 +94,6 @@
         }
         .font-space { font-family: 'Space Grotesk', sans-serif; }
         
-        /* Матовый скролл без неонового свечения */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.06); border-radius: 4px; }
@@ -60,7 +110,6 @@
             overflow: hidden;
         }
 
-        /* ── SIDEBAR (Список чатов) ── */
         #sidebar {
             width: 310px;
             flex-shrink: 0;
@@ -74,7 +123,6 @@
         #sidebar-header { padding: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); flex-shrink: 0; }
         #sidebar-list { flex: 1; overflow-y: auto; padding: 6px; }
 
-        /* ── MAIN AREA (Окно чата) ── */
         #main {
             flex: 1;
             display: flex;
@@ -96,7 +144,6 @@
             z-index: 5;
         }
 
-        /* Блок проекта в закрепе */
         #project-pin-bar {
             display: none;
             padding: 8px 14px;
@@ -125,7 +172,6 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Нижняя панель */
         #input-area {
             flex-shrink: 0;
             padding: 10px 14px;
@@ -135,7 +181,6 @@
             z-index: 15;
         }
 
-        /* ── REPLY BAR ── */
         #reply-bar {
             display: none;
             padding: 6px 10px;
@@ -148,10 +193,8 @@
         #reply-bar.show { display: flex; }
         #reply-bar-line { width: 3px; height: 26px; border-radius: 2px; background: #6366f1; flex-shrink: 0; }
 
-        /* ── МАТОВЫЙ СТИЛЬ "SPACE DARK" ── */
         .glass { background: #12111E; border: 1px solid rgba(255, 255, 255, 0.06); }
 
-        /* ── СПИСОК ЧАТОВ ── */
         .conv-item {
             padding: 8px 10px;
             border-radius: 12px;
@@ -165,7 +208,6 @@
         .conv-item:hover { background: rgba(255, 255, 255, 0.02); }
         .conv-item.active { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.04); }
 
-        /* ── АВАТАРЫ С МАТОВЫМИ ГРАДИЕНТАМИ ── */
         .avatar {
             width: 42px;
             height: 42px;
@@ -195,7 +237,6 @@
             z-index: 2;
         }
 
-        /* ── ПУЗЫРИ СООБЩЕНИЙ ── */
         .msg-row { display: flex; flex-direction: column; margin-bottom: 2px; }
         .msg-row.mine { align-items: flex-end; }
         .msg-row.theirs { align-items: flex-start; }
@@ -223,13 +264,11 @@
             color: #f1f5f9;
         }
 
-        /* Твики для Telegram-style визуального объединения групп сообщений */
         .rounded-br-sm { border-bottom-right-radius: 4px !important; }
         .rounded-tr-sm { border-top-right-radius: 4px !important; }
         .rounded-bl-sm { border-bottom-left-radius: 4px !important; }
         .rounded-tl-sm { border-top-left-radius: 4px !important; }
 
-        /* ── РЕАКЦИИ ПОД ПУЗЫРЕМ ── */
         .reactions-wrap {
             display: flex;
             flex-wrap: wrap;
@@ -255,7 +294,6 @@
             border-color: rgba(99, 102, 241, 0.3);
         }
 
-        /* ── ЕДИНАЯ ТЕЛЕГРАМ-СТАЙЛ МОБИЛЬНАЯ ПАНЕЛЬ РЕАКЦИЙ И МЕНЮ ── */
         .unified-mobile-menu {
             position: absolute;
             background: #12111E;
@@ -304,7 +342,6 @@
         .unified-menu-action.danger { color: #fb7185; }
         .unified-menu-action.danger:hover { background: rgba(244, 63, 94, 0.05); }
 
-        /* ── ЭМОДЗИ-ПИКЕР (Клавиатура смайликов у поля ввода) ── */
         #emoji-picker-popover {
             position: absolute;
             bottom: calc(100% + 8px);
@@ -335,7 +372,6 @@
             to { transform: scale(1) translateY(0); opacity: 1; }
         }
 
-        /* ── КНОПКИ УПРАВЛЕНИЯ ВВОДОМ ── */
         .input-action-btn {
             width: 42px;
             height: 42px;
@@ -370,7 +406,6 @@
         .send-btn:hover:not(:disabled) { background: #2e2d44; color: #c7d2fe; }
         .send-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 
-        /* ── ТЕЛЕГРАМ-СТАЙЛ МОБИЛЬНАЯ НАВИГАЦИЯ (Экраны до 700px) ── */
         @media(max-width: 700px) {
             #sidebar {
                 position: fixed; left: 0; top: 0; bottom: 0; right: 0;
@@ -389,7 +424,6 @@
 
         #sidebar-toggle { display: none; }
 
-        /* Всплывающий Тост */
         #toast {
             position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
             z-index: 9999; padding: 8px 16px; border-radius: 10px;
@@ -400,7 +434,6 @@
         }
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(6px); }
 
-        /* Модальные окна */
         .modal-bg {
             position: fixed; inset: 0; z-index: 800;
             background: rgba(0,0,0,0.65);
@@ -414,7 +447,6 @@
         }
         .input-dark:focus { border-color: rgba(255, 255, 255, 0.12); }
 
-        /* Выбор статуса через сетку смайликов */
         .status-option-btn {
             width: 38px; height: 36px; border-radius: 10px; background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.04); font-size: 18px; display: flex;
@@ -424,7 +456,6 @@
             background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.35);
         }
 
-        /* ── ШЛЮЗ БЛОКИРОВКИ: ВОЙДИТЕ В ЛИЧНЫЙ КАБИНЕТ ── */
         #auth-gate-screen {
             position: fixed; inset: 0; z-index: 900; background: #08070F;
             display: flex; align-items: center; justify-content: center; padding: 16px;
@@ -435,10 +466,10 @@
 
 <div id="toast"></div>
 
-<!-- Единая реакция и контекст-панель -->
+<!-- Контекст-панель реакций и действий -->
 <div id="unified-msg-menu" class="unified-mobile-menu" style="display: none;"></div>
 
-<!-- ══ ЭКРАН ВХОДА В ЛИЧНЫЙ КАБИНЕТ (АВТОРИЗАЦИОННЫЙ ШЛЮЗ) ══ -->
+<!-- Шлюз авторизации (требует активной сессии) -->
 <div id="auth-gate-screen" class="hidden">
     <div class="glass w-full max-w-sm rounded-3xl p-6 text-center space-y-5">
         <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto overflow-hidden">
@@ -448,7 +479,7 @@
             <p class="text-[9px] text-indigo-400 uppercase tracking-[0.2em] font-space font-bold">SPACE Video Agency</p>
             <h3 class="text-base font-space font-black text-white">Войдите в личный кабинет</h3>
         </div>
-        <p class="text-xs text-slate-400 leading-relaxed px-2">Чат SPACE использует общую авторизацию с личным кабинетом. Войдите один раз — чат откроется автоматически.</p>
+        <p class="text-xs text-slate-400 leading-relaxed px-2">Чат SPACE использует общую авторизацию с личным кабинетом. Войдите в кабинет монтажера или админа, чтобы начать общение.</p>
         
         <a id="auth-gate-cabinet-link" href="space_team.html" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-space text-xs transition duration-200 block text-center">
             <i class="fas fa-arrow-right-to-bracket mr-1.5"></i>Войти в личный кабинет
@@ -456,11 +487,11 @@
     </div>
 </div>
 
-<!-- ══ ГЛАВНЫЙ ИНТЕРФЕЙС ПРИЛОЖЕНИЯ ══ -->
+<!-- Главный интерфейс приложения -->
 <div id="app">
     <div id="sidebar-overlay" onclick="closeSidebar()" class="hidden fixed inset-0 bg-black/40 z-40"></div>
 
-    <!-- ── SIDEBAR ── -->
+    <!-- Сайбар -->
     <div id="sidebar">
         <div id="sidebar-header">
             <!-- Мой Профиль -->
@@ -478,17 +509,15 @@
                 </div>
                 <i class="fas fa-cog text-slate-500 text-xs"></i>
             </div>
-            <!-- Поиск -->
+            <!-- Поиск чатов -->
             <div class="relative">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-xs pointer-events-none"></i>
-                <input type="text" id="search-input" placeholder="Поиск чатов..."
-                    class="w-full bg-black/20 border border-white/[0.03] rounded-xl pl-8 pr-3 py-2 text-xs text-slate-300 outline-none focus:border-white/[0.06] transition">
+                <input type="text" id="search-input" placeholder="Поиск чата..." class="w-full bg-black/30 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600">
             </div>
         </div>
         
         <div id="sidebar-list"></div>
 
-        <!-- Кнопки внизу сайдбара -->
         <div class="p-3 border-t border-white/[0.04] flex flex-col gap-2">
             <a id="back-to-cabinet-link" href="space_team.html" class="flex items-center justify-center gap-2 py-2 rounded-xl border border-white/[0.04] bg-white/[0.01] text-xs font-bold text-slate-400 hover:bg-white/[0.03] transition">
                 <i class="fas fa-arrow-left text-[9px]"></i>
@@ -500,9 +529,8 @@
         </div>
     </div>
 
-    <!-- ── MAIN AREA ── -->
+    <!-- Основное окно сообщений -->
     <div id="main">
-        <!-- Шапка чата -->
         <div id="chat-header" onclick="onHeaderClick()">
             <button id="sidebar-toggle" onclick="event.stopPropagation();closeSidebar()" class="w-8 h-8 rounded-xl bg-white/[0.03] flex items-center justify-center text-slate-400 mr-1 flex-shrink-0" title="Назад к чатам">
                 <i class="fas fa-arrow-left text-xs"></i>
@@ -523,7 +551,7 @@
             <div id="chat-header-actions" class="flex items-center gap-2" onclick="event.stopPropagation()"></div>
         </div>
 
-        <!-- Закрепленные сообщения -->
+        <!-- Закрепы -->
         <div id="pinned-bar" class="hidden px-4 py-2 border-b border-white/[0.04] bg-white/[0.01] flex items-center gap-2 cursor-pointer" onclick="openPinnedListModal(event)">
             <i class="fas fa-thumbtack text-[10px] text-indigo-400"></i>
             <div class="flex-1 min-w-0">
@@ -558,16 +586,16 @@
             <button onclick="chatSearchNext()" class="w-6 h-6 rounded bg-white/[0.03] text-[10px] text-slate-400 flex items-center justify-center"><i class="fas fa-chevron-down"></i></button>
         </div>
 
-        <!-- Контейнер сообщений -->
+        <!-- Сообщения -->
         <div id="messages-wrap">
             <div class="my-auto text-center p-6 text-slate-500 flex flex-col items-center gap-2">
                 <i class="fas fa-comments text-3xl opacity-30"></i>
                 <p class="text-sm font-space font-bold text-slate-400">Выберите чат слева</p>
-                <p class="text-xs max-w-xs mx-auto">Начните переписку с монтажером, менеджером или зайдите в официальный канал</p>
+                <p class="text-xs max-w-xs mx-auto">Начните переписку с коллегами или зайдите в официальный информационный канал</p>
             </div>
         </div>
 
-        <!-- Индикатор набора текста -->
+        <!-- Статус набора текста -->
         <div id="typing-indicator" class="hidden px-4 py-1.5">
             <div class="inline-flex items-center gap-2 text-xs text-slate-500">
                 <span id="typing-name" class="font-bold">Печатает</span>
@@ -579,13 +607,13 @@
             </div>
         </div>
 
-        <!-- Кнопка прокрутки вниз -->
+        <!-- Скролл вниз -->
         <button id="scroll-btn" onclick="scrollToBottom(true)" class="hidden absolute bottom-20 right-6 w-11 h-11 rounded-full bg-indigo-600/90 shadow-lg border border-indigo-400/20 text-white flex items-center justify-center hover:bg-indigo-500 transition-all transform scale-100 hover:scale-105 active:scale-95 z-30">
             <i class="fas fa-arrow-down text-sm"></i>
             <div id="scroll-badge" class="absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-rose-600 text-white text-[10px] font-extrabold flex items-center justify-center px-1.5 border border-slate-900 hidden">0</div>
         </button>
 
-        <!-- Поле ввода с гарантией видимости кнопки -->
+        <!-- Поле ввода сообщений -->
         <div id="input-area">
             <div id="reply-bar">
                 <div id="reply-bar-line"></div>
@@ -596,11 +624,9 @@
                 <button onclick="cancelReply()" class="w-6 h-6 rounded-lg bg-white/[0.03] text-slate-400 flex items-center justify-center hover:text-white transition"><i class="fas fa-times text-[10px]"></i></button>
             </div>
             
-            <!-- Интегрированная клавиатура смайликов -->
             <div id="emoji-picker-popover"></div>
 
             <div class="flex items-end gap-3 relative">
-                <!-- Кнопка смайликов -->
                 <button id="emoji-trigger" onclick="toggleEmojiPicker(event)" class="input-action-btn" title="Выбрать эмодзи">
                     <i class="far fa-face-smile"></i>
                 </button>
@@ -615,9 +641,9 @@
     </div>
 </div>
 
-<!-- ══ МОДАЛЬНЫЕ ОКНА ══ -->
+<!-- Модалки -->
 
-<!-- Мой Профиль -->
+<!-- Профиль -->
 <div id="modal-profile" class="modal-bg hidden" onclick="closeModal('modal-profile')">
     <div class="glass w-full max-w-sm rounded-3xl overflow-hidden animate-scaleIn" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between px-6 pt-6 pb-2">
@@ -626,7 +652,6 @@
         </div>
         <div class="px-6 py-4 space-y-4">
             <div class="flex flex-col items-center gap-3">
-                <!-- Загрузка реального фото -->
                 <div class="relative group cursor-pointer" onclick="document.getElementById('avatar-file-input').click()">
                     <div id="profile-avatar-preview" class="avatar w-20 h-20 text-2xl rounded-2xl">?</div>
                     <div class="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
@@ -647,10 +672,8 @@
                     <textarea id="profile-bio-input" class="input-dark h-16 resize-none" placeholder="Расскажите о себе в агентстве SPACE..."></textarea>
                 </div>
                 <div>
-                    <!-- Статусы СТРОГО смайликами со всего стандартного набора -->
                     <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">Статус (Эмодзи)</label>
                     <div class="flex gap-2 p-2 bg-black/20 border border-white/[0.04] rounded-xl max-h-24 overflow-y-auto flex-wrap justify-center" id="profile-status-emojis">
-                        <!-- Заполнится динамически всеми стандартными смайликами -->
                     </div>
                     <input type="hidden" id="profile-emoji-select" value="">
                 </div>
@@ -667,7 +690,7 @@
 <div id="modal-project-details" class="modal-bg hidden" onclick="closeModal('modal-project-details')">
     <div class="glass w-full max-w-sm rounded-3xl overflow-hidden" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between px-6 pt-6 pb-2">
-            <h3 class="text-base font-space font-black text-white" id="proj-det-title">Проект</h3>
+            <h3 class="text-base font-space font-black text-white text-base" id="proj-det-title">Проект</h3>
             <button onclick="closeModal('modal-project-details')" class="w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
         </div>
         <div class="px-6 py-4 space-y-4">
@@ -692,7 +715,7 @@
     </div>
 </div>
 
-<!-- Создание канала -->
+<!-- Новый канал -->
 <div id="modal-create-channel" class="modal-bg hidden" onclick="closeModal('modal-create-channel')">
     <div class="glass w-full max-w-sm rounded-3xl overflow-hidden" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between px-6 pt-6 pb-2">
@@ -718,7 +741,7 @@
     </div>
 </div>
 
-<!-- Модалка истории изменений (для Администратора) -->
+<!-- Редакции -->
 <div id="modal-edit-history" class="modal-bg hidden" onclick="closeModal('modal-edit-history')">
     <div class="glass w-full max-w-sm rounded-3xl overflow-hidden" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between px-6 pt-6 pb-2">
@@ -731,7 +754,7 @@
     </div>
 </div>
 
-<!-- Модалка списка закрепленных сообщений -->
+<!-- Закрепленные списком -->
 <div id="modal-pinned-list" class="modal-bg hidden" onclick="closeModal('modal-pinned-list')">
     <div class="glass w-full max-w-sm rounded-3xl overflow-hidden" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between px-6 pt-6 pb-2">
@@ -744,7 +767,6 @@
     </div>
 </div>
 
-<!-- Подключаем скрипт премиальных анимаций (Apple & Telegram style) -->
 <script src="chatanim.js"></script>
 
 <script type="module">
@@ -756,7 +778,6 @@ import {
     serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// ─── FIREBASE CONFIG ───
 let FB_CONFIG = {
     apiKey: "AIzaSyBYkJnr5fi9EE6BRITTbyQulPwz1BeSP_s",
     authDomain: "space-video-agency.firebaseapp.com",
@@ -765,54 +786,32 @@ let FB_CONFIG = {
     messagingSenderId: "591140214223",
     appId: "1:591140214223:web:7bc45a81f66a7181f8eeba"
 };
-try { const s = localStorage.getItem('space_firebase_config'); if(s) FB_CONFIG = JSON.parse(s); } catch(e){}
 
 const APP_ID = 'space-video-agency';
 const BASE = (col) => ['artifacts', APP_ID, 'public', 'data', col];
 
 const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
-// ВАЖНО: автоопределение длинного поллинга — то же исправление, что и в
-// личных кабинетах (space_team.html / space_control.html), чтобы чат
-// не зависал без ошибок на мобильных/ограниченных сетях.
 const db = initializeFirestore(app, {
     experimentalAutoDetectLongPolling: true,
     useFetchStreams: false
 });
 
-// ══════════════════════════════════════════════════════════════════
-// ЕДИНАЯ СИСТЕМА АВТОРИЗАЦИИ (SPACE SESSION)
-// Логика сессии полностью вынесена в общий модуль space-auth.js,
-// подключённый в <head>. Один источник правды для всех трёх страниц
-// устраняет «циклическую авторизацию» между кабинетом и чатом —
-// чат больше не запрашивает повторный вход, если пользователь уже
-// авторизован в личном кабинете.
-// ══════════════════════════════════════════════════════════════════
 const { readSession: readSpaceSession, writeSession: writeSpaceSession,
-        consumeUrlSessionFallback, getCabinetUrl: getCabinetUrlForRole,
+        clearSession: destroySpaceSession, getCabinetUrl: getCabinetUrlForRole,
         navigateWithSession } = window.SpaceAuth;
 
-// Приём сессии, переданной из кабинета (резервный канал через одноразовый
-// защищённый токен в URL — сразу расшифровывается и стирается из адресной
-// строки, не оставляя следов в истории браузера).
-consumeUrlSessionFallback();
-
-// Ролевая модель и сессия
 let _spaceSession = readSpaceSession();
 let myRole = _spaceSession ? _spaceSession.role : null;
 let myId   = _spaceSession ? _spaceSession.id : null;
-let myNameSaved = _spaceSession ? _spaceSession.name : null;
+let myNameSaved = null; // Загружается динамически из Firestore
 
-// ─── Куда вести "Войти в личный кабинет" / "Личный кабинет" ───
 function getCabinetUrl() {
     return getCabinetUrlForRole(myRole);
 }
 
 function applyCabinetLinks() {
     const url = getCabinetUrl();
-    // auth-gate получает returnTo=chat.html — кабинет после логина
-    // вернёт пользователя обратно в чат с сессией (через storage,
-    // либо токен в URL как резервный канал).
     const authGateEl = document.getElementById('auth-gate-cabinet-link');
     if (authGateEl) {
         const rp = new URLSearchParams({ returnTo: 'chat.html' });
@@ -828,7 +827,6 @@ function applyCabinetLinks() {
 }
 applyCabinetLinks();
 
-// ─── Целевой диалог (передаётся из кабинета при клике "Чат" у проекта) ───
 let _pendingTargetEditorId = null;
 (function captureTargetEditor() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -844,6 +842,7 @@ let _pendingTargetEditorId = null;
         if (stored) _pendingTargetEditorId = stored;
     }
 })();
+
 const EMOJI_PACK = [
     '😀', '😂', '🥰', '😍', '😎', '😡', 
     '😮', '😢', '👍', '🔥', '🚀', '💻', 
@@ -854,7 +853,6 @@ const EMOJI_PACK = [
 
 const SUPPORTED_REACTIONS = ['👍', '🔥', '🚀', '❤️', '👀', '💩', '🎉', '👏'];
 
-// ─── ВЫСОТА ЭКРАНА С УЧЕТОМ КЛАВИАТУРЫ ───
 const resetHeight = () => {
     const vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -875,7 +873,6 @@ async function ensureAuth() {
     if (!auth.currentUser) await signInAnonymously(auth);
 }
 
-// ─── МАТОВЫЕ ГРАДИЕНТНЫЕ АВАТАРЫ ───
 const GRADIENT_PRESETS = [
     'linear-gradient(135deg, #1b172a 0%, #151121 100%)',
     'linear-gradient(135deg, #12172b 0%, #0d1221 100%)',
@@ -911,7 +908,6 @@ function applyAvatarStyle(el, nameString, avatarUrl = '') {
     el.textContent = nameString ? nameString.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : '?';
 }
 
-// ─── PRESENCE & ONLINE STATUS ───
 async function setMyPresence(online) {
     if (!myId || myId === 'unauthorized_user') return;
     try {
@@ -951,9 +947,13 @@ function getPresenceText(presence) {
     
     const isToday = lastSeenDate.getDate() === now.getDate() && lastSeenDate.getMonth() === now.getMonth() && lastSeenDate.getFullYear() === now.getFullYear();
     if (isToday) return `Сегодня в ${hours}:${minutes}`;
+    
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = lastSeenDate.getDate() === yesterday.getDate() && lastSeenDate.getMonth() === yesterday.getMonth() && lastSeenDate.getFullYear() === yesterday.getFullYear();
     if (isYesterday) return `Вчера в ${hours}:${minutes}`;
     
-    return `${pad(date.getDate())}.${pad(date.getMonth() + 1)} в ${hours}:${minutes}`;
+    return `${pad(lastSeenDate.getDate())}.${pad(lastSeenDate.getMonth() + 1)} в ${hours}:${minutes}`;
 }
 
 function updatePresenceUI() {
@@ -987,7 +987,6 @@ function updatePresenceUI() {
     }
 }
 
-// ─── PROFILE STATE ───
 let myProfile = { name: '', avatar: '', bio: '', statusEmoji: '' };
 let _allEditors = [];
 let _allProjects = []; 
@@ -1043,20 +1042,48 @@ window.selectStatusEmoji = function(emoji, event) {
     });
 };
 
-window.saveProfile = async function() {
-    myProfile.name = document.getElementById('profile-name-input').value.trim() || myProfile.name;
-    myProfile.bio = document.getElementById('profile-bio-input').value.trim();
-    myProfile.statusEmoji = document.getElementById('profile-emoji-select').value;
+async function loadServicesCatalog() {
     try {
-        await setDoc(doc(db, ...BASE('profiles'), myId), myProfile, { merge: true });
-        renderMyHeader();
-        closeModal('modal-profile');
-        showToast('Профиль сохранен', 'success');
-        loadSidebar();
-    } catch(e) { showToast('Ошибка сохранения', 'error'); }
+        await ensureAuth();
+    } catch(e) {}
+}
+
+const stageLabels = {
+    brief: "ТЗ & Бриф",
+    edit: "Черновик",
+    effects: "Звук & FX",
+    color: "Цвет",
+    done: "Сдача"
 };
 
-// ─── ИМПОРТ И ПРИВЯЗКА К ПРОЕКТАМ ИЗ КАБИНЕТА ───
+let activeTab = 'dashboard';
+
+window.getEditorRating = function(editorId) {
+    const completedProjects = _projects.filter(p => p.editorId === editorId && p.stage === 'done' && typeof p.rating === 'number' && p.rating > 0);
+    if (completedProjects.length === 0) return '0.0';
+    const sum = completedProjects.reduce((acc, p) => acc + p.rating, 0);
+    return (sum / completedProjects.length).toFixed(1);
+};
+
+window.getEditorPayout = function(p) {
+    if (p.editorSalary === undefined || p.editorSalary === null || p.editorSalary === '') {
+        return (parseFloat(p.baseSalary) || 0) + (parseFloat(p.extraSalary) || 0);
+    }
+    const base = parseFloat(p.editorSalary) || 0;
+    let extra = parseFloat(p.editorExtraSalary) || 0;
+    if (p.editorExtraServices && Array.isArray(p.editorExtraServices)) {
+        extra = p.editorExtraServices.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+    }
+    const bVal = parseFloat(p.editorBonusValue) || 0;
+    let bonus = 0;
+    if (p.editorBonusType === 'percent') {
+        bonus = base * (bVal / 100);
+    } else {
+        bonus = bVal;
+    }
+    return base + extra + bonus;
+};
+
 async function loadProjectsFromCabinet() {
     try {
         const snap = await getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'projects'));
@@ -1118,12 +1145,11 @@ window.viewProjectDetails = function() {
     openModal('modal-project-details');
 };
 
-// ─── СОСТОЯНИЕ ДИАЛОГОВ ───
 let _conversations = [];
 let _activeConvId = null;
 let _activeConvType = null;
 let _msgUnsub = null;
-let _unreadIncomingCount = 0; // Объявляем переменную для предотвращения ReferenceError в строгом режиме модулей
+let _unreadIncomingCount = 0;
 
 async function loadSidebar() {
     await loadProjectsFromCabinet();
@@ -1202,6 +1228,7 @@ async function loadSidebar() {
 
 function renderSidebar() {
     const list = document.getElementById('sidebar-list');
+    if (!list) return;
     const filter = (document.getElementById('search-input').value || '').toLowerCase();
     
     let filtered = _conversations.filter(c => c.name.toLowerCase().includes(filter));
@@ -1248,20 +1275,16 @@ function renderSidebar() {
     }).join('');
     updatePresenceUI();
 
-    // Если из кабинета был передан конкретный монтажёр (клик "Чат" у проекта) —
-    // открываем диалог с ним автоматически, без лишних действий пользователя.
     if (_pendingTargetEditorId && !_activeConvId) {
         const target = _conversations.find(c => c.type === 'dm' && c.editorId === _pendingTargetEditorId);
         if (target) {
             localStorage.removeItem('target_editor_id');
             _pendingTargetEditorId = null;
             openConversation(target.id, target.type);
-            return;
         }
     }
 }
 
-// ─── УМНОЕ ФОРМАТИРОВАНИЕ ВРЕМЕНИ СООБЩЕНИЙ ───
 function formatFriendlyTime(isoStringOrTimestamp) {
     if (!isoStringOrTimestamp) return '';
     let date;
@@ -1295,7 +1318,6 @@ function formatFriendlyTime(isoStringOrTimestamp) {
     return `${pad(date.getDate())}.${pad(date.getMonth() + 1)} в ${hours}:${minutes}`;
 }
 
-// Периодическое обновление меток времени для актуальности
 setInterval(() => {
     document.querySelectorAll('.msg-friendly-time').forEach(el => {
         const originalTime = el.getAttribute('data-time');
@@ -1305,7 +1327,6 @@ setInterval(() => {
     });
 }, 30000);
 
-// ─── ГЕНЕРАТОР ЗВУКОВОГО УВЕДОМЛЕНИЯ (Браузерный синтез) ───
 function playNotificationSound() {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1451,7 +1472,6 @@ function updateScrollBadge() {
     }
 }
 
-// ─── ЕДИНАЯ РЕАКЦИЯ + КОНТЕКСТНОЕ МЕНЮ (Telegram Mobile-style) ───
 let _ctxMsgId = null;
 
 window.showUnifiedMenu = function(e, msgId, isMine) {
@@ -1579,7 +1599,6 @@ function renderAllMessages(msgs, conv) {
         msgRow.className = `msg-row ${isMine ? 'mine' : 'theirs'}`;
         msgRow.setAttribute('data-msgid', msg.id);
 
-        const ts = msg.createdAt?.toDate ? msg.createdAt.toDate() : new Date();
         const isoString = msg.createdAt?.toDate ? msg.createdAt.toDate().toISOString() : new Date().toISOString();
         const timeFriendlyStr = formatFriendlyTime(isoString);
 
@@ -1686,7 +1705,6 @@ function renderAllMessages(msgs, conv) {
     });
 }
 
-// ─── РЕДАКТИРОВАНИЕ СООБЩЕНИЙ ───
 let _editingMsgId = null;
 
 window.ctxEdit = function() {
@@ -1770,7 +1788,6 @@ window.showEditHistory = async function(e, msgId) {
     } catch(e) {}
 };
 
-// ─── ЗАКРЕПЛЕНИЕ СООБЩЕНИЙ С ЦИКЛИЧНОСТЬЮ ───
 let _pinnedMsgs = [];
 let _pinnedCurIdx = 0;
 
@@ -1859,7 +1876,6 @@ function scrollToMsg(msgId) {
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// ─── ПОИСК В ЧАТЕ ───
 let _chatSearchResults = [];
 let _chatSearchIdx = 0;
 
@@ -1921,7 +1937,6 @@ function clearChatSearchHighlights() {
     document.querySelectorAll('.search-highlight').forEach(el => { el.outerHTML = el.textContent; });
 }
 
-// ─── ЧЕРНОВИКИ ДИАЛОГОВ ───
 function saveDraft(text) {
     if (!_activeConvId) return;
     if (text.trim()) { _drafts[_activeConvId] = text; } 
@@ -1943,7 +1958,6 @@ function loadDraft(convId) {
     document.getElementById('send-btn').disabled = !draft.trim();
 }
 
-// ─── ФУНКЦИИ ОТВЕТА И УДАЛЕНИЯ ───
 window.ctxReply = function() {
     if (!_ctxMsgId) return;
     const el = document.querySelector(`[data-msgid="${_ctxMsgId}"]`);
@@ -1967,7 +1981,6 @@ window.ctxDelete = async function() {
     } catch(e) { showToast('Ошибка удаления', 'error'); }
 };
 
-// ─── ИНДИКАТОР НАБОРА ТЕКСТА ───
 let _typingUnsub = null;
 let _myTypingTimeout = null;
 
@@ -2005,7 +2018,6 @@ function subscribeTyping(convId) {
     });
 }
 
-// ─── ЭМОДЗИ-ПИКЕР (Выбор у поля ввода) ───
 function initEmojiPicker() {
     const popover = document.getElementById('emoji-picker-popover');
     popover.innerHTML = EMOJI_PACK.map(emoji => `
@@ -2044,7 +2056,6 @@ window.insertEmoji = function(emoji) {
     autoResizeInput(input);
 };
 
-// ─── ОТПРАВКА СООБЩЕНИЙ ───
 let _replyTo = null;
 
 window.sendMessage = async function() {
@@ -2095,7 +2106,6 @@ window.cancelReply = function() {
     document.getElementById('reply-bar').classList.remove('show');
 };
 
-// ─── СОЗДАНИЕ КАНАЛОВ ───
 window.createChannel = async function() {
     const name = document.getElementById('ch-name-input').value.trim();
     const desc = document.getElementById('ch-desc-input').value.trim();
@@ -2109,24 +2119,61 @@ window.createChannel = async function() {
     } catch(e) {}
 };
 
-// ─── АВТОРИЗАЦИОННЫЙ ШЛЮЗ ЛИЧНОГО КАБИНЕТА ───
 async function checkAuthSession() {
-    if (myRole && myId) {
-        document.getElementById('auth-gate-screen').classList.add('hidden');
-        await loadMyProfile();
-        await loadSidebar();
-        subscribePresence();
-        initEmojiPicker();
+    const session = readSpaceSession();
+    if (session && session.role && session.id) {
+        myRole = session.role;
+        myId = session.id;
+        
+        try {
+            await ensureAuth();
+            
+            if (myRole === 'editor') {
+                const edDoc = await getDoc(doc(db, ...BASE('editors'), myId));
+                if (!edDoc.exists() || edDoc.data().isBlocked) {
+                    destroySpaceSession();
+                    document.getElementById('auth-gate-screen').classList.remove('hidden');
+                    showToast(edDoc.exists() ? 'Ваш аккаунт заблокирован' : 'Аккаунт не найден', 'error');
+                    return;
+                }
+                const edData = edDoc.data();
+                myNameSaved = edData.name || edData.login;
+            } else if (myRole === 'owner' || myRole === 'manager') {
+                const configRef = doc(db, ...BASE('site_config'), 'main');
+                const configSnap = await getDoc(configRef);
+                if (!configSnap.exists()) {
+                    destroySpaceSession();
+                    document.getElementById('auth-gate-screen').classList.remove('hidden');
+                    showToast('Конфигурация админа не найдена', 'error');
+                    return;
+                }
+                myNameSaved = 'Администратор';
+            }
+            
+            document.getElementById('auth-gate-screen').classList.add('hidden');
+            await loadMyProfile();
+            await loadSidebar();
+            subscribePresence();
+            initEmojiPicker();
+            
+        } catch (e) {
+            console.warn("Сбой верификации сессии по сети:", e);
+            document.getElementById('auth-gate-screen').classList.add('hidden');
+            await loadMyProfile();
+            await loadSidebar();
+            subscribePresence();
+            initEmojiPicker();
+        }
     } else {
         document.getElementById('auth-gate-screen').classList.remove('hidden');
     }
 }
 
-// ─── ВСПОМОГАТЕЛЬНЫЕ UX ФУНКЦИИ ───
 window.closeSidebar = function() { document.getElementById('app').classList.remove('chat-open'); };
 
 function scrollToBottom(smooth) {
     const wrap = document.getElementById('messages-wrap');
+    if (!wrap) return;
     wrap.scrollTo({ top: wrap.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
     _unreadIncomingCount = 0;
     updateScrollBadge();
@@ -2157,7 +2204,9 @@ function escapeHtml(str) {
 }
 
 window.openModal = id => {
-    document.getElementById(id).classList.remove('hidden');
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.classList.remove('hidden');
     if (id === 'modal-profile') {
         document.getElementById('profile-name-input').value = myProfile.name || '';
         document.getElementById('profile-bio-input').value = myProfile.bio || '';
@@ -2165,7 +2214,10 @@ window.openModal = id => {
         selectStatusEmoji(myProfile.statusEmoji || '');
     }
 };
-window.closeModal = id => document.getElementById(id).classList.add('hidden');
+window.closeModal = id => {
+    const m = document.getElementById(id);
+    if (m) m.classList.add('hidden');
+};
 
 window.openProfileModal = function() {
     window.openModal('modal-profile');
@@ -2174,6 +2226,7 @@ window.openProfileModal = function() {
 let _toastTimeout;
 window.showToast = function(msg, type = 'info') {
     const el = document.getElementById('toast');
+    if (!el) return;
     el.textContent = msg;
     el.className = `show ${type}`;
     clearTimeout(_toastTimeout);
@@ -2182,7 +2235,7 @@ window.showToast = function(msg, type = 'info') {
 
 (async () => {
     await ensureAuth();
-    checkAuthSession();
+    await checkAuthSession();
 })();
 </script>
 </body>
