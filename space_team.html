@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SPACE TEAM — Кабинет монтажёра</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link class="scroll-smooth" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <script>
+        window.addEventListener('error', function(e) {
+            const tc = document.getElementById('toast-container');
+            if (tc) {
+                const t = document.createElement('div');
+                t.className = 'toast border-rose-500/30 text-red-400';
+                t.innerHTML = `<i class="fas fa-exclamation-triangle mr-2.5"></i>Ошибка системы: ${e.message}`;
+                tc.appendChild(t);
+                setTimeout(()=>t.remove(), 5000);
+            }
+        });
+    </script>
+
+    <script>
+// ══════════════════════════════════════════════════════════════════
+// SPACE AUTH — единый модуль системы авторизации
+// ══════════════════════════════════════════════════════════════════
+(function () {
+    'use strict';
+
+    const SESSION_KEY = 'space_session_id';
+    const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+    const SESSIONS_COLLECTION = 'sessions';
+
+    let _db = null;
+    let _fns = null; 
+    let _appId = 'space-video-agency';
+
+    function init(db, firestoreFns, appId) {
+        _db = db;
+        _fns = firestoreFns;
+        if (appId) _appId = appId;
+    }
+
+    function sessionsPath() {
+        return ['artifacts', _appId, 'public', 'data', SESSIONS_COLLECTION];
+    }
+
+    function genSessionId() {
+        try {
+            return crypto.randomUUID();
+        } catch (e) {
+            return 'sid_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        }
+    }
+
+    function ensureInitialized() {
+        if (!_db || !_fns) {
+            throw new Error('[space-auth] SpaceAuth.init не был вызван перед использованием сессии');
+        }
+    }
+
+    async function writeSession(role, id, name) {
+        ensureInitialized();
+        const sessionId = genSessionId();
+        const now = Date.now();
+        const sessionData = {
+            role,
+            userId: id,
+            name: name || '',
+            createdAt: now,
+            expiresAt: now + SESSION_TTL_MS
+        };
+        await _fns.setDoc(_fns.doc(_db, ...sessionsPath(), sessionId), sessionData);
+        try { localStorage.setItem(SESSION_KEY, sessionId); } catch (e) {}
+        return { role, id, name: name || '', sessionId };
+    }
+
+    async function readSession() {
+        ensureInitialized();
+        let sessionId = null;
+        try { sessionId = localStorage.getItem(SESSION_KEY); } catch (e) { return null; }
+        if (!sessionId) return null;
+
+        let snap;
+        try {
+            snap = await _fns.getDoc(_fns.doc(_db, ...sessionsPath(), sessionId));
+        } catch (e) {
+            console.warn('[space-auth] Не удалось проверить сессию', e);
+            return null;
+        }
+
+        if (!snap.exists()) {
+            clearSessionLocal();
+            return null;
+        }
+
+        const data = snap.data();
+        if (!data || !data.role || !data.userId) {
+            clearSessionLocal();
+            return null;
+        }
+
+        if (typeof data.expiresAt !== 'number' || Date.now() > data.expiresAt) {
+            try { await _fns.deleteDoc(_fns.doc(_db, ...sessionsPath(), sessionId)); } catch (e) {}
+            clearSessionLocal();
+            return null;
+        }
+
+        return { role: data.role, id: data.userId, name: data.name || '', sessionId };
+    }
+
+    async function clearSession() {
+        let sessionId = null;
+        try { sessionId = localStorage.getItem(SESSION_KEY); } catch (e) {}
+        if (sessionId && _db && _fns) {
+            try { await _fns.deleteDoc(_fns.doc(_db, ...sessionsPath(), sessionId)); } catch (e) {}
+        }
+        clearSessionLocal();
+    }
+
+    function clearSessionLocal() {
+        [SESSION_KEY, 'chat_role', 'chat_id', 'chat_name'].forEach(k => {
+            try {
+                localStorage.removeItem(k);
+                sessionStorage.removeItem(k);
+            } catch (e) {}
+        });
+    }
+
+    function navigateWithSession(targetFile, extraParams) {
+        const params = new URLSearchParams(extraParams || {});
+        const qs = params.toString();
+        window.location.href = targetFile + (qs ? '?' + qs : '');
+    }
+
+    window.SpaceAuth = {
+        SESSION_KEY,
+        init,
+        readSession,
+        writeSession,
+        clearSession,
+        navigateWithSession
+    };
+})();
+</script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PWA Meta tags -->
+    <meta name="theme-color" content="#030208">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="icon" type="image/png" href="planet_favicon.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="planet_favicon.png" sizes="32x32">
+
+    <style>
+        * { caret-color: transparent; }
+        input, textarea, [contenteditable="true"] { caret-color: #818cf8 !important; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #030208 !important; 
+            color: #f8fafc; 
+            overflow-x: hidden; 
+        }
+        .font-space { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Smooth custom scrollbars */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #030208; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Premium Apple glass effects - strictly dark and flat borders, no glowing borders */
+        .glass-card {
+            background: rgba(14, 13, 24, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+        }
+        
+        .premium-border {
+            position: relative;
+        }
+        .premium-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.005));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-animate {
+            animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.98) translateY(6px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Responsive notification toasts */
+        #toast-container { position: fixed; bottom: 24px; right: 24px; left: 24px; md:left: auto; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { 
+            padding: 12px 18px; 
+            border-radius: 16px; 
+            font-size: 13px; 
+            font-weight: 500; 
+            background: #0E0D18; 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+            max-width: 100%;
+            md:max-width: 320px; 
+            pointer-events: auto;
+        }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        
+        .tab-segment { transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-segment.active { 
+            background: rgba(255, 255, 255, 0.04); 
+            box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.03), 0 1px 2px 0 rgba(0,0,0,0.3); 
+            color: #ffffff;
+        }
+
+        .bg-space-aurora {
+            background-color: #030208 !important;
+            background-image: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.04), transparent 50%);
+        }
+
+        .pressable {
+            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
+        }
+        .pressable:active { transform: scale(0.98); }
+
+        .modal-bg {
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        @media (max-width: 768px) {
+            .text-\[8px\], .text-\[9px\], .text-\[10px\] { font-size: 12px !important; }
+            .text-\[11px\] { font-size: 13px !important; }
+
+            input[type="text"], input[type="password"], textarea, select {
+                font-size: 16px !important;
+                min-height: 48px;
+            }
+            button, .pressable { min-height: 44px; }
+        }
+    </style>
+</head>
+<body class="relative min-h-screen bg-space-aurora selection:bg-indigo-500/30 selection:text-white">
+
+<div id="toast-container"></div>
+
+<!-- Loader Screen -->
+<div id="screen-loader" class="fixed inset-0 bg-[#030208] z-[9999] flex flex-col items-center justify-center p-6 transition-all duration-700 ease-out opacity-0 pointer-events-none">
+    <div class="w-full max-w-sm flex flex-col items-center text-center space-y-6">
+        <div class="relative w-20 h-20 flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full border border-indigo-500/10 animate-[spin_6s_linear_infinite]"></div>
+            <div class="absolute w-16 h-16 rounded-full border-t border-b border-indigo-500/30 animate-[spin_2s_linear_infinite]"></div>
+            <div class="w-12 h-12 rounded-[14px] overflow-hidden">
+                <img src="1000002719.png" alt="SPACE Logo" class="w-full h-full object-cover">
+            </div>
+        </div>
+        <div class="space-y-2">
+            <p class="text-[10px] text-indigo-400 uppercase tracking-[0.3em] font-space font-bold">SPACE TEAM v2.2</p>
+            <h2 class="text-lg font-space font-black text-white">Портал Видеомонтажа</h2>
+            <p id="loader-quote" class="text-xs text-slate-400 italic">Инициализация контура безопасности...</p>
+        </div>
+        <div class="w-48 bg-white/[0.04] h-[3px] rounded-full overflow-hidden relative">
+            <div id="loader-progress-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full w-0 transition-all duration-300 ease-out rounded-full"></div>
+        </div>
+        <div class="text-[9px] text-slate-600 font-mono tracking-widest uppercase" id="loader-status-text">ПОДКЛЮЧЕНИЕ К СЕРВЕРУ...</div>
+    </div>
+</div>
+
+<!-- Окно авторизации монтажёра (Плейсхолдер примера логина удален) -->
+<div id="screen-login" class="min-h-screen flex flex-col items-center justify-center px-4 relative z-10 transition-all duration-500">
+    <div class="w-full max-w-md glass-card premium-border rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-16 -left-16 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex items-center gap-4 justify-center">
+            <div class="w-[72px] h-[72px] rounded-[18px] border border-white/5 flex items-center justify-center shrink-0 overflow-hidden">
+                <img src="1000002719.png" alt="SPACE Logo" class="w-full h-full object-cover">
+            </div>
+            <div>
+                <p class="text-[9px] text-indigo-400 uppercase tracking-[0.25em] font-space font-bold">SPACE Team Center</p>
+                <h3 class="text-sm font-space font-black text-white tracking-wide">Портал Исполнителей</h3>
+            </div>
+        </div>
+
+        <div class="text-center space-y-1">
+            <h4 class="text-base font-bold text-white font-space">Вход для Монтажёров</h4>
+            <p class="text-[11px] text-slate-400">Введите свои персональные ключи доступа</p>
+        </div>
+
+        <div class="space-y-3.5 relative z-20">
+            <div class="relative">
+                <i class="fas fa-user-edit absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="text" id="login-input" autocomplete="username" autocapitalize="none" autocorrect="off" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition placeholder:text-slate-600" placeholder="Логин">
+            </div>
+            <div class="relative">
+                <i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="password" id="pass-input" autocomplete="current-password" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition placeholder:text-slate-600" placeholder="Пароль" onkeydown="if(event.key==='Enter') executeLogin()">
+            </div>
+        </div>
+
+        <button onclick="executeLogin()" id="login-submit-btn" class="pressable w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold font-space text-xs uppercase tracking-widest text-white transition">
+            Войти в Кабинет
+        </button>
+    </div>
+</div>
+
+<div id="screen-dashboard" class="hidden min-h-screen flex flex-col relative z-10 pb-12">
+    <!-- Top Floating Navigation -->
+    <nav class="sticky top-0 z-50 w-full bg-transparent px-4 py-3 md:py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <!-- Left Brand -->
+            <div class="flex items-center gap-3 bg-[#0E0D18]/80 border border-white/[0.05] rounded-full px-5 py-2 backdrop-blur-xl shrink-0">
+                <div class="w-7 h-7 rounded-full flex items-center justify-center bg-indigo-500/10 border border-indigo-500/20 overflow-hidden">
+                    <img src="1000002719.png" alt="SPACE Logo" class="w-full h-full object-cover">
+                </div>
+                <span class="font-space font-black tracking-[0.15em] text-white text-xs sm:text-sm">SPACE TEAM</span>
+                <span id="nav-editor-name" class="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/15 px-2.5 py-0.5 rounded-full font-bold font-space uppercase">Исполнитель</span>
+            </div>
+
+            <!-- Right Controls -->
+            <div class="flex items-center gap-3 bg-[#0E0D18]/80 border border-white/[0.05] rounded-full px-4 py-1.5 backdrop-blur-xl shrink-0">
+                <button onclick="openChatLink()" class="pressable px-3 py-1.5 rounded-full border border-white/[0.04] bg-white/[0.02] text-[10px] font-bold text-slate-300 hover:bg-white/[0.06] flex items-center gap-1.5">
+                    <i class="fas fa-comments text-indigo-400"></i><span>Чат</span>
+                </button>
+                <button onclick="openProfileModal()" class="pressable w-8 h-8 rounded-full bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 hover:bg-indigo-600/20 text-xs">
+                    <i class="fas fa-user-cog"></i>
+                </button>
+                <button onclick="logout()" class="pressable w-8 h-8 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/20 text-xs">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 grid grid-cols-1 md:grid-cols-12 gap-6 flex-1 w-full">
+        <!-- Sidebar - Left Column -->
+        <div class="col-span-1 md:col-span-3 space-y-6">
+            <!-- Stats overview -->
+            <div class="glass-card premium-border rounded-3xl p-5 space-y-4">
+                <div class="text-center space-y-2">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-[#11101A] border border-white/5 flex items-center justify-center text-2xl text-indigo-300 font-black font-space" id="sidebar-avatar">
+                        S
+                    </div>
+                    <h3 class="text-sm font-bold text-white font-space truncate" id="sidebar-name">Загрузка...</h3>
+                    <p class="text-[10px] text-slate-400" id="sidebar-login">@login</p>
+                </div>
+
+                <div class="h-[1px] bg-white/[0.04]"></div>
+
+                <!-- Metrics grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-black/20 p-3 rounded-xl border border-white/[0.02] text-center">
+                        <span class="block text-[8px] text-slate-500 uppercase tracking-wider mb-1">Выполнено</span>
+                        <span class="text-sm font-black text-emerald-400 font-mono" id="stat-closed">0</span>
+                    </div>
+                    <div class="bg-black/20 p-3 rounded-xl border border-white/[0.02] text-center">
+                        <span class="block text-[8px] text-slate-500 uppercase tracking-wider mb-1">Рейтинг</span>
+                        <span class="text-sm font-black text-amber-400 font-mono" id="stat-rating">0.0</span>
+                    </div>
+                </div>
+
+                <!-- Financial totals card -->
+                <div class="bg-[#0E0D18] border border-white/5 p-4 rounded-2xl space-y-1.5">
+                    <div class="flex justify-between items-center text-[10px] text-slate-400">
+                        <span>Заработано всего:</span>
+                        <span class="font-bold text-white font-mono" id="fin-total">0 ₽</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter tabs -->
+            <div class="glass-card premium-border rounded-3xl p-4 flex flex-col gap-1.5 font-space font-bold text-xs">
+                <button onclick="switchCategory('active')" id="btn-cat-active" class="tab-segment active w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all">
+                    <span class="flex items-center gap-2"><i class="fas fa-layer-group text-indigo-400"></i> В работе</span>
+                    <span class="px-2 py-0.5 rounded-full bg-[#161525] text-indigo-300 text-[10px] font-bold" id="badge-count-active">0</span>
+                </button>
+                <button onclick="switchCategory('review')" id="btn-cat-review" class="tab-segment w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.02] transition-all">
+                    <span class="flex items-center gap-2"><i class="fas fa-clipboard-check text-orange-400"></i> На проверке</span>
+                    <span class="px-2 py-0.5 rounded-full bg-[#1A1512] text-orange-300 text-[10px] font-bold" id="badge-count-review">0</span>
+                </button>
+                <button onclick="switchCategory('completed')" id="btn-cat-completed" class="tab-segment w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.02] transition-all">
+                    <span class="flex items-center gap-2"><i class="fas fa-check-double text-emerald-400"></i> Завершенные</span>
+                    <span class="px-2 py-0.5 rounded-full bg-[#111A15] text-emerald-300 text-[10px] font-bold" id="badge-count-completed">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Viewport - Right Column -->
+        <div class="col-span-1 md:col-span-9 space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-black font-space text-white uppercase tracking-wider" id="viewport-title">Задачи в работе</h2>
+            </div>
+            
+            <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically populated project cards -->
+            </div>
+            
+            <div id="empty-state" class="hidden">
+                <div class="flex flex-col items-center justify-center p-12 text-center border border-white/[0.05] rounded-3xl bg-black/20">
+                    <div class="w-16 h-16 rounded-full bg-white/[0.01] flex items-center justify-center mb-4 text-slate-500">
+                        <i class="fas fa-rocket text-2xl"></i>
+                    </div>
+                    <h3 class="text-sm font-bold font-space text-white" id="empty-state-title">Нет активных проектов</h3>
+                    <p class="text-[11px] text-slate-500 mt-1" id="empty-state-subtitle">Ожидайте назначения задач администратором</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Details & Actions Modal (Полная информационная панель проекта) -->
+<div id="modal-project-details" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onclick="closeModal('modal-project-details')">
+    <div class="glass-card premium-border w-full max-w-2xl rounded-3xl p-5 sm:p-6 space-y-4 overflow-y-auto max-h-[90vh] modal-animate" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between border-b border-white/[0.05] pb-3">
+            <div>
+                <h3 class="font-space font-black text-white text-base" id="modal-project-name">Название проекта</h3>
+                <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wide mt-0.5" id="modal-client-name">Клиент</p>
+            </div>
+            <button onclick="closeModal('modal-project-details')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white"><i class="fas fa-times text-xs"></i></button>
+        </div>
+
+        <input type="hidden" id="current-project-id">
+
+        <!-- ДАННЫЕ ЗАКАЗА И СРОКИ (Read-only) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-black/25 p-4 rounded-2xl border border-white/[0.03] space-y-2">
+                <span class="text-[10px] text-slate-400 uppercase font-bold block">Сведения о заказе</span>
+                <div class="space-y-1.5 text-xs">
+                    <div class="flex justify-between"><span class="text-slate-500">Категория:</span><span class="text-white font-medium" id="modal-client-category">-</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Код доступа:</span><span class="text-indigo-300 font-mono font-medium" id="modal-access-code">-</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Статус:</span><span class="text-white font-medium" id="modal-status-text">-</span></div>
+                </div>
+            </div>
+            <div class="bg-black/25 p-4 rounded-2xl border border-white/[0.03] space-y-2">
+                <span class="text-[10px] text-slate-400 uppercase font-bold block">Временные рамки</span>
+                <div class="space-y-1.5 text-xs">
+                    <div class="flex justify-between"><span class="text-slate-500">Дедлайн проекта:</span><span class="text-rose-300 font-medium" id="modal-deadline-date">-</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Создан:</span><span class="text-white font-medium" id="modal-created-date">-</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Обновлен:</span><span class="text-white font-medium" id="modal-updated-date">-</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ФИНАНСОВЫЙ ОТЧЕТ И ДОП. УСЛУГИ (Read-only) -->
+        <div class="bg-black/25 p-4 rounded-2xl border border-white/[0.03] space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] text-emerald-400 uppercase font-bold">Финансовая сводка (Ваша выплата)</span>
+                <span class="text-xs font-mono font-black text-emerald-400" id="modal-earnings-payout">0 ₽</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1 border-t border-white/[0.02]">
+                <div class="space-y-1.5">
+                    <div class="flex justify-between"><span class="text-slate-500">Базовый оклад:</span><span class="text-white font-mono" id="modal-editor-base-salary">0 ₽</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Название бонуса:</span><span class="text-white" id="modal-editor-bonus-name">нет</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Размер бонуса:</span><span class="text-emerald-400 font-mono" id="modal-editor-bonus-val">0 ₽</span></div>
+                </div>
+                <div class="space-y-1.5">
+                    <div class="flex justify-between"><span class="text-slate-500">Штрафы:</span><span class="text-rose-400 font-mono" id="modal-editor-penalty-total">-0 ₽</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Итого за доп. услуги:</span><span class="text-indigo-300 font-mono" id="modal-editor-extra-salary">0 ₽</span></div>
+                </div>
+            </div>
+            
+            <!-- Списки дополнительных услуг и штрафов детально -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-[11px]">
+                <div class="bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <span class="text-[9px] text-slate-400 uppercase font-bold block">Подключенные доп. услуги</span>
+                    <div id="modal-editor-extra-list" class="space-y-1 text-slate-300">
+                        <div class="text-slate-500 italic">Нет подключенных доп. услуг</div>
+                    </div>
+                </div>
+                <div class="bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <span class="text-[9px] text-rose-400/80 uppercase font-bold block">Примененные штрафы</span>
+                    <div id="modal-editor-penalties-list" class="space-y-1 text-slate-300">
+                        <div class="text-slate-500 italic">Штрафов нет</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Links Box -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-black/25 p-4 rounded-2xl border border-white/[0.03] space-y-2">
+                <span class="text-[10px] text-indigo-400 uppercase font-bold block">Ссылки проекта</span>
+                <div class="space-y-2">
+                    <a id="link-sources" href="#" target="_blank" class="pressable w-full py-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-300 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition">
+                        <i class="fas fa-folder-open"></i> Исходники
+                    </a>
+                    <a id="link-reference" href="#" target="_blank" class="pressable w-full py-2.5 bg-white/[0.03] hover:bg-white/[0.06] text-slate-300 rounded-xl flex items-center justify-center gap-2 text-xs transition">
+                        <i class="fas fa-link"></i> Референс
+                    </a>
+                </div>
+            </div>
+
+            <!-- Admin Brief Note (Скрытое ТЗ) -->
+            <div class="bg-black/25 p-4 rounded-2xl border border-white/[0.03] flex flex-col justify-between">
+                <div>
+                    <span class="text-[10px] text-amber-400 uppercase font-bold block mb-1">Скрытое ТЗ / Ссылка</span>
+                    <a id="link-brief" href="#" target="_blank" class="pressable text-xs text-indigo-400 hover:underline block truncate font-mono">https://...</a>
+                </div>
+                <div class="mt-2 text-[10px] text-slate-500 italic">
+                    Доступно только вам
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Notes / Brief Text (Read-only) -->
+        <div class="bg-black/25 p-4 rounded-2xl border border-white/[0.03] space-y-2">
+            <span class="text-[10px] text-indigo-400 uppercase font-bold block">Инструкции от Администратора / Бриф</span>
+            <div class="bg-black/30 p-3 rounded-xl max-h-32 overflow-y-auto">
+                <p id="modal-admin-notes" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">...</p>
+            </div>
+        </div>
+
+        <!-- Rejected Feedback -->
+        <div id="rework-container" class="hidden bg-rose-500/10 border border-rose-500/15 p-4 rounded-2xl space-y-2">
+            <span class="text-[10px] text-rose-400 uppercase font-bold block"><i class="fas fa-exclamation-circle mr-1"></i> Комментарий инспектора (Правки)</span>
+            <p id="modal-rework-comment" class="text-xs text-slate-300 italic">...</p>
+        </div>
+
+        <!-- УПРАВЛЯЕМЫЙ ФУНКЦИОНАЛ (Монтажер может менять Прогресс, Стадию и Бортовой Журнал) -->
+        <div id="editor-management-section" class="bg-black/20 p-4 rounded-2xl border border-white/[0.05] space-y-4">
+            <span class="text-[10px] text-indigo-400 uppercase font-bold block">Управление ходом работы</span>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] text-slate-500 font-bold uppercase mb-1.5">Текущая стадия разработки</label>
+                    <select id="modal-stage-select" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+                        <option value="brief">ТЗ & Бриф</option>
+                        <option value="edit">Черновик</option>
+                        <option value="effects">Звук & FX</option>
+                        <option value="color">Цветокоррекция</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-500 font-bold uppercase mb-1.5 flex items-center justify-between">
+                        Прогресс проекта %
+                        <span id="modal-progress-display" class="text-xs font-bold text-indigo-400">0%</span>
+                    </label>
+                    <input type="range" id="modal-progress-slider" min="0" max="100" class="w-full accent-indigo-600 my-3" oninput="document.getElementById('modal-progress-display').textContent=this.value+'%'">
+                </div>
+            </div>
+
+            <!-- Бортовой журнал проекта -->
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase mb-1.5">Бортовой журнал проекта (Записи монтажёра)</label>
+                <textarea id="modal-editor-journal" maxlength="800" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white resize-none h-20 focus:outline-none focus:border-indigo-500/30 placeholder:text-slate-600" placeholder="Опишите текущие изменения, сложности или важные пометки по сборке ролика..."></textarea>
+                <div class="text-right text-[8px] text-slate-500 mt-1" id="modal-editor-journal-counter">0 / 800</div>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="saveProjectProgressOnly()" id="btn-save-progress" class="pressable px-6 py-2.5 bg-indigo-600/15 border border-indigo-500/30 hover:bg-indigo-600/30 text-indigo-300 text-xs font-bold rounded-xl transition flex items-center gap-2">
+                    <i class="fas fa-save"></i> Сохранить ход работы
+                </button>
+            </div>
+        </div>
+
+        <!-- Interactive Actions Form (Отправка на проверку) -->
+        <div id="submit-section" class="space-y-4 pt-2">
+            <div class="h-[1px] bg-white/[0.05]"></div>
+            
+            <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-white font-space">Отправка проекта на проверку</h4>
+                <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Все пункты обязательны</span>
+            </div>
+
+            <!-- Dynamically populated checklist -->
+            <div class="bg-black/30 p-4 rounded-2xl border border-white/5 space-y-2.5" id="checklist-container">
+                <!-- Checkbox elements go here -->
+            </div>
+
+            <!-- Submission Details -->
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Ссылка на готовый ролик (Яндекс.Диск, Облако...)</label>
+                    <input type="url" id="sub-final-link" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30 font-mono" placeholder="https://disk.yandex.ru/d/... ">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Комментарий для инспектора (Правки / Пометки)</label>
+                    <textarea id="sub-comment" maxlength="500" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white resize-none h-20 focus:outline-none focus:border-indigo-500/30" placeholder="Опишите, что было сделано, укажите важные детали для инспекции..."></textarea>
+                </div>
+            </div>
+
+            <button onclick="submitProjectForReview()" id="btn-submit-review" class="pressable w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold font-space text-white transition">
+                Отправить на инспекцию
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Profile / Security Settings Modal -->
+<div id="modal-profile" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onclick="closeModal('modal-profile')">
+    <div class="glass-card premium-border w-full max-w-sm rounded-3xl p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between border-b border-white/[0.05] pb-3">
+            <h3 class="font-space font-black text-white text-base">Личные настройки</h3>
+            <button onclick="closeModal('modal-profile')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white"><i class="fas fa-times text-xs"></i></button>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase mb-1.5">Отображаемое имя</label>
+                <input type="text" id="prof-name" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase mb-1.5">Новый пароль (оставьте пустым для сохранения текущего)</label>
+                <input type="password" id="prof-pass" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="••••••••">
+            </div>
+        </div>
+
+        <button onclick="saveProfile()" class="pressable w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold font-space text-white transition">
+            Сохранить изменения
+        </button>
+    </div>
+</div>
+
+<!-- Main System Application logic -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+    getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query, collection, orderBy, where, serverTimestamp, writeBatch 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* ВНИМАНИЕ: Замените на вашу конфигурацию Firebase */
+const firebaseConfig = {
+    apiKey: "AIzaSy_YOUR_API_KEY",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project",
+    storageBucket: "your-project.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abcdef"
+};
+
+let app, db;
+try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+} catch (e) {
+    console.error("Firebase init error:", e);
+}
+
+const APP_ID = 'space-video-agency';
+const BASE_PATH = `artifacts/${APP_ID}/public/data`;
+
+function getColPath(colName) { return `${BASE_PATH}/${colName}`; }
+
+// Local cache state
+let currentEditor = null;
+let currentCategory = 'active'; // active, review, completed
+let state = {
+    projects: [],
+    settings: { checklist: [] }
+};
+let unsubscribes = [];
+
+// Toast Notifications helper
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    const colorClass = type === 'success' ? 'border-emerald-500/30 text-emerald-400' : 'border-rose-500/30 text-red-400';
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    toast.className = `toast ${colorClass}`;
+    toast.innerHTML = `<i class="fas ${icon} mr-2.5"></i>${message}`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px) scale(0.95)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+function showLoader(text = 'ПОДКЛЮЧЕНИЕ...', quote = 'Авторизация в закрытом контуре...') {
+    const loader = document.getElementById('screen-loader');
+    document.getElementById('loader-status-text').innerText = text;
+    document.getElementById('loader-quote').innerText = quote;
+    loader.classList.remove('opacity-0', 'pointer-events-none');
+    loader.classList.add('opacity-100');
+    let width = 0;
+    const bar = document.getElementById('loader-progress-bar');
+    const interval = setInterval(() => {
+        width += Math.random() * 15;
+        if (width >= 90) clearInterval(interval);
+        bar.style.width = Math.min(width, 90) + '%';
+    }, 200);
+    return interval;
+}
+
+function hideLoader(interval) {
+    clearInterval(interval);
+    const bar = document.getElementById('loader-progress-bar');
+    bar.style.width = '100%';
+    setTimeout(() => {
+        const loader = document.getElementById('screen-loader');
+        loader.classList.remove('opacity-100');
+        loader.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => { bar.style.width = '0'; }, 700);
+    }, 300);
+}
+
+window.closeModal = function(id) {
+    document.getElementById(id).classList.add('hidden');
+};
+
+// Bind SpaceAuth Core
+if (window.SpaceAuth) {
+    window.SpaceAuth.init(db, { doc, setDoc, getDoc, deleteDoc }, APP_ID);
+}
+
+async function checkAuthOnLoad() {
+    if (!window.SpaceAuth) return;
+    const interval = showLoader('ПРОВЕРКА СЕССИИ...', 'Проверка статуса учетной записи');
+    const session = await window.SpaceAuth.readSession();
+    
+    if (session && session.role === 'editor') {
+        const docSnap = await getDoc(doc(db, getColPath('editors'), session.id));
+        if (docSnap.exists() && !docSnap.data().isBlocked) {
+            currentEditor = { id: docSnap.id, ...docSnap.data() };
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-dashboard').classList.remove('hidden');
+            await initializeEditorPortal();
+        } else {
+            if (docSnap.exists() && docSnap.data().isBlocked) {
+                showToast("Ваш аккаунт заблокирован администратором", "error");
+            }
+            await window.SpaceAuth.clearSession();
+            showLoginScreen();
+        }
+    } else {
+        showLoginScreen();
+    }
+    hideLoader(interval);
+}
+
+function showLoginScreen() {
+    document.getElementById('screen-login').classList.remove('hidden');
+    document.getElementById('screen-dashboard').classList.add('hidden');
+}
+
+window.executeLogin = async function() {
+    const login = document.getElementById('login-input').value.trim().toLowerCase();
+    const pass = document.getElementById('pass-input').value.trim();
+    const btn = document.getElementById('login-submit-btn');
+
+    if (!login || !pass) return showToast("Заполните имя пользователя и пароль", "error");
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> ВХОД...';
+
+    try {
+        const snapshot = await getDoc(doc(db, getColPath('editors'), login));
+        let editorData = null;
+        let editorId = null;
+
+        if (snapshot.exists()) {
+            editorData = snapshot.data();
+            editorId = snapshot.id;
+        } else {
+            showToast("Неверные учетные данные", "error");
+            btn.disabled = false;
+            btn.innerHTML = 'Войти в Кабинет';
+            return;
+        }
+
+        if (editorData) {
+            if (editorData.isBlocked) {
+                showToast("Доступ заблокирован", "error");
+                btn.disabled = false;
+                btn.innerHTML = 'Войти в Кабинет';
+                return;
+            }
+            const hashed = CryptoJS.SHA256(pass).toString();
+            if (editorData.password === hashed) {
+                currentEditor = { id: editorId, ...editorData };
+                await window.SpaceAuth.writeSession('editor', editorId, editorData.realName);
+                
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('screen-dashboard').classList.remove('hidden');
+                await initializeEditorPortal();
+                showToast(`С возвращением, ${editorData.realName}!`);
+            } else {
+                showToast("Неправильный пароль", "error");
+            }
+        }
+    } catch (e) {
+        showToast("Ошибка подключения", "error");
+        console.error(e);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Войти в Кабинет';
+    }
+};
+
+window.logout = async function() {
+    if (confirm('Вы уверены, что хотите выйти?')) {
+        if (window.SpaceAuth) await window.SpaceAuth.clearSession();
+        unsubscribes.forEach(unsub => unsub());
+        unsubscribes = [];
+        window.location.reload();
+    }
+};
+
+async function initializeEditorPortal() {
+    unsubscribes.forEach(unsub => unsub());
+    unsubscribes = [];
+
+    // Real-time Editor profile updates
+    unsubscribes.push(onSnapshot(doc(db, getColPath('editors'), currentEditor.id), (snap) => {
+        if (snap.exists()) {
+            currentEditor = { id: snap.id, ...snap.data() };
+            updateSidebarUI();
+        }
+    }));
+
+    // Real-time projects assigned to this editor
+    const qProjects = query(
+        collection(db, getColPath('projects')), 
+        where('editorId', '==', currentEditor.id)
+    );
+
+    unsubscribes.push(onSnapshot(qProjects, (snapshot) => {
+        state.projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderPortalDashboard();
+        
+        // Live update of details modal if it's currently open
+        const openProjId = document.getElementById('current-project-id').value;
+        if (openProjId && !document.getElementById('modal-project-details').classList.contains('hidden')) {
+            window.openProjectDetails(openProjId);
+        }
+    }));
+
+    // Global checklist configurations
+    unsubscribes.push(onSnapshot(doc(db, getColPath('admin_settings'), 'global'), (docSnap) => {
+        if (docSnap.exists()) {
+            state.settings = docSnap.data();
+        }
+    }));
+}
+
+function updateSidebarUI() {
+    const avatar = (currentEditor.realName || currentEditor.login).charAt(0).toUpperCase();
+    document.getElementById('sidebar-avatar').textContent = avatar;
+    document.getElementById('sidebar-name').textContent = currentEditor.realName || 'Имя не указано';
+    document.getElementById('sidebar-login').textContent = `@${currentEditor.login}`;
+    
+    // Stats
+    document.getElementById('stat-closed').textContent = currentEditor.stats?.projectsClosed || 0;
+    document.getElementById('stat-rating').textContent = (currentEditor.stats?.averageRating || 0).toFixed(1);
+    
+    // Cumulative earnings breakdown calculation
+    let earned = 0;
+    state.projects.forEach(p => {
+        if (p.stage === 'done' || p.status === 'completed') {
+            const base = parseFloat(p.editorSalary) || 0;
+            const extra = parseFloat(p.editorExtraSalary) || 0;
+            const penalties = parseFloat(p.penaltyTotal) || 0;
+            let bonus = 0;
+            if (p.editorBonus && p.editorBonus.value) {
+                bonus = p.editorBonus.type === 'percent' ? base * (p.editorBonus.value / 100) : p.editorBonus.value;
+            }
+            earned += (base + extra + bonus) - penalties;
+        }
+    });
+    document.getElementById('fin-total').textContent = earned.toLocaleString('ru-RU') + ' ₽';
+}
+
+window.switchCategory = function(cat) {
+    currentCategory = cat;
+    
+    ['active', 'review', 'completed'].forEach(c => {
+        const btn = document.getElementById(`btn-cat-${c}`);
+        if (c === cat) {
+            btn.classList.add('active', 'text-white');
+            btn.classList.remove('text-slate-400');
+        } else {
+            btn.classList.remove('active', 'text-white');
+            btn.classList.add('text-slate-400');
+        }
+    });
+
+    const titles = {
+        'active': 'Задачи в работе',
+        'review': 'На инспекции',
+        'completed': 'Завершенные архивы'
+    };
+    document.getElementById('viewport-title').textContent = titles[cat];
+    renderPortalDashboard();
+};
+
+function renderPortalDashboard() {
+    updateSidebarUI();
+
+    const active = state.projects.filter(p => p.stage !== 'done' && p.stage !== 'review_pending');
+    const review = state.projects.filter(p => p.stage === 'review_pending');
+    const completed = state.projects.filter(p => p.stage === 'done' || p.status === 'completed');
+
+    document.getElementById('badge-count-active').textContent = active.length;
+    document.getElementById('badge-count-review').textContent = review.length;
+    document.getElementById('badge-count-completed').textContent = completed.length;
+
+    let targetList = [];
+    if (currentCategory === 'active') targetList = active;
+    else if (currentCategory === 'review') targetList = review;
+    else if (currentCategory === 'completed') targetList = completed;
+
+    const grid = document.getElementById('projects-grid');
+    const empty = document.getElementById('empty-state');
+
+    if (targetList.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        
+        const config = {
+            'active': { title: 'Нет активных задач', subtitle: 'Ожидайте назначения новых задач администратором', icon: 'fa-rocket' },
+            'review': { title: 'На проверке пусто', subtitle: 'Здесь будут отображаться проекты до согласования инспекцией', icon: 'fa-clipboard-check' },
+            'completed': { title: 'Архив пуст', subtitle: 'Завершенные задачи еще не зарегистрированы', icon: 'fa-folder-open' }
+        };
+        
+        document.getElementById('empty-state-title').textContent = config[currentCategory].title;
+        document.getElementById('empty-state-subtitle').textContent = config[currentCategory].subtitle;
+    } else {
+        empty.classList.add('hidden');
+        grid.innerHTML = targetList.map(renderProjectCard).join('');
+    }
+}
+
+function getStageName(stage) {
+    const map = {
+        'brief': 'ТЗ & Бриф',
+        'edit': 'Черновик',
+        'effects': 'Звук & FX',
+        'color': 'Цветокоррекция',
+        'review_pending': 'На проверке',
+        'review_rework': 'Правки / Доработка',
+        'done': 'Сдан'
+    };
+    return map[stage] || stage;
+}
+
+function getStageColor(stage) {
+    const map = {
+        'brief': 'text-slate-400 bg-slate-500/10 border-slate-500/20',
+        'edit': 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+        'effects': 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+        'color': 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+        'review_pending': 'text-orange-400 bg-orange-500/10 border-orange-500/20',
+        'review_rework': 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+        'done': 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+    };
+    return map[stage] || 'text-slate-400';
+}
+
+function renderProjectCard(p) {
+    const deadline = p.deadline ? new Date(p.deadline).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Без дедлайна';
+    const isLate = p.deadline && new Date(p.deadline) < new Date() && p.stage !== 'done';
+    
+    return `
+        <div class="glass-card premium-border rounded-2xl p-4 flex flex-col justify-between hover:bg-white/[0.01] transition relative overflow-hidden group">
+            ${isLate ? '<div class="absolute top-0 right-0 w-16 h-16 overflow-hidden"><div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-bold uppercase tracking-widest py-1 px-6 transform translate-x-4 -translate-y-2 rotate-45">ПРОСРОЧЕН</div></div>' : ''}
+            
+            <div class="space-y-3">
+                <div>
+                    <h3 class="text-sm font-black font-space text-white truncate pr-8" title="${p.name}">${p.name}</h3>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-[9px] text-indigo-400 font-bold uppercase tracking-wide">${p.clientCategory || 'Стандарт'}</span>
+                        <span class="text-[9px] text-slate-500 font-medium">@${p.clientName || 'Конфиденциально'}</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-slate-400 flex items-center gap-1.5"><i class="far fa-clock"></i> ${deadline}</span>
+                    <span class="px-2 py-0.5 rounded border ${getStageColor(p.stage)} font-bold text-[9px] uppercase">${getStageName(p.stage)}</span>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[9px] text-slate-500 font-bold uppercase">
+                        <span>Прогресс</span>
+                        <span class="text-indigo-400">${p.progress || 0}%</span>
+                    </div>
+                    <div class="w-full bg-white/[0.05] h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-indigo-500 h-full rounded-full transition-all duration-500" style="width: ${p.progress || 0}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-3 mt-3 border-t border-white/[0.05] flex gap-2">
+                <button onclick="openProjectDetails('${p.id}')" class="pressable flex-1 py-2 bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 text-slate-300 text-[10px] font-bold rounded-lg transition">Управление & Сводка проекта</button>
+            </div>
+        </div>
+    `;
+}
+
+window.openProjectDetails = function(id) {
+    const p = state.projects.find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('current-project-id').value = p.id;
+    document.getElementById('modal-project-name').textContent = p.name;
+    document.getElementById('modal-client-name').textContent = p.clientName || 'Конфиденциальный клиент';
+    
+    // Read-only order information
+    document.getElementById('modal-client-category').textContent = p.clientCategory || 'Не указана';
+    document.getElementById('modal-access-code').textContent = p.accessCode || '-';
+    document.getElementById('modal-status-text').textContent = p.status === 'completed' ? 'Завершен (Архив)' : 'В работе';
+    
+    // Deadlines & creation logs
+    const deadlineStr = p.deadline ? new Date(p.deadline).toLocaleString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Без дедлайна';
+    const createdStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('ru-RU') : '-';
+    const updatedStr = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('ru-RU') : '-';
+    
+    document.getElementById('modal-deadline-date').textContent = deadlineStr;
+    document.getElementById('modal-created-date').textContent = createdStr;
+    document.getElementById('modal-updated-date').textContent = updatedStr;
+
+    // Read-only financial specifications
+    const baseSal = parseFloat(p.editorSalary) || 0;
+    const extraSal = parseFloat(p.editorExtraSalary) || 0;
+    const penaltyTot = parseFloat(p.penaltyTotal) || 0;
+    
+    let bonusVal = 0;
+    if (p.editorBonus && p.editorBonus.value) {
+        bonusVal = p.editorBonus.type === 'percent' ? baseSal * (p.editorBonus.value / 100) : p.editorBonus.value;
+        document.getElementById('modal-editor-bonus-name').textContent = p.editorBonus.name || 'Стимулирующий бонус';
+    } else {
+        document.getElementById('modal-editor-bonus-name').textContent = 'нет';
+    }
+    
+    const editorNetEarnings = (baseSal + extraSal + bonusVal) - penaltyTot;
+    
+    document.getElementById('modal-editor-base-salary').textContent = baseSal.toLocaleString('ru-RU') + ' ₽';
+    document.getElementById('modal-editor-bonus-val').textContent = bonusVal.toLocaleString('ru-RU') + ' ₽';
+    document.getElementById('modal-editor-penalty-total').textContent = '-' + penaltyTot.toLocaleString('ru-RU') + ' ₽';
+    document.getElementById('modal-editor-extra-salary').textContent = extraSal.toLocaleString('ru-RU') + ' ₽';
+    document.getElementById('modal-earnings-payout').textContent = editorNetEarnings.toLocaleString('ru-RU') + ' ₽';
+
+    // Extra services detailed breakdown (Read-only list)
+    const extraListContainer = document.getElementById('modal-editor-extra-list');
+    if (p.editorExtraServices && p.editorExtraServices.length > 0) {
+        extraListContainer.innerHTML = p.editorExtraServices.map(srv => `
+            <div class="flex justify-between items-center py-1 border-b border-white/[0.01]">
+                <span class="text-slate-400">${srv.name}</span>
+                <span class="font-mono text-indigo-300 font-semibold">+${srv.price} ₽</span>
+            </div>
+        `).join('');
+    } else {
+        extraListContainer.innerHTML = `<div class="text-slate-500 italic">Нет подключенных доп. услуг</div>`;
+    }
+
+    // Penalties detailed list (Read-only list)
+    const penaltiesListContainer = document.getElementById('modal-editor-penalties-list');
+    if (p.editorPenalties && p.editorPenalties.length > 0) {
+        penaltiesListContainer.innerHTML = p.editorPenalties.map(pen => `
+            <div class="flex justify-between items-center py-1 border-b border-white/[0.01]">
+                <span class="text-rose-400/80">${pen.name}</span>
+                <span class="font-mono text-rose-400 font-semibold">-${pen.price} ₽</span>
+            </div>
+        `).join('');
+    } else {
+        penaltiesListContainer.innerHTML = `<div class="text-slate-500 italic">Штрафов нет</div>`;
+    }
+
+    // Interactive editing of local progress, stage and board journal
+    document.getElementById('modal-stage-select').value = (p.stage === 'review_pending' || p.stage === 'review_rework' || p.stage === 'done') ? 'color' : (p.stage || 'brief');
+    document.getElementById('modal-progress-slider').value = p.progress || 0;
+    document.getElementById('modal-progress-display').textContent = (p.progress || 0) + '%';
+    
+    const editorJournalField = document.getElementById('modal-editor-journal');
+    editorJournalField.value = p.editorJournal || '';
+    document.getElementById('modal-editor-journal-counter').textContent = (p.editorJournal?.length || 0) + ' / 800';
+
+    // Links configuration
+    setupExternalLink('link-sources', p.videoSources);
+    setupExternalLink('link-reference', p.videoReference);
+    setupExternalLink('link-brief', p.tkLink);
+
+    // Board notes
+    document.getElementById('modal-admin-notes').textContent = p.notes || 'Дополнительные примечания к проекту не указаны.';
+
+    // Manage rejection alerts
+    const reworkContainer = document.getElementById('rework-container');
+    if (p.stage === 'review_rework' && p.adminReply) {
+        reworkContainer.classList.remove('hidden');
+        document.getElementById('modal-rework-comment').textContent = p.adminReply;
+    } else {
+        reworkContainer.classList.add('hidden');
+    }
+
+    // Submission area toggling depending on state
+    const submitSection = document.getElementById('submit-section');
+    const editorManagementSection = document.getElementById('editor-management-section');
+    
+    if (p.stage === 'review_pending' || p.stage === 'done') {
+        submitSection.classList.add('hidden');
+        editorManagementSection.classList.add('hidden');
+    } else {
+        submitSection.classList.remove('hidden');
+        editorManagementSection.classList.remove('hidden');
+        buildInteractiveChecklist();
+    }
+
+    document.getElementById('modal-project-details').classList.remove('hidden');
+};
+
+// Interactive progress & stage update save logic for editor
+window.saveProjectProgressOnly = async function() {
+    const id = document.getElementById('current-project-id').value;
+    const p = state.projects.find(x => x.id === id);
+    if (!p) return;
+
+    const selectedStage = document.getElementById('modal-stage-select').value;
+    const selectedProgress = parseInt(document.getElementById('modal-progress-slider').value);
+    const journalText = document.getElementById('modal-editor-journal').value.trim();
+
+    const btn = document.getElementById('btn-save-progress');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+
+    try {
+        await updateDoc(doc(db, getColPath('projects'), id), {
+            stage: selectedStage,
+            progress: selectedProgress,
+            editorJournal: journalText,
+            updatedAt: Date.now()
+        });
+        showToast("Прогресс и бортовой журнал успешно сохранены");
+    } catch (e) {
+        showToast("Не удалось сохранить прогресс", "error");
+        console.error(e);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Сохранить ход работы';
+    }
+};
+
+function setupExternalLink(elementId, url) {
+    const el = document.getElementById(elementId);
+    if (url && url.startsWith('http')) {
+        el.href = url;
+        el.classList.remove('pointer-events-none', 'opacity-40');
+    } else {
+        el.removeAttribute('href');
+        el.classList.add('pointer-events-none', 'opacity-40');
+    }
+}
+
+function buildInteractiveChecklist() {
+    const container = document.getElementById('checklist-container');
+    const items = state.settings.checklist || [];
+    
+    if (items.length === 0) {
+        container.innerHTML = `<div class="text-[10px] text-slate-500 italic text-center">Глобальные стандарты проверки отсутствуют</div>`;
+        return;
+    }
+
+    container.innerHTML = items.map((item, idx) => `
+        <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-white/[0.02] rounded-xl transition">
+            <input type="checkbox" class="checklist-item mt-0.5 accent-indigo-600" data-index="${idx}">
+            <span class="text-xs text-slate-300 leading-normal select-none">${item}</span>
+        </label>
+    `).join('');
+}
+
+window.submitProjectForReview = async function() {
+    const id = document.getElementById('current-project-id').value;
+    const p = state.projects.find(x => x.id === id);
+    if (!p) return;
+
+    const checkboxes = document.querySelectorAll('.checklist-item');
+    let allChecked = true;
+    checkboxes.forEach(box => {
+        if (!box.checked) allChecked = false;
+    });
+
+    if (checkboxes.length > 0 && !allChecked) {
+        return showToast("Необходимо подтвердить все пункты стандартов качества", "error");
+    }
+
+    const finalLink = document.getElementById('sub-final-link').value.trim();
+    if (!finalLink || !finalLink.startsWith('http')) {
+        return showToast("Укажите корректную ссылку на готовую работу", "error");
+    }
+
+    const comment = document.getElementById('sub-comment').value.trim();
+    const btn = document.getElementById('btn-submit-review');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> ОТПРАВКА...';
+
+    try {
+        const batch = writeBatch(db);
+        const pRef = doc(db, getColPath('projects'), id);
+        
+        batch.update(pRef, {
+            stage: 'review_pending',
+            editorSubmissionNote: comment,
+            finalVideoLink: finalLink,
+            updatedAt: Date.now()
+        });
+
+        const notifRef = doc(collection(db, getColPath('notifications_admin')));
+        batch.set(notifRef, {
+            type: 'review_submission',
+            title: 'Новая работа на проверку',
+            message: `Монтажёр ${currentEditor.realName} отправил проект "${p.name}" на инспекцию. Ссылка: ${finalLink}`,
+            createdAt: Date.now(),
+            read: false
+        });
+
+        await batch.commit();
+        showToast("Проект успешно отправлен на инспекцию администрации");
+        closeModal('modal-project-details');
+    } catch (e) {
+        showToast("Ошибка сохранения данных", "error");
+        console.error(e);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Отправить на инспекцию';
+    }
+};
+
+window.openProfileModal = function() {
+    document.getElementById('prof-name').value = currentEditor.realName || '';
+    document.getElementById('prof-pass').value = '';
+    document.getElementById('modal-profile').classList.remove('hidden');
+};
+
+window.saveProfile = async function() {
+    const name = document.getElementById('prof-name').value.trim();
+    const pass = document.getElementById('prof-pass').value.trim();
+
+    if (!name) return showToast("Имя не может быть пустым", "error");
+
+    const updateData = { realName: name };
+    if (pass) {
+        if (pass.length < 4) return showToast("Пароль должен быть не менее 4 символов", "error");
+        updateData.password = CryptoJS.SHA256(pass).toString();
+    }
+
+    try {
+        await updateDoc(doc(db, getColPath('editors'), currentEditor.id), updateData);
+        showToast("Профиль успешно обновлен");
+        closeModal('modal-profile');
+    } catch (e) {
+        showToast("Ошибка при сохранении", "error");
+    }
+};
+
+window.openChatLink = function() {
+    if (window.SpaceAuth) {
+        window.SpaceAuth.navigateWithSession('chat.html');
+    } else {
+        window.location.href = 'chat.html';
+    }
+};
+
+// Textarea auto-resize & counters
+['modal-editor-journal'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+        el.addEventListener('input', function() {
+            const counter = document.getElementById(`${id}-counter`);
+            if(counter) counter.innerText = `${this.value.length} / ${this.getAttribute('maxlength')}`;
+        });
+    }
+});
+
+// Initial setup startup run
+document.addEventListener('DOMContentLoaded', checkAuthOnLoad);
+</script>
+
+</body>
+</html>
