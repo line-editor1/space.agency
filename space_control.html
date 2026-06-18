@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SPACE CONTROL — Панель Администратора</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link class="scroll-smooth" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <!-- Глобальный отлов ошибок, чтобы понимать почему не работает кнопка входа -->
+    <script>
+        window.addEventListener('error', function(e) {
+            const tc = document.getElementById('toast-container');
+            if (tc) {
+                const t = document.createElement('div');
+                t.className = 'toast border-rose-500/30 text-red-400';
+                t.innerHTML = `<i class="fas fa-exclamation-triangle mr-2.5"></i>Ошибка скрипта: ${e.message}`;
+                tc.appendChild(t);
+                setTimeout(()=>t.remove(), 5000);
+            }
+        });
+    </script>
+
+    <script>
+// ══════════════════════════════════════════════════════════════════
+// SPACE AUTH — единый модуль системы авторизации
+// Встроен напрямую (inline) во все три файла (chat.html, space_team.html,
+// space_control.html) ДО основного модульного <script type="module">,
+// и экспортирует свои функции через глобальный объект window.SpaceAuth.
+//
+// Один источник правды для сессии устраняет расхождения между
+// файлами (раньше каждый файл хранил свою копию этой логики, что
+// приводило к багам вроде "циклической авторизации").
+//
+// Сессия хранится в Firestore (коллекция "sessions") — это
+// единственный источник истины и единственное место, где проверяется
+// её срок действия. В localStorage хранится только непрозрачный ID
+// сессии (sessionId), без role/id/имени внутри. Поэтому кодирование
+// кириллицы (Base64/btoa) для передачи сессии больше не требуется в
+// принципе: ни в URL, ни в storage не передаётся ничего, кроме
+// случайной ID-строки, а сама сессия читается из Firestore, который
+// уже умеет работать с любым Unicode без какого-либо кодирования.
+//
+// Перед использованием readSession/writeSession/clearSession модуль,
+// который подключает SpaceAuth, обязан один раз вызвать
+// window.SpaceAuth.init(db, firestoreFns, appId) сразу после
+// инициализации Firebase.
+// ══════════════════════════════════════════════════════════════════
+(function () {
+    'use strict';
+
+    const SESSION_KEY = 'space_session_id';
+    // Срок жизни сессии — 12 часов. После истечения пользователь должен
+    // войти заново. Защищает от вечно живущих сессий на чужих устройствах.
+    const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+    const SESSIONS_COLLECTION = 'sessions';
+
+    let _db = null;
+    let _fns = null; // { doc, setDoc, getDoc, deleteDoc }
+    let _appId = 'space-video-agency';
+
+    function init(db, firestoreFns, appId) {
+        _db = db;
+        _fns = firestoreFns;
+        if (appId) _appId = appId;
+    }
+
+    function sessionsPath() {
+        return ['artifacts', _appId, 'public', 'data', SESSIONS_COLLECTION];
+    }
+
+    function genSessionId() {
+        try {
+            return crypto.randomUUID();
+        } catch (e) {
+            return 'sid_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        }
+    }
+
+    function ensureInitialized() {
+        if (!_db || !_fns) {
+            throw new Error('[space-auth] SpaceAuth.init(db, firestoreFns, appId) не был вызван перед использованием сессии');
+        }
+    }
+
+    // ── Запись сессии ──
+    // Создаёт документ сессии в Firestore и сохраняет только его ID
+    // локально (никакого JSON с именем/ролью — только случайная строка).
+    async function writeSession(role, id, name) {
+        ensureInitialized();
+        const sessionId = genSessionId();
+        const now = Date.now();
+        const sessionData = {
+            role,
+            userId: id,
+            name: name || '',
+            createdAt: now,
+            expiresAt: now + SESSION_TTL_MS
+        };
+        await _fns.setDoc(_fns.doc(_db, ...sessionsPath(), sessionId), sessionData);
+        try { localStorage.setItem(SESSION_KEY, sessionId); } catch (e) {}
+        return { role, id, name: name || '', sessionId };
+    }
+
+    // ── Чтение сессии ──
+    // Асинхронная: делает запрос в Firestore по сохранённому sessionId
+    // и проверяет, что сессия существует и не истекла.
+    async function readSession() {
+        ensureInitialized();
+        let sessionId = null;
+        try { sessionId = localStorage.getItem(SESSION_KEY); } catch (e) { return null; }
+        if (!sessionId) return null;
+
+        let snap;
+        try {
+            snap = await _fns.getDoc(_fns.doc(_db, ...sessionsPath(), sessionId));
+        } catch (e) {
+            console.warn('[space-auth] Не удалось проверить сессию', e);
+            return null;
+        }
+
+        if (!snap.exists()) {
+            clearSessionLocal();
+            return null;
+        }
+
+        const data = snap.data();
+        if (!data || !data.role || !data.userId) {
+            clearSessionLocal();
+            return null;
+        }
+
+        if (typeof data.expiresAt !== 'number' || Date.now() > data.expiresAt) {
+            try { await _fns.deleteDoc(_fns.doc(_db, ...sessionsPath(), sessionId)); } catch (e) {}
+            clearSessionLocal();
+            return null;
+        }
+
+        return { role: data.role, id: data.userId, name: data.name || '', sessionId };
+    }
+
+    // ── Удаление сессии (выход) ──
+    async function clearSession() {
+        let sessionId = null;
+        try { sessionId = localStorage.getItem(SESSION_KEY); } catch (e) {}
+        if (sessionId && _db && _fns) {
+            try { await _fns.deleteDoc(_fns.doc(_db, ...sessionsPath(), sessionId)); } catch (e) {}
+        }
+        clearSessionLocal();
+    }
+
+    function clearSessionLocal() {
+        [SESSION_KEY, 'chat_role', 'chat_id', 'chat_name'].forEach(k => {
+            try {
+                localStorage.removeItem(k);
+                sessionStorage.removeItem(k);
+            } catch (e) {}
+        });
+    }
+
+    // ── Куда вести "Войти в личный кабинет" в зависимости от роли ──
+    function getCabinetUrl(role) {
+        if (role === 'owner' || role === 'manager') return 'space_control.html';
+        if (role === 'editor') return 'space_team.html';
+        try {
+            const last = localStorage.getItem('space_last_cabinet');
+            if (last === 'space_team.html' || last === 'space_control.html') return last;
+        } catch (e) {}
+        return 'space_team.html';
+    }
+
+    function rememberCabinet(fileName) {
+        try { localStorage.setItem('space_last_cabinet', fileName); } catch (e) {}
+    }
+
+    // ── Промис с тайм-аутом (сетевые операции не должны висеть вечно) ──
+    function withTimeout(promise, ms, message) {
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => reject(new Error(message || 'Превышено время ожидания соединения')), ms);
+            promise.then(
+                (val) => { clearTimeout(timer); resolve(val); },
+                (err) => { clearTimeout(timer); reject(err); }
+            );
+        });
+    }
+
+    // ── Переход на другую страницу SPACE ──
+    // Сессия уже лежит в Firestore, а localStorage общий для всех страниц
+    // одного домена, поэтому передавать роль/id/имя через URL не нужно —
+    // целевая страница сама прочитает текущую сессию при загрузке.
+    // extraParams — обычные служебные query-параметры (returnTo, editor),
+    // они никогда не содержат кириллицы и не требуют кодирования.
+    function navigateWithSession(targetFile, extraParams) {
+        const params = new URLSearchParams(extraParams || {});
+        const qs = params.toString();
+        window.location.href = targetFile + (qs ? '?' + qs : '');
+    }
+
+    window.SpaceAuth = {
+        SESSION_KEY,
+        init,
+        readSession,
+        writeSession,
+        clearSession,
+        getCabinetUrl,
+        rememberCabinet,
+        withTimeout,
+        navigateWithSession
+    };
+})();
+</script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PWA Meta tags -->
+    <meta name="theme-color" content="#030208">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Оптимизированный размер иконки во вкладке браузера (уменьшен и стандартизирован) -->
+    <link rel="icon" type="image/png" href="planet_favicon.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="planet_favicon.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="1000002719.png" sizes="180x180">
+
+    <style>
+        * { caret-color: transparent; }
+        input, textarea, [contenteditable="true"] { caret-color: #818cf8 !important; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #030208 !important; 
+            color: #f8fafc; 
+            overflow-x: hidden; 
+        }
+        .font-space { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Smooth scrollbar styling */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #030208; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Premium Apple-style glass panels */
+        .glass-card {
+            background: rgba(14, 13, 24, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+        
+        .premium-border {
+            position: relative;
+        }
+        .premium-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(255,255,255,0.01));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* Apple-style fade-in-up transition */
+        .fade-in-up {
+            animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom premium modal animations */
+        .modal-animate {
+            animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Responsive notification toasts container */
+        #toast-container { position: fixed; bottom: 24px; right: 24px; left: 24px; md:left: auto; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { 
+            padding: 12px 18px; 
+            border-radius: 16px; 
+            font-size: 13px; 
+            font-weight: 500; 
+            background: #0E0D18; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+            max-width: 100%;
+            md:max-width: 320px; 
+            pointer-events: auto;
+        }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(14px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        
+        /* Interactive segmented navigation buttons */
+        .tab-segment { transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-segment.active { 
+            background: rgba(255, 255, 255, 0.05); 
+            box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.05), 0 1px 3px 0 rgba(0,0,0,0.4); 
+            color: #ffffff;
+        }
+
+        /* Status LED animation indicators */
+        .status-led {
+            position: relative;
+        }
+        .status-led::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            animation: statusPulse 1.8s infinite ease-out;
+            opacity: 0.8;
+            left: 0;
+            top: 0;
+        }
+        @keyframes statusPulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(2.4); opacity: 0; }
+        }
+
+        .bg-space-aurora {
+            background-color: #030208 !important;
+            background-image: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.08), transparent 50%),
+                              radial-gradient(circle at 10% 80%, rgba(139, 92, 246, 0.02), transparent 40%);
+        }
+
+        .pressable {
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+        }
+        .pressable:active {
+            transform: scale(0.97);
+        }
+
+        #pwa-install-banner {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            background: #0E0D18;
+        }
+
+        .modal-bg {
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           МОБИЛЬНАЯ АДАПТАЦИЯ (Apple Style)
+           ══════════════════════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .text-\[8px\], .text-\[9px\], .text-\[10px\] { font-size: 12px !important; }
+            .text-\[11px\] { font-size: 13px !important; }
+
+            input[type="text"], input[type="number"], input[type="password"],
+            input[type="email"], input[type="datetime-local"], input[type="search"],
+            input[type="url"], input[type="date"], textarea, select {
+                font-size: 16px !important;
+                min-height: 48px;
+                padding-top: 12px !important;
+                padding-bottom: 12px !important;
+            }
+            textarea { min-height: 100px; }
+
+            .es-price-input, input[type="range"] {
+                font-size: 13px !important;
+                min-height: 40px;
+            }
+
+            button, .pressable, a.pressable {
+                min-height: 44px;
+            }
+            .pressable.w-8.h-8, .pressable.w-12.h-12, .pressable.w-10.h-10, .pressable.w-9.h-9 {
+                min-height: 0;
+            }
+
+            .glass-card.premium-border {
+                padding: 1.25rem !important;
+                border-radius: 1.5rem !important;
+            }
+
+            .modal-bg > div.glass-card {
+                max-height: 94vh;
+                border-radius: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="relative min-h-screen bg-space-aurora selection:bg-indigo-500/30 selection:text-white">
+
+<div id="toast-container"></div>
+
+<!-- Custom Premium Confirmation Dialog for secure and beautiful popup prompts -->
+<div id="custom-confirm-modal" class="modal-bg hidden fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card premium-border w-full max-w-sm rounded-3xl p-6 space-y-4 modal-animate">
+        <div class="text-center space-y-2">
+            <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto text-red-400">
+                <i class="fas fa-exclamation-triangle text-lg"></i>
+            </div>
+            <h4 id="confirm-title" class="text-sm font-bold font-space text-white">Вы уверены?</h4>
+            <p id="confirm-message" class="text-[11px] text-slate-400">Это действие не может быть отменено.</p>
+        </div>
+        <div class="flex gap-3 pt-2">
+            <button id="confirm-cancel-btn" class="pressable flex-1 py-2.5 rounded-xl border border-white/[0.04] text-[11px] font-bold text-slate-400 hover:bg-white/[0.02]">Отмена</button>
+            <button id="confirm-ok-btn" class="pressable flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-[11px] font-bold text-white shadow-lg">Продолжить</button>
+        </div>
+    </div>
+</div>
+
+<div id="pwa-install-banner" class="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-[9998] p-5 rounded-2xl hidden transform translate-y-10 opacity-0 transition-all duration-500 ease-out">
+    <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0 overflow-hidden">
+            <img src="1000002719.png" alt="SPACE Logo" class="w-full h-full object-cover">
+        </div>
+        <div class="space-y-1.5 flex-1">
+            <h4 class="text-xs font-bold text-white font-space tracking-wide uppercase">Установите SPACE CONTROL</h4>
+            <p class="text-[11px] text-slate-400 leading-relaxed">Панель управления видеопроизводством в формате приложения.</p>
+            <div class="flex gap-2.5 pt-1.5">
+                <button onclick="triggerPwaInstall()" class="pressable px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold text-white transition-all">Установить</button>
+                <button onclick="dismissPwaInstall()" class="pressable px-4 py-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] text-[10px] text-slate-400 transition-all">Позже</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="screen-loader" class="fixed inset-0 bg-[#030208] z-[9999] flex flex-col items-center justify-center p-6 transition-all duration-700 ease-out opacity-0 pointer-events-none">
+    <div class="w-full max-w-sm flex flex-col items-center text-center space-y-6">
+        <div class="relative w-20 h-20 flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full border border-indigo-500/20 animate-[spin_4s_linear_infinite]"></div>
+            <div class="absolute w-16 h-16 rounded-full border-t border-b border-indigo-400 animate-[spin_1.5s_linear_infinite]"></div>
+            <div class="w-12 h-12 rounded-[14px] flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                <img src="1000002719.png" alt="SPACE Logo" class="w-full h-full object-cover animate-pulse">
+            </div>
+        </div>
+        
+        <div class="space-y-2">
+            <p class="text-[10px] text-indigo-400 uppercase tracking-[0.3em] font-space font-bold animate-pulse">SPACE CONTROL v2.1</p>
+            <h2 id="loader-welcome-title" class="text-lg font-space font-black text-white">Авторизация Администратора</h2>
+            <p id="loader-quote" class="text-xs text-slate-400 italic font-light px-4">Подключение к центру координации...</p>
+        </div>
+
+        <div class="w-48 bg-white/[0.04] h-[3px] rounded-full overflow-hidden relative">
+            <div id="loader-progress-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full w-0 transition-all duration-300 ease-out rounded-full"></div>
+        </div>
+
+        <div class="text-[9px] text-slate-600 font-mono tracking-widest uppercase" id="loader-status-text">ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ...</div>
+    </div>
+</div>
+
+<div id="screen-login" class="min-h-screen flex flex-col items-center justify-center px-4 relative z-10 transition-all duration-500">
+    <div class="w-full max-w-md glass-card premium-border rounded-3xl p-6 sm:p-8 space-y-6 sm:space-y-7 shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-16 -left-16 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <!-- Логотип растянут и оформлен обводкой со скруглениями -->
+        <div class="flex items-center gap-4 justify-center text-center sm:text-left relative z-20 pointer-events-none">
+            <div class="w-[72px] h-[72px] rounded-[18px] border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.25)] flex items-center justify-center shrink-0 overflow-hidden">
+                <img src="1000002719.png" alt="SPACE Logo" class="w-full h-full object-cover">
+            </div>
+            <div>
+                <p class="text-[9px] text-indigo-400 uppercase tracking-[0.25em] font-space font-bold">SPACE Control Center</p>
+                <h3 class="text-xs sm:text-sm font-space font-black text-white tracking-wide">Панель Управления</h3>
+            </div>
+        </div>
+
+        <div class="text-center space-y-1 pointer-events-none">
+            <h4 class="text-base font-bold text-white font-space">Вход для Администрации</h4>
+            <p class="text-[11px] text-slate-400">Введите ключи безопасности SPACE</p>
+        </div>
+
+        <div class="space-y-3.5 relative z-20">
+            <div class="relative">
+                <i class="fas fa-user-shield absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="text" id="login-input" autocomplete="username" autocapitalize="none" autocorrect="off" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600" placeholder="Логин Администратора">
+            </div>
+            <div class="relative">
+                <i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="password" id="pass-input" autocomplete="current-password" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600" placeholder="Пароль" onkeydown="if(event.key==='Enter') executeLogin()">
+            </div>
+        </div>
+
+        <button onclick="executeLogin()" id="login-submit-btn" class="pressable w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold font-space text-xs uppercase tracking-widest text-white transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.25)] disabled:opacity-50 disabled:cursor-not-allowed relative z-20">
+            Войти в Панель
+        </button>
+    </div>
+</div>
+
+<div id="screen-dashboard" class="hidden min-h-screen flex flex-col relative z-10 pb-12">
+    <!-- TOP NAVIGATION BAR (FLOATING BUBBLES HEADER DESIGN) -->
+    <nav class="sticky top-0 z-50 w-full bg-transparent px-4 py-3 md:py-4">
+        <!-- Desktop Header Version (>= 768px) -->
+        <div class="hidden md:flex max-w-7xl mx-auto items-center justify-between gap-4">
+            <!-- Left Bubble (Logo / ID) -->
+            <div class="flex items-center gap-3 bg-[#0E0D18]/80 border border-white/[0.05] rounded-full px-5 py-2 backdrop-blur-xl shadow-lg shrink-0">
+                <div class="w-7 h-7 rounded-full flex items-center justify-center bg-indigo-500/10 border border-indigo-500/20 overflow-hidden">
+                    <img src="1000002719.png" alt="SPACE Logo" class="w-full h-full object-cover">
+                </div>
+                <span class="font-space font-black tracking-[0.15em] text-white text-xs sm:text-sm">SPACE CONTROL</span>
+                <span id="user-nav-role" class="text-[8px] sm:text-[9px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 px-2 py-0.5 rounded-full font-bold font-space uppercase tracking-wider">Администратор</span>
+            </div>
+            
+            <!-- Middle Bubble (Current Tab Indicator) -->
+            <div id="desktop-header-title-bubble" class="flex items-center gap-2 bg-[#0E0D18]/80 border border-white/[0.05] rounded-full px-6 py-2.5 backdrop-blur-xl shadow-lg font-space font-bold text-xs">
+                <!-- Dynamically populated by JS inside switchTab() -->
+            </div>
+
+            <!-- Right Bubble (Action Pill) -->
+            <div class="flex items-center gap-4 bg-[#0E0D18]/80 border border-white/[0.05] rounded-full px-5 py-2 backdrop-blur-xl shadow-lg relative shrink-0">
+                <!-- Notifications -->
+                <button onclick="toggleNotifications()" class="pressable relative text-slate-400 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-bell text-sm"></i>
+                    <span id="nav-notif-badge" class="hidden absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full border border-[#030208]"></span>
+                </button>
+                
+                <!-- Notifications Dropdown inside relative wrapper -->
+                <div id="notifications-dropdown" class="absolute top-12 right-0 w-80 bg-[#0E0D18] rounded-2xl border border-white/[0.1] shadow-2xl overflow-hidden z-[100] hidden opacity-0 transition-all duration-300 transform scale-95 origin-top-right">
+                    <div class="p-4 border-b border-white/[0.05] flex justify-between items-center bg-[#141322]">
+                        <span class="text-xs font-bold font-space text-white uppercase tracking-wider">Оповещения</span>
+                        <button onclick="deleteAllNotifications()" class="text-[10px] text-rose-400 hover:text-rose-300 transition-colors">Удалить все</button>
+                    </div>
+                    <div id="notifications-list" class="max-h-64 overflow-y-auto divide-y divide-white/[0.02]"></div>
+                </div>
+
+                <div class="h-4 w-[1px] bg-white/[0.08]"></div>
+                
+                <button id="header-pwa-install-btn" onclick="triggerPwaInstall()" class="pressable hidden px-3.5 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-[10px] font-bold text-indigo-300 hover:bg-indigo-500/20 transition-all flex items-center gap-1.5">
+                    <i class="fas fa-download text-[10px]"></i><span>Установить</span>
+                </button>
+                <a href="admin.html" target="_blank" class="pressable px-3.5 py-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-[10px] font-bold text-cyan-300 hover:bg-cyan-500/20 transition-all flex items-center gap-1.5">
+                    <i class="fas fa-user-cog text-[10px]"></i><span>В админку</span>
+                </a>
+                <button onclick="openChatLink()" class="pressable px-3.5 py-1.5 rounded-full border border-white/[0.04] bg-white/[0.02] text-[10px] font-bold text-slate-300 hover:bg-white/[0.06] transition-all flex items-center gap-1.5">
+                    <i class="fas fa-comments text-indigo-400 text-[10px]"></i><span>Чат</span>
+                </button>
+                <button onclick="logout()" class="pressable text-[10px] text-slate-400 hover:text-red-400 transition flex items-center gap-1.5 ml-1 font-bold font-space">
+                    <i class="fas fa-sign-out-alt"></i><span>Выйти</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Header Version (< 768px) -->
+        <div class="flex md:hidden items-center justify-between gap-3">
+            <!-- Mobile Left Bubble -->
+            <button onclick="toggleMobileMenu(true)" class="pressable text-slate-300 hover:text-white text-base w-10 h-10 flex items-center justify-center bg-[#0E0D18]/80 border border-white/[0.05] rounded-full backdrop-blur-xl shrink-0 shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Mobile Middle Bubble -->
+            <div id="mobile-header-title-bubble" class="flex-1 flex items-center justify-center gap-2 bg-[#0E0D18]/80 border border-white/[0.05] rounded-full px-4 h-10 backdrop-blur-xl shadow-lg min-w-0">
+                <!-- Will be dynamically updated by JS inside switchTab() -->
+            </div>
+            
+            <!-- Mobile Right Bubble -->
+            <div class="flex items-center gap-1.5 bg-[#0E0D18]/80 border border-white/[0.05] rounded-full p-1 h-10 backdrop-blur-xl shadow-lg shrink-0">
+                <!-- Notifications -->
+                <button onclick="toggleNotifications()" class="pressable relative w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/[0.04] transition">
+                    <i class="fas fa-bell text-xs"></i>
+                    <span id="nav-notif-badge-mobile" class="hidden absolute top-2 right-2 w-1.5 h-1.5 bg-indigo-500 rounded-full status-led"></span>
+                </button>
+                <!-- Chat -->
+                <button onclick="openChatLink()" class="pressable w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/[0.04] transition">
+                    <i class="fas fa-comments text-indigo-400 text-xs"></i>
+                </button>
+                <!-- Admin page link -->
+                <a href="admin.html" target="_blank" class="pressable w-8 h-8 flex items-center justify-center rounded-full text-cyan-300 hover:bg-white/[0.04] transition">
+                    <i class="fas fa-user-cog text-xs"></i>
+                </a>
+                <!-- Logout action button -->
+                <button onclick="logout()" class="pressable w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-400 hover:bg-white/[0.04] transition">
+                    <i class="fas fa-sign-out-alt text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- FULL SCREEN MOBILE OVERLAY MENU -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 z-[9999] bg-[#030208]/95 backdrop-blur-xl transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden flex flex-col">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-white/[0.04]">
+            <span class="font-space font-black tracking-widest text-indigo-400 text-lg uppercase">Навигация Space</span>
+            <button onclick="toggleMobileMenu(false)" class="pressable w-10 h-10 flex items-center justify-center bg-white/[0.03] border border-white/[0.05] rounded-xl text-slate-400 hover:text-white">
+                <i class="fas fa-times text-base"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-5 space-y-6">
+            <div class="space-y-2">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest px-2 mb-2 font-space">Разделы центра</p>
+                <!-- Mobile Navigation Container filled by JS -->
+                <div id="mobile-tabs-container" class="grid grid-cols-2 gap-3"></div>
+            </div>
+            
+            <!-- Mobile State / Analytics Inside Sliding Drawer -->
+            <div class="space-y-4 pt-5 border-t border-white/[0.04]">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest px-2 font-space">Текущее состояние</p>
+                <div id="mobile-analytics-grid" class="grid grid-cols-2 gap-3"></div>
+                
+                <div class="flex flex-col gap-2 pt-2">
+                    <button onclick="toggleMobileMenu(false); openAdminSettingsModal();" class="pressable w-full py-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[10px] font-bold font-space text-slate-300 hover:bg-white/[0.06] hover:text-white transition flex items-center justify-center gap-2">
+                        <i class="fas fa-sliders text-indigo-400"></i> Стандарты качества
+                    </button>
+                    <button onclick="toggleMobileMenu(false); openCreateEditorModal();" class="pressable w-full py-3.5 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-[10px] font-bold font-space text-indigo-300 hover:bg-indigo-600/20 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-user-plus"></i> Новый монтажёр
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADAPTIVE DOUBLE COLUMN VIEW -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 flex-1 w-full">
+        <!-- БОКОВАЯ ПАНЕЛЬ (Sidebar) - ЛЕВАЯ КОЛОНКА -->
+        <div class="hidden md:block md:col-span-3 space-y-6">
+            <!-- Блок навигации -->
+            <div class="glass-card premium-border rounded-3xl p-4 space-y-2">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest px-2 mb-1 font-space">Навигация</p>
+                <div id="dashboard-tabs-container" class="flex flex-col gap-1 whitespace-nowrap">
+                    <!-- Вкладки генерируются динамически -->
+                </div>
+            </div>
+
+            <!-- Аналитика и стандарты -->
+            <div class="glass-card premium-border rounded-3xl p-5 space-y-4">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1 font-space">Состояние</p>
+                <div id="consolidated-analytics-grid" class="grid grid-cols-1 gap-2.5">
+                    <!-- Аналитика обновляется через JS -->
+                </div>
+                
+                <div class="h-[1px] bg-white/[0.04]"></div>
+                
+                <div class="flex flex-col gap-2">
+                    <button onclick="openAdminSettingsModal()" class="pressable w-full py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[10px] font-bold font-space text-slate-300 hover:bg-white/[0.06] hover:text-white transition flex items-center justify-center gap-2">
+                        <i class="fas fa-sliders text-indigo-400"></i> Стандарты качества
+                    </button>
+                    <button onclick="openCreateEditorModal()" class="pressable w-full py-3 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-[10px] font-bold font-space text-indigo-300 hover:bg-indigo-600/20 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-user-plus"></i> Новый монтажёр
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ОСНОВНОЙ РАБОЧИЙ ВЬЮПОРТ - ПРАВАЯ КОЛОНКА -->
+        <div class="col-span-1 md:col-span-9 space-y-6">
+            <div id="dashboard-viewport" class="space-y-6">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Создать / Редактировать проект -->
+<div id="modal-project" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-project')">
+    <div class="glass-card premium-border w-full max-w-2xl rounded-3xl p-5 sm:p-6 space-y-4 overflow-y-auto max-h-[90vh] modal-animate" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between">
+            <h3 class="font-space font-black text-white text-base" id="project-modal-title">Параметры проекта</h3>
+            <button onclick="closeModal('modal-project')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
+        </div>
+        <input type="hidden" id="form-project-id">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Проект</label>
+                <input type="text" id="p-name" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Наименование Клиента</label>
+                <input type="text" id="p-client" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Код доступа клиента</label>
+                <input type="text" id="p-access-code" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30 font-mono font-bold">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Категория монтажа</label>
+                <input type="text" id="p-client-category" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="VIP / Базовый">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Ответственный монтажёр</label>
+                <select id="p-editor-id" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30"></select>
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Дедлайн (Дата и время)</label>
+                <input type="datetime-local" id="p-deadline" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+            </div>
+            <div class="col-span-1 md:col-span-2">
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5"><i class="fas fa-link text-indigo-400 mr-1"></i> Ссылка на ТЗ (скрытая, только для монтажёра)</label>
+                <input type="url" id="p-tk-link" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="https://docs.google.com/...">
+            </div>
+        </div>
+
+        <!-- ХАРАКТЕРИСТИКИ РОЛИКА -->
+        <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.04] space-y-3">
+            <h4 class="text-[10px] text-blue-400 uppercase tracking-wider font-bold">Характеристики ролика</h4>
+            <div class="grid grid-cols-2 gap-3.5">
+                <div>
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Формат ролика</label>
+                    <select id="p-video-format" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+                        <option value="9:16">Вертикальный (9:16)</option>
+                        <option value="16:9">Горизонтальный (16:9)</option>
+                        <option value="1:1">Квадратный (1:1)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Разрешение</label>
+                    <select id="p-video-resolution" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+                        <option value="1080p">FullHD (1080p)</option>
+                        <option value="4K">4K UHD</option>
+                        <option value="2K">2K QHD</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Хронометраж</label>
+                    <input type="text" id="p-video-duration" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="до 60 сек">
+                </div>
+                <div>
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Субтитры</label>
+                    <select id="p-video-subtitles" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+                        <option value="yes_animated">Да (с анимацией)</option>
+                        <option value="yes_simple">Да (простые)</option>
+                        <option value="no">Не требуются</option>
+                    </select>
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Целевая платформа</label>
+                    <input type="text" id="p-video-platform" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="YouTube, Shorts, Reels">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Музыкальное сопровождение</label>
+                    <input type="text" id="p-video-music" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Динамичная без АП">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Ссылка на референс</label>
+                    <input type="url" id="p-video-reference" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="https://...">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Ссылка на исходники</label>
+                    <input type="url" id="p-video-sources" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="https://disk.yandex.ru/...">
+                </div>
+            </div>
+        </div>
+
+        <!-- РАСЧЕТ С КЛИЕНТОМ И ДОП. УСЛУГИ -->
+        <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.04] space-y-3">
+            <h4 class="text-[10px] text-indigo-400 uppercase tracking-wider font-bold">Стоимость работы для Клиента</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Базовый оклад клиента (₽)</label>
+                    <input type="number" id="p-base-salary" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="3000">
+                </div>
+                <div class="col-span-1 md:col-span-2 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[9px] text-slate-500 font-bold uppercase">Доп. услуги для клиента</label>
+                        <button type="button" onclick="addClientExtraServiceRow()" class="pressable px-2 py-1 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 text-[9px] font-bold rounded-lg transition-all flex items-center gap-1">
+                            <i class="fas fa-plus text-[8px]"></i> Добавить услугу
+                        </button>
+                    </div>
+                    <div id="p-client-extra-services-container" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+                    <input type="hidden" id="p-client-extra-salary" value="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.04] space-y-3">
+            <h4 class="text-[10px] text-emerald-400 uppercase tracking-wider font-bold">Зарплата и Бонусы Монтажёра</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Оклад монтажёра за проект (₽)</label>
+                    <input type="number" id="p-editor-salary" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="2000" oninput="recalculatePenaltyTotal()">
+                </div>
+                
+                <div class="col-span-1 md:col-span-2 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[9px] text-slate-500 font-bold uppercase">Доп. услуги монтажёра</label>
+                        <button type="button" onclick="addExtraServiceRow()" class="pressable px-2 py-1 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 text-[9px] font-bold rounded-lg transition-all flex items-center gap-1">
+                            <i class="fas fa-plus text-[8px]"></i> Добавить услугу
+                        </button>
+                    </div>
+                    <div id="p-extra-services-container" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+                    <input type="hidden" id="p-editor-extra-salary" value="0">
+                </div>
+                
+                <div>
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Наименование бонуса</label>
+                    <input type="text" id="p-editor-bonus-name" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="За скорость">
+                </div>
+                <div>
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Тип бонуса</label>
+                    <select id="p-editor-bonus-type" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+                        <option value="rub">Фиксированный (₽)</option>
+                        <option value="percent">Процент от оклада (%)</option>
+                    </select>
+                </div>
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Размер бонуса</label>
+                    <input type="number" id="p-editor-bonus-value" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="0">
+                </div>
+
+                <div class="col-span-1 md:col-span-2 space-y-2 pt-2 border-t border-white/[0.04]">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[9px] text-rose-400 font-bold uppercase">Штрафы монтажёру</label>
+                        <button type="button" onclick="addPenaltyRow()" class="pressable px-2 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-[9px] font-bold rounded-lg transition-all flex items-center gap-1">
+                            <i class="fas fa-plus text-[8px]"></i> Добавить штраф
+                        </button>
+                    </div>
+                    <div id="p-penalties-container" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+                    <input type="hidden" id="p-editor-penalty-total" value="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Стадия готовности</label>
+                <select id="p-stage" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
+                    <option value="brief">ТЗ & Бриф</option>
+                    <option value="edit">Черновик</option>
+                    <option value="effects">Звук & FX</option>
+                    <option value="color">Цвет</option>
+                    <option value="done">Сдача</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                    Прогресс %
+                    <span id="p-progress-display" class="text-xs font-bold text-indigo-400">0%</span>
+                </label>
+                <input type="range" id="p-progress" min="0" max="100" class="w-full accent-indigo-600 my-2" oninput="document.getElementById('p-progress-display').textContent=this.value+'%'">
+            </div>
+        </div>
+        <div>
+            <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Бриф / Заметки к проекту</label>
+            <textarea id="p-notes" maxlength="800" class="w-full bg-black/40 border border-white/5 rounded-xl p-3.5 text-xs text-white resize-none h-20 focus:outline-none focus:border-indigo-500/30"></textarea>
+            <div class="text-right text-[9px] text-slate-500 mt-1" id="p-notes-counter">0 / 800</div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button onclick="closeModal('modal-project')" class="pressable flex-1 py-3 rounded-xl border border-white/[0.04] text-xs font-bold text-slate-400 hover:bg-white/[0.02]">Закрыть</button>
+            <button onclick="saveProject()" class="pressable flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Детализация Финансов проекта -->
+<div id="modal-finance-details" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-finance-details')">
+    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between border-b border-white/[0.05] pb-3.5">
+            <div>
+                <h3 class="font-space font-black text-white text-base" id="finance-details-title">Финансовый отчет</h3>
+                <p class="text-[10px] text-indigo-400 uppercase tracking-wider mt-0.5" id="finance-details-project">Проект</p>
+            </div>
+            <button onclick="closeModal('modal-finance-details')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
+        </div>
+
+        <!-- Стоимость для клиента -->
+        <div class="bg-black/20 p-4 rounded-2xl border border-indigo-500/10 space-y-2">
+            <h4 class="text-xs font-bold font-space text-indigo-300 uppercase tracking-wide flex items-center gap-1.5"><i class="fas fa-user-tie"></i> Расчет с Клиентом</h4>
+            <div class="flex justify-between text-xs py-1 border-b border-white/[0.02]">
+                <span class="text-slate-400">Базовая ставка:</span>
+                <span class="font-mono text-white font-bold" id="f-client-base">0 ₽</span>
+            </div>
+            <div class="space-y-1.5 pt-1" id="f-client-addons-list">
+                <!-- Сюда сгенерируются доп. услуги для клиента -->
+            </div>
+            <div class="flex justify-between text-xs pt-2 font-bold border-t border-white/[0.05] text-indigo-400 font-mono">
+                <span>Итого получено:</span>
+                <span id="f-client-total">0 ₽</span>
+            </div>
+        </div>
+
+        <!-- Выплата монтажёру -->
+        <div class="bg-black/20 p-4 rounded-2xl border border-emerald-500/10 space-y-2">
+            <h4 class="text-xs font-bold font-space text-emerald-400 uppercase tracking-wide flex items-center gap-1.5"><i class="fas fa-cut"></i> Выплата монтажёра</h4>
+            <div class="text-[11px] text-slate-400 flex items-center gap-1.5 mb-1">
+                <span>Исполнитель:</span>
+                <span class="font-bold text-white font-space" id="f-editor-name">Имя монтажёра</span>
+            </div>
+            <div class="flex justify-between text-xs py-1 border-b border-white/[0.02]">
+                <span class="text-slate-400">Оклад за проект:</span>
+                <span class="font-mono text-white font-bold" id="f-editor-base">0 ₽</span>
+            </div>
+            <div class="flex justify-between text-xs py-1 border-b border-white/[0.02]">
+                <span class="text-slate-400">Бонус (<span id="f-editor-bonus-desc">нет</span>):</span>
+                <span class="font-mono text-white font-bold" id="f-editor-bonus-val">0 ₽</span>
+            </div>
+            <div class="space-y-1.5 pt-1" id="f-editor-addons-list">
+                <!-- Сюда сгенерируются доп. услуги монтажёра -->
+            </div>
+            <div class="space-y-1.5 pt-1" id="f-editor-penalties-list">
+                <!-- Сюда сгенерируются штрафы монтажёра -->
+            </div>
+            <div class="flex justify-between text-xs pt-2 font-bold border-t border-white/[0.05] text-emerald-400 font-mono">
+                <span>Итого выплачено:</span>
+                <span id="f-editor-total">0 ₽</span>
+            </div>
+        </div>
+
+        <!-- Итоговая чистая прибыль -->
+        <div class="flex justify-between items-center bg-indigo-500/10 p-4 rounded-2xl border border-indigo-500/20">
+            <span class="text-xs text-white font-bold uppercase font-space tracking-wider">Чистая прибыль с проекта:</span>
+            <span class="text-base font-black text-emerald-400 font-mono" id="f-project-profit">0 ₽</span>
+        </div>
+
+        <button onclick="closeModal('modal-finance-details')" class="pressable w-full py-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.05] text-xs font-bold text-white transition">
+            Закрыть отчет
+        </button>
+    </div>
+</div>
+
+<!-- Управление монтажёром -->
+<div id="modal-manage-editor" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-manage-editor')">
+    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between border-b border-white/[0.05] pb-3.5">
+            <div>
+                <h3 class="font-space font-black text-white text-base" id="manage-editor-title">Кабинет монтажёра</h3>
+                <p class="text-[10px] text-slate-500" id="manage-editor-login-label">@username</p>
+            </div>
+            <button onclick="closeModal('modal-manage-editor')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
+        </div>
+        <input type="hidden" id="manage-editor-id">
+        
+        <div class="grid grid-cols-2 gap-3.5 text-center">
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.02]">
+                <span class="block text-[9px] text-slate-500 uppercase tracking-widest mb-1.5">Сдано проектов</span>
+                <span class="text-xl font-bold text-emerald-400 font-mono" id="m-stat-closed">0</span>
+            </div>
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.02]">
+                <span class="block text-[9px] text-slate-500 uppercase tracking-widest mb-1.5">Средний Рейтинг</span>
+                <span class="text-xl font-bold text-amber-400 font-mono flex items-center justify-center gap-1.5"><i class="fas fa-star text-sm"></i> <span id="m-stat-rating">0.0</span></span>
+            </div>
+        </div>
+
+        <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.04] space-y-3">
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Изменить имя</label>
+                <input type="text" id="manage-new-name" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Отображаемое имя">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Изменить логин</label>
+                <input type="text" id="manage-new-login" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Новый логин">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Сменить пароль</label>
+                <input type="password" id="manage-new-pass" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="••••••••">
+            </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button onclick="toggleBlockEditor()" id="btn-block-editor" class="pressable flex-1 py-3 text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition">Заблокировать</button>
+            <button onclick="deleteEditorConfirm()" class="pressable flex-1 py-3 text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition">Удалить</button>
+        </div>
+        <button onclick="saveEditorManagement()" class="pressable w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold font-space text-white transition mt-2">
+            Сохранить параметры
+        </button>
+    </div>
+</div>
+
+<!-- Модалка: Добавить монтажера -->
+<div id="modal-editor" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-editor')">
+    <div class="glass-card premium-border w-full max-w-sm rounded-3xl p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between">
+            <h3 class="font-space font-black text-white text-base">Добавить монтажёра</h3>
+            <button onclick="closeModal('modal-editor')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
+        </div>
+        <div class="space-y-3.5">
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Реальное Имя</label>
+                <input type="text" id="e-name" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Даниил">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Логин в системе</label>
+                <input type="text" id="e-login" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="dani_editor">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Персональный Пароль</label>
+                <input type="password" id="e-pass" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="••••••••">
+            </div>
+        </div>
+        <button onclick="createEditor()" class="pressable w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white mt-3">Создать аккаунт</button>
+    </div>
+</div>
+
+<!-- Модалка: Проверка работы -->
+<div id="modal-review-submission" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-review-submission')">
+    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 modal-animate max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between border-b border-white/[0.05] pb-3">
+            <h3 class="font-space font-black text-white text-base">Инспекция проекта</h3>
+            <button onclick="closeModal('modal-review-submission')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
+        </div>
+        <input type="hidden" id="review-submission-id">
+        <input type="hidden" id="review-project-id">
+        <input type="hidden" id="review-editor-id">
+        
+        <div class="space-y-4">
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.02]">
+                <span class="block text-[9px] text-slate-500 uppercase tracking-widest mb-1">Заметка монтажёра</span>
+                <p id="review-editor-comment" class="text-xs text-slate-300 leading-relaxed italic">...</p>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider">Оценка качества (Обязательно для принятия)</label>
+                <div class="flex items-center gap-3 justify-center py-2 bg-black/30 rounded-2xl border border-white/5" id="admin-star-rating">
+                    <input type="hidden" id="review-rating-val" value="0">
+                    <i class="far fa-star text-xl text-slate-700 cursor-pointer hover:scale-110 transition" onclick="setReviewRating(1)"></i>
+                    <i class="far fa-star text-xl text-slate-700 cursor-pointer hover:scale-110 transition" onclick="setReviewRating(2)"></i>
+                    <i class="far fa-star text-xl text-slate-700 cursor-pointer hover:scale-110 transition" onclick="setReviewRating(3)"></i>
+                    <i class="far fa-star text-xl text-slate-700 cursor-pointer hover:scale-110 transition" onclick="setReviewRating(4)"></i>
+                    <i class="far fa-star text-xl text-slate-700 cursor-pointer hover:scale-110 transition" onclick="setReviewRating(5)"></i>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Отзыв / Правки (Будет отправлено монтажёру)</label>
+                <textarea id="review-admin-reply" maxlength="800" class="w-full bg-black/40 border border-white/5 rounded-xl p-3.5 text-xs text-white resize-none h-24 focus:outline-none focus:border-indigo-500/30 placeholder:text-slate-600" placeholder="Отличная работа! / Переделай переходы во второй сцене..."></textarea>
+                <div class="text-right text-[9px] text-slate-500 mt-1" id="review-admin-reply-counter">0 / 800</div>
+            </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button onclick="submitReview(false)" class="pressable flex-1 py-3 rounded-xl border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-xs font-bold text-red-400 transition-all">На доработку</button>
+            <button onclick="submitReview(true)" class="pressable flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]">Принять проект</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Настройки -->
+<div id="modal-admin-settings" class="modal-bg hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="closeModal('modal-admin-settings')">
+    <div class="glass-card premium-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 modal-animate" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between border-b border-white/[0.05] pb-3.5">
+            <h3 class="font-space font-black text-white text-base">Глобальные стандарты</h3>
+            <button onclick="closeModal('modal-admin-settings')" class="pressable w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
+        </div>
+
+        <div class="space-y-4">
+            <div class="space-y-2">
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider">Чек-лист сдачи проектов</label>
+                <div class="flex gap-2">
+                    <input type="text" id="new-checklist-item" class="flex-1 bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Проверить титры...">
+                    <button onclick="addChecklistItem()" class="pressable px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition-all"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+
+            <div class="space-y-2 max-h-52 overflow-y-auto pr-1" id="admin-checklist-items"></div>
+
+            <div class="space-y-2 border-t border-white/[0.05] pt-4">
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider">Доступ Администратора</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="admin-login-input" autocomplete="username" class="bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Новый логин">
+                    <input type="password" id="admin-pass-input" autocomplete="new-password" class="bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Новый пароль">
+                </div>
+                <button onclick="updateAdminCredentials()" class="pressable w-full py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-[10px] font-bold uppercase tracking-wider transition-all">Сохранить доступ администратора</button>
+                <p class="text-[10px] text-slate-500 leading-relaxed">Заполняйте оба поля только если хотите их изменить. При первом запуске задайте логин и пароль здесь — без них вход в панель невозможен.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем выделенный внешний JS-модуль с логикой администратора -->
+<script type="module" src="space_control_data.js"></script>
+
+</body>
+</html>
