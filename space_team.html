@@ -345,6 +345,11 @@
                 <button onclick="openChatLink()" class="pressable px-3.5 py-1.5 rounded-full border border-white/[0.04] bg-white/[0.02] text-[10px] font-bold text-slate-300 hover:bg-white/[0.06] transition-all flex items-center gap-1.5">
                     <i class="fas fa-comments text-indigo-400 text-[10px]"></i><span>Чат</span>
                 </button>
+                <!-- #6: Кнопка показывается только если owner вошёл через «Войти в кабинет».
+                     js-exit-editor-mode — маркерный класс, кнопка скрыта по умолчанию. -->
+                <button onclick="exitEditorMode()" class="js-exit-editor-mode hidden pressable px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-[10px] font-bold text-amber-300 hover:bg-amber-500/20 transition-all flex items-center gap-1.5">
+                    <i class="fas fa-shield-alt text-[10px]"></i><span>В панель</span>
+                </button>
                 <button onclick="logout()" class="pressable text-[10px] text-slate-400 hover:text-red-400 transition flex items-center gap-1.5 ml-1 font-bold font-space">
                     <i class="fas fa-sign-out-alt"></i><span>Выйти</span>
                 </button>
@@ -368,6 +373,10 @@
                 </button>
                 <button onclick="openChatLink()" class="pressable w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/[0.04] transition">
                     <i class="fas fa-comments text-indigo-400 text-xs"></i>
+                </button>
+                <!-- #6: Мобильная кнопка возврата в панель администратора -->
+                <button onclick="exitEditorMode()" class="js-exit-editor-mode hidden pressable w-8 h-8 flex items-center justify-center rounded-full text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 transition">
+                    <i class="fas fa-shield-alt text-xs"></i>
                 </button>
                 <button onclick="logout()" class="pressable w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-400 hover:bg-white/[0.04] transition">
                     <i class="fas fa-sign-out-alt text-xs"></i>
@@ -640,8 +649,9 @@ let FB_CONFIG = {
 // Единая система авторизации SPACE — все функции сессии вынесены в
 // общий модуль space-auth.js, подключённый в <head>. Это устраняет
 // расхождения логики между chat.html / space_team.html / space_control.html.
-const { withTimeout, readSession: readSpaceSession, writeSession: writeSpaceSessionRaw,
+const { withTimeout, readSession: readSpaceSession, writeSession: writeSpaceSession,
         clearSession: destroySpaceSession,
+        restoreOwnerSession, hasOwnerBackup,
         rememberCabinet, navigateWithSession } = window.SpaceAuth;
 
 const APP_ID = 'space-video-agency';
@@ -684,14 +694,11 @@ async function ensureAuth() {
     });
 }
 
-function writeSpaceSession(role, id) {
-    return writeSpaceSessionRaw(role, id);
-}
-
-const _initialSession = readSpaceSession();
-
-let currentRole = _initialSession ? _initialSession.role : null;
-let currentUserId = _initialSession ? _initialSession.id : null;
+// currentRole и currentUserId НЕ инициализируются здесь синхронно.
+// Единственная точка установки — checkSession() и блок после логина.
+// Это устраняет двойную инициализацию (#4).
+let currentRole = null;
+let currentUserId = null;
 // Имя пользователя не хранится в сессии — загружается из Firestore.
 let currentUserName = null;
 
@@ -1947,20 +1954,30 @@ function subscribeData() {
 async function checkSession() {
     const session = readSpaceSession();
     if (session && session.role === 'editor') {
+        // Единственная точка установки currentRole/currentUserId (#4)
         currentRole = session.role;
         currentUserId = session.id;
         // Имя загружается из Firestore (editors/{id}), не из localStorage
-        
+
         document.getElementById('screen-login').classList.add('hidden');
-        
+
         await ensureAuth().catch(err => {
             console.warn("Ошибка восстановления сессии авторизации (пропуск):", err);
         });
-        
+
         subscribeData();
         loadServicesCatalog();
         startFrontendClock();
         setupPWA();
+
+        // #6: Показываем кнопку «Выйти из режима монтажёра» если owner
+        // вошёл через «Войти в кабинет» и сохранил свою сессию в бэкап.
+        const ownerBackBtns = document.querySelectorAll('.js-exit-editor-mode');
+        if (hasOwnerBackup()) {
+            ownerBackBtns.forEach(btn => btn.classList.remove('hidden'));
+        } else {
+            ownerBackBtns.forEach(btn => btn.classList.add('hidden'));
+        }
 
         // Загружаем профиль монтажёра из Firestore: имя + статус
         getDoc(doc(db, ...BASE('editors'), currentUserId)).then(edSnap => {
@@ -1976,24 +1993,24 @@ async function checkSession() {
             ];
             nameEls.forEach(el => { if (el) el.textContent = currentUserName || ''; });
         });
-        
+
         document.getElementById('my-avatar').innerHTML = '<i class="fas fa-film text-indigo-400 text-xl pointer-events-none"></i>';
 
         getDoc(doc(db, ...BASE('profiles'), currentUserId)).then(snap => {
             const status = snap.exists() ? (snap.data().statusText || 'Свободен — жду проекты') : 'Свободен — жду проекты';
-            
+
             const labels = ['my-status-label', 'mobile-my-status-label'];
             labels.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.textContent = status;
             });
-            
+
             const led = document.getElementById('my-status-dot');
             const topLed = document.getElementById('top-user-status-dot');
-            
+
             let targetClass = "w-2 h-2 rounded-full bg-emerald-500 status-led animate-pulse";
             let targetTopClass = "w-1.5 h-1.5 rounded-full bg-emerald-500 status-led animate-pulse";
-            
+
             if (status.includes('Свободен')) {
                 targetClass = "w-2 h-2 rounded-full bg-emerald-500 status-led animate-pulse";
                 targetTopClass = "w-1.5 h-1.5 rounded-full bg-emerald-500 status-led animate-pulse";
@@ -2004,10 +2021,10 @@ async function checkSession() {
                 targetClass = "w-2 h-2 rounded-full bg-amber-500 status-led animate-pulse";
                 targetTopClass = "w-1.5 h-1.5 rounded-full bg-amber-500 status-led animate-pulse";
             }
-            
+
             if (led) led.className = targetClass;
             if (topLed) topLed.className = targetTopClass;
-            
+
             updateStatusButtonsUI(status);
         });
 
@@ -2027,8 +2044,31 @@ async function checkSession() {
     }
 }
 
-window.onload = function() {
-    checkSession();
+// #6: Выход из режима просмотра монтажёра — восстанавливает owner-сессию
+// и возвращает администратора в space_control.html.
+window.exitEditorMode = function() {
+    window.customConfirm(
+        'Выйти из режима монтажёра',
+        'Вернуться в панель администратора?',
+        () => {
+            const ownerSession = restoreOwnerSession();
+            if (ownerSession) {
+                window.location.href = 'space_control.html';
+            } else {
+                // Бэкап истёк — просто разлогиниваем
+                destroySpaceSession();
+                currentRole = null; currentUserId = null; currentUserName = null;
+                document.getElementById('screen-dashboard').classList.add('hidden');
+                document.getElementById('screen-login').classList.remove('hidden');
+            }
+        }
+    );
+};
+
+// #8: window.onload обёрнут в async чтобы корректно await checkSession().
+// Без этого ошибки внутри async checkSession() поглощались тихо.
+window.onload = async function() {
+    await checkSession();
 };
 
 document.addEventListener('click', (e) => {

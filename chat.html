@@ -9,11 +9,17 @@
     <script src="space-auth.js"></script>
     <script>
         // Предотвращение падения приложения, если space-auth.js не загрузился в песочнице браузера
+        // Предотвращение падения приложения, если space-auth.js не загрузился в песочнице браузера.
+        // ВАЖНО: этот fallback должен точно повторять поведение space-auth.js.
+        // При любом изменении space-auth.js — синхронизировать и этот блок.
         if (!window.SpaceAuth) {
-            const SESSION_KEY = 'space_session';
-            const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+            const SESSION_KEY      = 'space_session';
+            const OWNER_BACKUP_KEY = 'space_owner_backup';
+            const SESSION_TTL_MS   = 12 * 60 * 60 * 1000;
             window.SpaceAuth = {
                 SESSION_KEY,
+                OWNER_BACKUP_KEY,
+                SESSION_TTL_MS,
                 readSession: () => {
                     try {
                         const raw = localStorage.getItem(SESSION_KEY);
@@ -27,17 +33,25 @@
                         return session;
                     } catch(e) { return null; }
                 },
-                // Имя намеренно не сохраняется в сессии — оно загружается из Firestore
                 writeSession: (role, id) => {
                     const session = { role, id, ts: Date.now() };
                     try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch(e) {}
                     return session;
                 },
+                // #2: clearSession удаляет все реально используемые ключи — как оригинал.
                 clearSession: () => {
-                    try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+                    [SESSION_KEY, OWNER_BACKUP_KEY, 'space_last_cabinet'].forEach(k => {
+                        try { localStorage.removeItem(k); } catch(e) {}
+                    });
                 },
+                // #1: manager удалён. Только две роли: owner и editor.
                 getCabinetUrl: (role) => {
-                    if (role === 'owner' || role === 'manager') return 'space_control.html';
+                    if (role === 'owner') return 'space_control.html';
+                    if (role === 'editor') return 'space_team.html';
+                    try {
+                        const last = localStorage.getItem('space_last_cabinet');
+                        if (last === 'space_team.html' || last === 'space_control.html') return last;
+                    } catch(e) {}
                     return 'space_team.html';
                 },
                 rememberCabinet: (fileName) => {
@@ -49,16 +63,18 @@
                         promise.then((val) => { clearTimeout(timer); resolve(val); }, (err) => { clearTimeout(timer); reject(err); });
                     });
                 },
-                // Передача сессии только через localStorage, без st-параметра в URL
                 navigateWithSession: (targetFile, role, id, _nameIgnored, extraParams) => {
                     window.SpaceAuth.writeSession(role, id);
                     const params = new URLSearchParams(extraParams || {});
                     const qs = params.toString();
                     window.location.href = targetFile + (qs ? '?' + qs : '');
-                }
+                },
+                // #6: заглушки для owner-backup API
+                saveOwnerSession: () => {},
+                restoreOwnerSession: () => null,
+                hasOwnerBackup: () => false
             };
         }
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- PWA Meta tags -->
@@ -801,9 +817,10 @@ const { readSession: readSpaceSession, writeSession: writeSpaceSession,
         clearSession: destroySpaceSession, getCabinetUrl: getCabinetUrlForRole,
         navigateWithSession } = window.SpaceAuth;
 
-let _spaceSession = readSpaceSession();
-let myRole = _spaceSession ? _spaceSession.role : null;
-let myId   = _spaceSession ? _spaceSession.id : null;
+// myRole и myId НЕ инициализируются здесь синхронно (#4).
+// Единственная точка установки — checkAuthSession() ниже.
+let myRole = null;
+let myId   = null;
 let myNameSaved = null; // Загружается динамически из Firestore
 
 function getCabinetUrl() {
@@ -994,7 +1011,7 @@ let _drafts = {};
 
 async function loadMyProfile() {
     await ensureAuth();
-    if (myRole === 'owner' || myRole === 'manager') {
+    if (myRole === 'owner') {
         document.getElementById('create-channel-btn').classList.remove('hidden');
         document.getElementById('back-link-text').textContent = 'Панель Администратора';
     }
@@ -1165,7 +1182,7 @@ async function loadSidebar() {
 
     _conversations = [];
 
-    if (myRole === 'owner' || myRole === 'manager') {
+    if (myRole === 'owner') {
         for (const ed of _allEditors) {
             const chatId = 'owner__' + ed.id;
             let unread = 0, lastMsg = '', lastAt = null;
@@ -1360,7 +1377,12 @@ window.openConversation = async function(convId, type) {
     document.getElementById('app').classList.add('chat-open');
     closeChatSearch();
     syncProjectForActiveChat(conv);
-    loadPinnedFromStorage(convId);
+    // #11: Загружаем закреплённые из Firestore (не localStorage).
+    // Вызов async, updatePinnedBar() вызывается внутри после загрузки.
+    loadPinnedFromFirestore(convId).then(() => {
+        updatePinnedBar();
+        updatePinnedBadgesInDOM();
+    });
 
     const titleEl = document.getElementById('chat-title');
     const titleEmojiEl = document.getElementById('chat-title-emoji');
@@ -1382,7 +1404,7 @@ window.openConversation = async function(convId, type) {
     wrap.innerHTML = `<div class="my-auto text-center py-10"><i class="fas fa-spinner fa-spin text-slate-600 text-lg"></i></div>`;
 
     try {
-        const field = myRole === 'owner' || myRole === 'manager' ? 'unreadOwner' : 'unreadEditor';
+        const field = myRole === 'owner' ? 'unreadOwner' : 'unreadEditor';
         await setDoc(doc(db, ...colName, convId, 'meta', 'info'), { [field]: 0 }, { merge: true });
         conv.unread = 0;
         renderSidebar();
@@ -1430,7 +1452,7 @@ window.openConversation = async function(convId, type) {
 
     const inputEl = document.getElementById('msg-input');
     const sendBtn = document.getElementById('send-btn');
-    const canWrite = type === 'dm' || myRole === 'owner' || myRole === 'manager';
+    const canWrite = type === 'dm' || myRole === 'owner';
     inputEl.disabled = !canWrite;
     sendBtn.disabled = !canWrite;
     inputEl.placeholder = canWrite ? 'Ваше сообщение...' : 'Только администраторы могут писать сюда';
@@ -1444,7 +1466,7 @@ window.openConversation = async function(convId, type) {
 window.onHeaderClick = function() {
     const conv = _conversations.find(c => c.id === _activeConvId);
     if (!conv) return;
-    if (conv.type === 'dm' && (myRole === 'owner' || myRole === 'manager')) {
+    if (conv.type === 'dm' && (myRole === 'owner')) {
         viewProjectDetails();
     }
 };
@@ -1505,7 +1527,7 @@ window.showUnifiedMenu = function(e, msgId, isMine) {
         actionsList += `<div class="unified-menu-action" onclick="ctxEdit(); closeUnifiedMenu();"><i class="fas fa-pen text-indigo-400"></i>Редактировать</div>`;
     }
 
-    if (isMine || myRole === 'owner' || myRole === 'manager') {
+    if (isMine || myRole === 'owner') {
         actionsList += `<div class="unified-menu-action danger" onclick="ctxDelete(); closeUnifiedMenu();"><i class="fas fa-trash"></i>Удалить</div>`;
     }
 
@@ -1643,7 +1665,7 @@ function renderAllMessages(msgs, conv) {
         const isDeleted = msg.deleted === true;
         const isEdited = !isDeleted && msg.editedAt;
         
-        if (isDeleted && myRole !== 'owner' && myRole !== 'manager') {
+        if (isDeleted && myRole !== 'owner') {
             return;
         }
 
@@ -1653,7 +1675,7 @@ function renderAllMessages(msgs, conv) {
         } else {
             let editedMark = '';
             if (isEdited) {
-                if (myRole === 'owner' || myRole === 'manager') {
+                if (myRole === 'owner') {
                     const histCount = (msg.editHistory || []).length;
                     editedMark = `<span class="text-[9px] text-indigo-400 cursor-pointer italic hover:underline mr-1" onclick="showEditHistory(event, '${msg.id}')">ред. (${histCount})</span>`;
                 } else {
@@ -1802,20 +1824,39 @@ window.ctxTogglePin = function(isPinned) {
         _pinnedMsgs.push({ id: _ctxMsgId, text: text.slice(0, 80), senderName: myProfile.name });
         showToast('Закреплено', 'success');
     }
-    savePinnedToStorage();
+    savePinnedToFirestore();
     updatePinnedBar();
     updatePinnedBadgesInDOM();
 };
 
-function savePinnedToStorage() {
+// #11: Закреплённые сообщения хранятся в Firestore (не в localStorage).
+// Путь: conversations/{convId}/meta/pins → { pins: [...] }
+// Это обеспечивает синхронизацию между устройствами и пользователями.
+async function savePinnedToFirestore() {
     if (!_activeConvId) return;
-    localStorage.setItem('pins_' + _activeConvId, JSON.stringify(_pinnedMsgs));
+    try {
+        const ref = doc(db, ...BASE('conversations'), _activeConvId, 'meta', 'pins');
+        await setDoc(ref, { pins: _pinnedMsgs });
+    } catch(e) {
+        console.warn('[pins] Ошибка сохранения закреплённых в Firestore:', e);
+        showToast('Не удалось сохранить закреп', 'error');
+    }
 }
 
-function loadPinnedFromStorage(convId) {
-    const s = localStorage.getItem('pins_' + convId);
-    _pinnedMsgs = s ? JSON.parse(s) : [];
-    _pinnedCurIdx = Math.max(0, _pinnedMsgs.length - 1);
+async function loadPinnedFromFirestore(convId) {
+    _pinnedMsgs = [];
+    _pinnedCurIdx = 0;
+    if (!convId) return;
+    try {
+        const ref = doc(db, ...BASE('conversations'), convId, 'meta', 'pins');
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            _pinnedMsgs = snap.data().pins || [];
+            _pinnedCurIdx = Math.max(0, _pinnedMsgs.length - 1);
+        }
+    } catch(e) {
+        console.warn('[pins] Ошибка загрузки закреплённых из Firestore:', e);
+    }
 }
 
 function updatePinnedBar() {
@@ -2086,7 +2127,7 @@ window.sendMessage = async function() {
             status: 'sent'
         });
 
-        const recipientField = myRole === 'owner' || myRole === 'manager' ? 'unreadEditor' : 'unreadOwner';
+        const recipientField = myRole === 'owner' ? 'unreadEditor' : 'unreadOwner';
         await setDoc(doc(db, ...colName, _activeConvId, 'meta', 'info'), {
             lastMessage: text.slice(0, 60),
             lastAt: new Date().toISOString(),
@@ -2122,12 +2163,13 @@ window.createChannel = async function() {
 async function checkAuthSession() {
     const session = readSpaceSession();
     if (session && session.role && session.id) {
+        // Единственная точка установки myRole/myId (#4)
         myRole = session.role;
         myId = session.id;
-        
+
         try {
             await ensureAuth();
-            
+
             if (myRole === 'editor') {
                 const edDoc = await getDoc(doc(db, ...BASE('editors'), myId));
                 if (!edDoc.exists() || edDoc.data().isBlocked) {
@@ -2138,7 +2180,7 @@ async function checkAuthSession() {
                 }
                 const edData = edDoc.data();
                 myNameSaved = edData.name || edData.login;
-            } else if (myRole === 'owner' || myRole === 'manager') {
+            } else if (myRole === 'owner') {
                 const configRef = doc(db, ...BASE('site_config'), 'main');
                 const configSnap = await getDoc(configRef);
                 if (!configSnap.exists()) {
@@ -2148,16 +2190,31 @@ async function checkAuthSession() {
                     return;
                 }
                 myNameSaved = 'Администратор';
+            } else {
+                // Неизвестная роль — не пускаем (#1)
+                destroySpaceSession();
+                document.getElementById('auth-gate-screen').classList.remove('hidden');
+                return;
             }
-            
+
             document.getElementById('auth-gate-screen').classList.add('hidden');
             await loadMyProfile();
             await loadSidebar();
             subscribePresence();
             initEmojiPicker();
-            
+
         } catch (e) {
+            // #5: При сетевой ошибке не пускаем редактора без верификации —
+            // он может быть заблокирован. Owner пропускаем (у него нет isBlocked).
             console.warn("Сбой верификации сессии по сети:", e);
+            if (myRole === 'editor') {
+                // Нет соединения — показываем экран с предупреждением, не разлогиниваем.
+                // Разлогинивание было бы слишком агрессивным при временном обрыве сети.
+                showToast('Нет соединения. Попробуйте обновить страницу.', 'error');
+                document.getElementById('auth-gate-screen').classList.remove('hidden');
+                return;
+            }
+            // Owner при сетевой ошибке — разрешаем (конфиг не меняется в рантайме).
             document.getElementById('auth-gate-screen').classList.add('hidden');
             await loadMyProfile();
             await loadSidebar();

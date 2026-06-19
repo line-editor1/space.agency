@@ -866,6 +866,7 @@ const BASE = (col) => ['artifacts', APP_ID, 'public', 'data', col];
 // расхождения логики между chat.html / space_team.html / space_control.html.
 const { withTimeout, readSession: readSpaceSession, writeSession: writeSpaceSession,
         clearSession: destroySpaceSession,
+        saveOwnerSession,
         rememberCabinet, navigateWithSession } = window.SpaceAuth;
 
 // Подсказка для chat.html: запоминаем, из какого личного кабинета пришёл
@@ -883,10 +884,12 @@ const db = initializeFirestore(app, {
     useFetchStreams: false
 });
 
-const _initialSession = readSpaceSession();
-
-let currentRole = _initialSession ? _initialSession.role : null;
-let currentUserId = _initialSession ? _initialSession.id : null;
+// currentRole и currentUserId НЕ инициализируются здесь синхронно.
+// Единственная точка установки — checkSession() и setSession().
+// Это устраняет двойную инициализацию, при которой переменные могли
+// расходиться если сессия истекала между двумя чтениями.
+let currentRole = null;
+let currentUserId = null;
 // Имя пользователя не хранится в сессии — загружается из Firestore.
 let currentUserName = null;
 
@@ -950,6 +953,8 @@ function initRealtimeListeners() {
 function checkSession() {
     const session = readSpaceSession();
     if (session && session.role === 'owner') {
+        // Единственная точка установки currentRole и currentUserId в этом файле.
+        // Дублирующая синхронная инициализация при загрузке модуля удалена.
         currentRole = session.role;
         currentUserId = session.id;
         // currentUserName загружается из Firestore, не из сессии
@@ -1141,14 +1146,17 @@ window.openChatLink = function(editorId) {
     }
 };
 
-// "Войти от имени монтажёра" — доступно только уже аутентифицированному
-// администратору (owner). Сессия передаётся через localStorage (role + id),
-// имя загружается из Firestore на целевой странице.
+// «Войти от имени монтажёра» — доступно только аутентифицированному
+// администратору (owner). Перед переходом сохраняем текущую owner-сессию
+// в OWNER_BACKUP_KEY, чтобы space_team.html мог показать кнопку
+// «Выйти из режима монтажёра» и восстановить сессию администратора.
 window.loginAsEditor = function(id) {
     if (currentRole !== 'owner') {
         showToast('Недостаточно прав для этого действия', 'error');
         return;
     }
+    // Сохраняем owner-сессию до перезаписи
+    saveOwnerSession();
     navigateWithSession('space_team.html', 'editor', id, null);
 };
 
@@ -1228,7 +1236,10 @@ window.executeLogin = async function() {
                 'Не удалось сохранить учётные данные'
             );
             await triggerLoader('Администратор');
-            setSession('owner', 'owner');
+            // Используем login как id — уникальный идентификатор администратора,
+            // а не строковый литерал 'owner'. Это позволит разграничить сессии
+            // если в будущем будет несколько администраторов.
+            setSession('owner', login);
             showToast('Учётные данные администратора заданы', 'success');
             return;
         }
@@ -1238,7 +1249,7 @@ window.executeLogin = async function() {
 
         if (login === expectedLogin && hash === expectedHash) {
             await triggerLoader('Администратор');
-            setSession('owner', 'owner');
+            setSession('owner', login);
         } else {
             showToast('Неверные учетные данные администратора', 'error');
         }
@@ -1254,7 +1265,7 @@ function setSession(role, id) {
     const s = writeSpaceSession(role, id);
     currentRole = s.role;
     currentUserId = s.id;
-    // currentUserName загружается из Firestore при инициализации страницы
+    currentUserName = null; // загружается из Firestore при инициализации
 
     // Возврат в чат после auth-gate
     const _rtParams = new URLSearchParams(window.location.search);
