@@ -298,6 +298,52 @@
         <button onclick="executeLogin()" id="login-submit-btn" class="pressable w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold font-space text-xs uppercase tracking-widest text-white transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.25)] relative z-20 disabled:opacity-50 disabled:cursor-not-allowed">
             Открыть рабочий стол
         </button>
+        <!-- Ссылка на регистрацию -->
+        <p class="text-center text-[11px] text-slate-500 relative z-20">
+            Нет аккаунта?
+            <button onclick="window.showRegisterTab()" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition">Создать</button>
+        </p>
+    </div>
+</div>
+
+<!-- Экран регистрации монтажёра — дизайн идентичен screen-login -->
+<div id="screen-register" class="hidden min-h-screen flex flex-col items-center justify-center px-4 relative z-10 transition-all duration-500">
+    <div class="w-full max-w-md glass-card premium-border rounded-3xl p-6 sm:p-8 space-y-6 sm:space-y-7 shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-16 -left-16 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="flex items-center gap-3 justify-center text-center sm:text-left pointer-events-none">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-indigo-500/10 border border-indigo-500/25 shadow-[0_0_16px_rgba(99,102,241,0.25)]">
+                <i class="fas fa-user-plus text-2xl text-indigo-400"></i>
+            </div>
+            <div>
+                <p class="text-[9px] text-indigo-400 uppercase tracking-[0.25em] font-space font-bold">SPACE Video Agency</p>
+                <h3 class="text-xs sm:text-sm font-space font-black text-white tracking-wide">Регистрация монтажёра</h3>
+            </div>
+        </div>
+        <div class="text-center space-y-1 pointer-events-none">
+            <h4 class="text-base font-bold text-white font-space">Создать аккаунт</h4>
+            <p class="text-[11px] text-slate-400">После регистрации администратор активирует доступ</p>
+        </div>
+        <div class="space-y-3.5 relative z-20">
+            <div class="relative">
+                <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="email" id="reg-email-input" autocomplete="email" autocapitalize="none" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600" placeholder="Email">
+            </div>
+            <div class="relative">
+                <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="text" id="reg-name-input" autocomplete="name" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600" placeholder="Ваше имя">
+            </div>
+            <div class="relative">
+                <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="password" id="reg-pass-input" autocomplete="new-password" class="w-full bg-black/30 border border-white/5 rounded-xl py-3.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-indigo-500/40 focus:bg-black/50 transition-all duration-300 placeholder:text-slate-600" placeholder="Придумайте пароль (мин. 6 символов)" onkeydown="if(event.key==='Enter') executeRegister()">
+            </div>
+        </div>
+        <button onclick="executeRegister()" id="reg-submit-btn" class="pressable w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold font-space text-xs uppercase tracking-widest text-white transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.25)] relative z-20 disabled:opacity-50 disabled:cursor-not-allowed">
+            Отправить заявку
+        </button>
+        <p class="text-center text-[11px] text-slate-500 relative z-20">
+            Уже есть аккаунт?
+            <button onclick="window.showLoginTab()" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition">Войти</button>
+        </p>
     </div>
 </div>
 
@@ -630,7 +676,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
     getFirestore, initializeFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
     collection, getDocs, query, where, onSnapshot
@@ -646,61 +692,29 @@ let FB_CONFIG = {
     appId: "1:591140214223:web:7bc45a81f66a7181f8eeba"
 };
 
-// Единая система авторизации SPACE — все функции сессии вынесены в
-// общий модуль space-auth.js, подключённый в <head>. Это устраняет
-// расхождения логики между chat.html / space_team.html / space_control.html.
-const { withTimeout, readSession: readSpaceSession, writeSession: writeSpaceSession,
-        clearSession: destroySpaceSession,
-        restoreOwnerSession, hasOwnerBackup,
-        rememberCabinet, navigateWithSession } = window.SpaceAuth;
+// SpaceAuth v4 — только утилиты. Сессия через Firebase Auth.
+const { withTimeout, rememberCabinet, consumeImpersonation, hasImpersonation, getCabinetUrl } = window.SpaceAuth;
 
 const APP_ID = 'space-video-agency';
 const BASE = (col) => ['artifacts', APP_ID, 'public', 'data', col];
 
-// Подсказка для chat.html: запоминаем, из какого личного кабинета пришёл
-// пользователь, чтобы кнопка "Войти в личный кабинет" в чате вела на
-// правильный файл, а не на несуществующую/чужую страницу.
 try { rememberCabinet('space_team.html'); } catch(e) {}
 
 const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
-// ВАЖНО: используем автоопределение длинного поллинга вместо WebChannel-стриминга.
-// На многих мобильных сетях/операторских прокси стандартное соединение Firestore
-// зависает без ошибки (вечный "Подключение к SPACE..."). Long-polling решает это.
 const db = initializeFirestore(app, {
     experimentalAutoDetectLongPolling: true,
     useFetchStreams: false
 });
 
-// Полноценная функция аутентификации Firebase без застреваний на мобильных ОС
-async function ensureAuth() {
-    return new Promise((resolve) => {
-        const unsubscribe = onAuthStateChanged(auth, user => {
-            unsubscribe();
-            if (user) {
-                resolve(user);
-            } else {
-                signInAnonymously(auth)
-                    .then(cred => resolve(cred.user))
-                    .catch(err => {
-                        console.error("Firebase Anonymous Auth error:", err);
-                        resolve(null); // Разрешаем поток без вечного зависания страницы
-                    });
-            }
-        }, error => {
-            console.error("onAuthStateChanged error:", error);
-            resolve(null);
-        });
-    });
-}
-
-// currentRole и currentUserId НЕ инициализируются здесь синхронно.
-// Единственная точка установки — checkSession() и блок после логина.
-// Это устраняет двойную инициализацию (#4).
+// Состояние — устанавливается только в initAuthListener()
 let currentRole = null;
-let currentUserId = null;
-// Имя пользователя не хранится в сессии — загружается из Firestore.
+let currentUserId = null;   // editorDocId из коллекции editors (не Firebase UID!)
 let currentUserName = null;
+
+// При loginAsEditor: owner просматривает кабинет монтажёра.
+// _impersonatedEditorDocId — Firestore doc ID монтажёра для показа его данных.
+let _impersonatedEditorDocId = null;
 
 let _editors = [];
 let _projects = [];
@@ -815,7 +829,6 @@ function loadServicesCatalogFromCache() {
 async function loadServicesCatalog() {
     loadServicesCatalogFromCache();
     try {
-        await ensureAuth();
         const snap = await getDoc(doc(db, ...BASE('calc_config'), 'main'));
         if (snap.exists() && Array.isArray(snap.data().extraServicesCatalog) && snap.data().extraServicesCatalog.length) {
             _servicesCatalog = snap.data().extraServicesCatalog;
@@ -898,18 +911,13 @@ window.triggerPwaInstall = async function() {
 };
 
 window.openChatLink = function(editorId) {
-    if (editorId) { localStorage.setItem('target_editor_id', editorId); }
-    else { localStorage.removeItem('target_editor_id'); }
-
-    const extra = {};
-    if (editorId) extra.editor = editorId;
-
-    if (currentRole && currentUserId) {
-        navigateWithSession('chat.html', currentRole, currentUserId, null, extra);
+    if (editorId) {
+        try { localStorage.setItem('target_editor_id', editorId); } catch(e) {}
     } else {
-        const params = new URLSearchParams(extra);
-        window.location.href = 'chat.html?' + params.toString();
+        try { localStorage.removeItem('target_editor_id'); } catch(e) {}
     }
+    const params = editorId ? '?editor=' + encodeURIComponent(editorId) : '';
+    window.location.href = 'chat.html' + params;
 };
 
 async function triggerLoader(welcomeName) {
@@ -937,90 +945,106 @@ async function triggerLoader(welcomeName) {
     loader.classList.add('opacity-0', 'pointer-events-none');
 }
 
+// executeLogin: вход монтажёра через Firebase Auth Email/Password.
+// Поле "логин" в форме используется как email.
 window.executeLogin = async function() {
     const loginEl = document.getElementById('login-input');
-    const passEl = document.getElementById('pass-input');
-    const login = loginEl.value.trim();
-    const pass = passEl.value;
-    
-    if (!login || !pass) { 
-        showToast('Заполните логин и пароль', 'error'); 
-        return; 
-    }
+    const passEl  = document.getElementById('pass-input');
+    const email   = loginEl.value.trim();
+    const pass    = passEl.value;
 
-    if (typeof CryptoJS === 'undefined') {
-        showToast('Компоненты шифрования не загружены. Перезагрузите страницу.', 'error');
+    if (!email || !pass) {
+        showToast('Заполните логин и пароль', 'error');
         return;
     }
 
-    const hash = CryptoJS.SHA256(pass).toString();
     const submitBtn = document.getElementById('login-submit-btn');
-
     try {
         if (submitBtn) { submitBtn.disabled = true; }
         showToast('Подключение к SPACE...', 'info');
 
         await withTimeout(
-            ensureAuth().catch(err => {
-                console.warn("Сбой авторизации Firebase, попытка прямого чтения данных...", err);
-            }),
-            12000,
+            signInWithEmailAndPassword(auth, email, pass),
+            15000,
             'Не удалось установить соединение'
         );
+        // onAuthStateChanged подхватит сессию и покажет dashboard
+    } catch(e) {
+        console.error('executeLogin error:', e);
+        if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found') {
+            showToast('Неверный логин или пароль', 'error');
+        } else if (e.code === 'auth/too-many-requests') {
+            showToast('Слишком много попыток. Подождите немного.', 'error');
+        } else {
+            showToast('Не удалось подключиться. Проверьте соединение.', 'error');
+        }
+    } finally {
+        if (submitBtn) { submitBtn.disabled = false; }
+    }
+};
 
-        const q = query(collection(db, ...BASE('editors')), where('login', '==', login));
-        const snap = await withTimeout(getDocs(q), 12000, 'Сервер не отвечает');
-        
-        if (snap.empty) { 
-            showToast('Монтажёр не найден', 'error'); 
-            return; 
-        }
-        
-        const edDoc = snap.docs[0];
-        const edData = edDoc.data();
-        
-        if (edData.isBlocked) { 
-            showToast('Ваш аккаунт заблокирован', 'error'); 
-            return; 
-        }
-        if (edData.passwordHash !== hash) { 
-            showToast('Неверный пароль', 'error'); 
-            return; 
-        }
+// executeRegister: монтажёр создаёт аккаунт.
+// Запись users/{uid} с active: false — активирует администратор.
+window.executeRegister = async function() {
+    const emailEl = document.getElementById('reg-email-input');
+    const nameEl  = document.getElementById('reg-name-input');
+    const passEl  = document.getElementById('reg-pass-input');
+    if (!emailEl || !nameEl || !passEl) return;
 
-        try {
-            await withTimeout(updateDoc(doc(db, ...BASE('editors'), edDoc.id), { 
-                lastLogin: new Date().toISOString() 
-            }), 8000, 'lastLogin timeout');
-        } catch(e) {
-            console.warn("Не удалось записать lastLogin (ограничение прав):", e);
+    const email = emailEl.value.trim();
+    const name  = nameEl.value.trim();
+    const pass  = passEl.value;
+
+    if (!email || !name || !pass) { showToast('Заполните все поля', 'error'); return; }
+    if (pass.length < 6) { showToast('Пароль не короче 6 символов', 'error'); return; }
+
+    const submitBtn = document.getElementById('reg-submit-btn');
+    try {
+        if (submitBtn) { submitBtn.disabled = true; }
+        showToast('Создаём аккаунт...', 'info');
+
+        const cred = await withTimeout(
+            createUserWithEmailAndPassword(auth, email, pass),
+            15000, 'Не удалось создать аккаунт'
+        );
+
+        await setDoc(doc(db, 'users', cred.user.uid), {
+            role:      'editor',
+            active:    false,
+            name:      name,
+            email:     email,
+            createdAt: new Date().toISOString()
+        });
+
+        await signOut(auth);
+        showToast('Аккаунт создан! Ждите активации администратором.', 'success');
+        window.showLoginTab && window.showLoginTab();
+    } catch(e) {
+        console.error('executeRegister error:', e);
+        if (e.code === 'auth/email-already-in-use') {
+            showToast('Этот email уже зарегистрирован', 'error');
+        } else {
+            showToast('Ошибка регистрации: ' + (e.message || e.code), 'error');
         }
-        
-        await triggerLoader(edData.name || edData.login);
-        
-        const session = writeSpaceSession('editor', edDoc.id);
-        currentRole = session.role;
-        currentUserId = session.id;
-        // Имя загружается из edData — это только что загруженный профиль из Firestore
-        currentUserName = edData.name || edData.login || '';
-        
-        await checkSession();
-    } catch(e) { 
-        console.error("Login sequence crash:", e);
-        showToast('Не удалось подключиться к SPACE. Проверьте интернет-соединение и попробуйте снова.', 'error'); 
     } finally {
         if (submitBtn) { submitBtn.disabled = false; }
     }
 };
 
 window.logout = function() {
-    window.customConfirm('Выход из системы', 'Вы действительно хотите выйти из своего личного кабинета?', () => {
-        destroySpaceSession();
-        currentRole = null; currentUserId = null; currentUserName = null;
-        document.getElementById('screen-dashboard').classList.add('hidden');
-        document.getElementById('screen-login').classList.remove('hidden');
+    window.customConfirm('Выход из системы', 'Вы действительно хотите выйти из своего личного кабинета?', async () => {
+        try {
+            currentRole = null; currentUserId = null; currentUserName = null;
+            _impersonatedEditorDocId = null;
+            await signOut(auth);
+        } catch(e) {
+            console.error('logout error:', e);
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-login').classList.remove('hidden');
+        }
     });
 };
+
 
 function updateActiveTabHeader(tabName) {
     const tabsData = {
@@ -1439,7 +1463,6 @@ window.toggleTimer = async function(projectId) {
     if (!p) return;
 
     try {
-        await ensureAuth();
         const ref = doc(db, ...BASE('projects'), projectId);
         
         if (p.timerStatus === 'running') {
@@ -1627,7 +1650,6 @@ window.submitProjectEditsRequest = async function() {
     };
     
     try {
-        await ensureAuth();
         await addDoc(collection(db, ...BASE('edit_requests')), proposal);
         sendNotification('owner', 'Новый запрос изменений', `Монтажёр ${currentUserName} предложил изменения в проекте "${proposal.projectName}"`);
         showToast('Запрос отправлен администратору', 'success');
@@ -1697,7 +1719,6 @@ window.submitProjectWork = async function() {
     if (!url) { showToast('Укажите корректную ссылку', 'error'); return; }
     
     try {
-        await ensureAuth();
         const p = _projects.find(x => x.id === id);
         
         let finalTime = p.timeSpent || 0;
@@ -1784,7 +1805,6 @@ window.markAllNotificationsRead = async function() {
 
 window.deleteAllNotifications = async function() {
     try {
-        await ensureAuth();
         const myNotifs = _notifications.filter(n => n.userId === currentUserId);
         for (const n of myNotifs) {
             await deleteDoc(doc(db, ...BASE('notifications'), n.id));
@@ -1817,7 +1837,6 @@ function updateStatusButtonsUI(status) {
 
 window.setUserWorkStatus = async function(statusText) {
     try {
-        await ensureAuth();
         await setDoc(doc(db, ...BASE('profiles'), currentUserId), { statusText }, { merge: true });
         
         const labels = ['my-status-label', 'mobile-my-status-label'];
@@ -1951,125 +1970,192 @@ function subscribeData() {
     });
 }
 
-async function checkSession() {
-    const session = readSpaceSession();
-    if (session && session.role === 'editor') {
-        // Единственная точка установки currentRole/currentUserId (#4)
-        currentRole = session.role;
-        currentUserId = session.id;
-        // Имя загружается из Firestore (editors/{id}), не из localStorage
-
-        document.getElementById('screen-login').classList.add('hidden');
-
-        await ensureAuth().catch(err => {
-            console.warn("Ошибка восстановления сессии авторизации (пропуск):", err);
-        });
-
-        subscribeData();
-        loadServicesCatalog();
-        startFrontendClock();
-        setupPWA();
-
-        // #6: Показываем кнопку «Выйти из режима монтажёра» если owner
-        // вошёл через «Войти в кабинет» и сохранил свою сессию в бэкап.
-        const ownerBackBtns = document.querySelectorAll('.js-exit-editor-mode');
-        if (hasOwnerBackup()) {
-            ownerBackBtns.forEach(btn => btn.classList.remove('hidden'));
-        } else {
-            ownerBackBtns.forEach(btn => btn.classList.add('hidden'));
-        }
-
-        // Загружаем профиль монтажёра из Firestore: имя + статус
-        getDoc(doc(db, ...BASE('editors'), currentUserId)).then(edSnap => {
-            if (edSnap.exists()) {
-                const edData = edSnap.data();
-                currentUserName = edData.name || edData.login || '';
-            }
-            // Обновляем имя в интерфейсе
-            const nameEls = [
-                document.getElementById('my-name'),
-                document.getElementById('top-user-name'),
-                document.getElementById('mobile-my-name')
-            ];
-            nameEls.forEach(el => { if (el) el.textContent = currentUserName || ''; });
-        });
-
-        document.getElementById('my-avatar').innerHTML = '<i class="fas fa-film text-indigo-400 text-xl pointer-events-none"></i>';
-
-        getDoc(doc(db, ...BASE('profiles'), currentUserId)).then(snap => {
-            const status = snap.exists() ? (snap.data().statusText || 'Свободен — жду проекты') : 'Свободен — жду проекты';
-
-            const labels = ['my-status-label', 'mobile-my-status-label'];
-            labels.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = status;
-            });
-
-            const led = document.getElementById('my-status-dot');
-            const topLed = document.getElementById('top-user-status-dot');
-
-            let targetClass = "w-2 h-2 rounded-full bg-emerald-500 status-led animate-pulse";
-            let targetTopClass = "w-1.5 h-1.5 rounded-full bg-emerald-500 status-led animate-pulse";
-
-            if (status.includes('Свободен')) {
-                targetClass = "w-2 h-2 rounded-full bg-emerald-500 status-led animate-pulse";
-                targetTopClass = "w-1.5 h-1.5 rounded-full bg-emerald-500 status-led animate-pulse";
-            } else if (status.includes('Занят')) {
-                targetClass = "w-2 h-2 rounded-full bg-rose-500 status-led animate-pulse";
-                targetTopClass = "w-1.5 h-1.5 rounded-full bg-rose-500 status-led animate-pulse";
-            } else {
-                targetClass = "w-2 h-2 rounded-full bg-amber-500 status-led animate-pulse";
-                targetTopClass = "w-1.5 h-1.5 rounded-full bg-amber-500 status-led animate-pulse";
-            }
-
-            if (led) led.className = targetClass;
-            if (topLed) topLed.className = targetTopClass;
-
-            updateStatusButtonsUI(status);
-        });
-
-        // Возврат в чат после auth-gate
-        const _rtParams = new URLSearchParams(window.location.search);
-        const _returnTo = _rtParams.get('returnTo');
-        if (_returnTo === 'chat.html') {
-            const _et = _rtParams.get('editor');
-            navigateWithSession('chat.html', currentRole, currentUserId, null, _et ? { editor: _et } : {});
+// ─── AUTH LISTENER ───────────────────────────────────────────────────────────
+// Заменяет checkSession() + ensureAuth() + exitEditorMode().
+// Единственная точка входа. Вызывается один раз в window.onload.
+// Firebase Auth сам восстанавливает сессию после перезагрузки страницы.
+function initAuthListener() {
+    onAuthStateChanged(auth, async (firebaseUser) => {
+        if (!firebaseUser) {
+            // Нет Firebase сессии → показываем экран логина
+            currentRole = null;
+            currentUserId = null;
+            currentUserName = null;
+            _impersonatedEditorDocId = null;
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('screen-login').classList.remove('hidden');
+            // Скрыть кнопку «В панель» если видна
+            document.querySelectorAll('.js-exit-editor-mode').forEach(b => b.classList.add('hidden'));
             return;
         }
-        document.getElementById('screen-dashboard').classList.remove('hidden');
-        renderSegmentTabs();
-    } else {
-        document.getElementById('screen-login').classList.remove('hidden');
-        document.getElementById('screen-dashboard').classList.add('hidden');
-    }
+
+        try {
+            // Читаем роль из Firestore users/{uid}
+            const userSnap = await withTimeout(
+                getDoc(doc(db, 'users', firebaseUser.uid)),
+                10000, 'Не удалось загрузить профиль'
+            );
+
+            if (!userSnap.exists()) {
+                await signOut(auth);
+                showToast('Профиль не найден. Обратитесь к администратору.', 'error');
+                return;
+            }
+
+            const userData = userSnap.data();
+
+            // Owner может зайти в space_team через loginAsEditor (impersonation)
+            const isOwner = userData.role === 'owner';
+            const isImpersonating = isOwner && hasImpersonation();
+
+            if (isOwner && !isImpersonating) {
+                // Обычный owner без impersonation — ему здесь не место
+                await signOut(auth);
+                showToast('Для администратора — space_control.html', 'error');
+                return;
+            }
+
+            if (userData.role === 'editor' && userData.active === false) {
+                await signOut(auth);
+                showToast('Аккаунт ожидает активации администратором', 'error');
+                return;
+            }
+
+            // --- Определяем editorDocId ---
+            let editorDocId = null;
+            let editorData  = null;
+
+            if (isImpersonating) {
+                // Owner смотрит чужой кабинет
+                editorDocId = consumeImpersonation();
+                _impersonatedEditorDocId = editorDocId;
+                currentRole = 'owner'; // технически это owner
+            } else {
+                // Обычный editor — ищем его запись в editors по uid
+                const q = query(collection(db, ...BASE('editors')), where('uid', '==', firebaseUser.uid));
+                const snap = await withTimeout(getDocs(q), 10000, 'Ошибка загрузки профиля');
+
+                if (snap.empty) {
+                    // Первый вход — создаём запись в editors
+                    const newEdRef = await addDoc(collection(db, ...BASE('editors')), {
+                        uid:       firebaseUser.uid,
+                        name:      userData.name || '',
+                        email:     userData.email || firebaseUser.email || '',
+                        login:     userData.email || firebaseUser.email || '',
+                        isBlocked: false,
+                        lastLogin: new Date().toISOString(),
+                        createdAt: new Date().toISOString()
+                    });
+                    editorDocId = newEdRef.id;
+                    editorData  = { name: userData.name || '', login: userData.email || '' };
+                } else {
+                    const edDoc = snap.docs[0];
+                    editorDocId = edDoc.id;
+                    editorData  = edDoc.data();
+
+                    if (editorData.isBlocked) {
+                        await signOut(auth);
+                        showToast('Ваш аккаунт заблокирован', 'error');
+                        return;
+                    }
+
+                    // Обновляем lastLogin
+                    try {
+                        await updateDoc(doc(db, ...BASE('editors'), editorDocId), {
+                            lastLogin: new Date().toISOString()
+                        });
+                    } catch(e) { /* права могут не позволять */ }
+                }
+                currentRole = 'editor';
+            }
+
+            currentUserId = editorDocId;
+            currentUserName = editorData ? (editorData.name || editorData.login || '') : (userData.name || '');
+
+            // Показываем кнопку «В панель» если owner impersonates
+            const backBtns = document.querySelectorAll('.js-exit-editor-mode');
+            if (isImpersonating) {
+                backBtns.forEach(b => b.classList.remove('hidden'));
+            } else {
+                backBtns.forEach(b => b.classList.add('hidden'));
+            }
+
+            // Обновляем имя в интерфейсе
+            ['my-name','top-user-name','mobile-my-name'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = currentUserName;
+            });
+
+            document.getElementById('screen-login').classList.add('hidden');
+
+            subscribeData();
+            loadServicesCatalog();
+            startFrontendClock();
+            setupPWA();
+
+            // Загружаем статус
+            getDoc(doc(db, ...BASE('profiles'), currentUserId)).then(snap => {
+                const status = snap.exists() ? (snap.data().statusText || 'Свободен — жду проекты') : 'Свободен — жду проекты';
+                ['my-status-label','mobile-my-status-label'].forEach(id => {
+                    const el = document.getElementById(id); if (el) el.textContent = status;
+                });
+                const colorMap = { 'Свободен': 'emerald', 'Занят': 'rose' };
+                const color = Object.entries(colorMap).find(([k]) => status.includes(k))?.[1] || 'amber';
+                const cls2 = `w-2 h-2 rounded-full bg-${color}-500 status-led animate-pulse`;
+                const cls15 = `w-1.5 h-1.5 rounded-full bg-${color}-500 status-led animate-pulse`;
+                const led = document.getElementById('my-status-dot');
+                const topLed = document.getElementById('top-user-status-dot');
+                if (led) led.className = cls2;
+                if (topLed) topLed.className = cls15;
+                updateStatusButtonsUI(status);
+            });
+
+            // Аватар
+            const avatarEl = document.getElementById('my-avatar');
+            if (avatarEl) avatarEl.innerHTML = '<i class="fas fa-film text-indigo-400 text-xl pointer-events-none"></i>';
+
+            // returnTo redirect
+            const _returnTo = new URLSearchParams(window.location.search).get('returnTo');
+            if (_returnTo === 'chat.html') {
+                window.location.href = 'chat.html';
+                return;
+            }
+
+            document.getElementById('screen-dashboard').classList.remove('hidden');
+            renderSegmentTabs();
+
+        } catch(e) {
+            console.error('initAuthListener error:', e);
+            showToast('Ошибка подключения. Попробуйте обновить страницу.', 'error');
+        }
+    });
 }
 
-// #6: Выход из режима просмотра монтажёра — восстанавливает owner-сессию
-// и возвращает администратора в space_control.html.
+// Выйти из режима просмотра монтажёра — возврат в space_control.html.
+// Owner остаётся в Firebase Auth, просто переходим обратно.
 window.exitEditorMode = function() {
     window.customConfirm(
         'Выйти из режима монтажёра',
         'Вернуться в панель администратора?',
-        () => {
-            const ownerSession = restoreOwnerSession();
-            if (ownerSession) {
-                window.location.href = 'space_control.html';
-            } else {
-                // Бэкап истёк — просто разлогиниваем
-                destroySpaceSession();
-                currentRole = null; currentUserId = null; currentUserName = null;
-                document.getElementById('screen-dashboard').classList.add('hidden');
-                document.getElementById('screen-login').classList.remove('hidden');
-            }
-        }
+        () => { window.location.href = 'space_control.html'; }
     );
 };
 
-// #8: window.onload обёрнут в async чтобы корректно await checkSession().
-// Без этого ошибки внутри async checkSession() поглощались тихо.
-window.onload = async function() {
-    await checkSession();
+window.showLoginTab = function() {
+    document.getElementById('screen-register').classList.add('hidden');
+    document.getElementById('screen-login').classList.remove('hidden');
 };
+
+window.showRegisterTab = function() {
+    document.getElementById('screen-login').classList.add('hidden');
+    document.getElementById('screen-register').classList.remove('hidden');
+};
+
+window.onload = function() {
+    setupPWA();
+    initAuthListener();
+};
+
 
 document.addEventListener('click', (e) => {
     const drop = document.getElementById('notifications-dropdown');

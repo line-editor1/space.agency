@@ -6,510 +6,25 @@
     <title>SPACE — Чат</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  // Предотвращение падения приложения, если space-auth.js не загрузился...
-if (!window.SpaceAuth) {
-    ...
-}
-
-Удали старую функцию инициализации сессии и проверку `checkAuthSession` в конце скрипта:
-```javascript
-async function checkAuthSession() {
-    const session = readSpaceSession();
-    ...
-}
-
-####  Что заменить в `chat.html`:
-
-1. Подключи глобальные методы в область видимости `window` в самом начале тега `<script type="module">`:
-```javascript
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import {
-    getFirestore, initializeFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
-    collection, getDocs, query, where, orderBy, onSnapshot,
-    serverTimestamp, increment
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-// Экспортируем в window, чтобы space-auth.js имел доступ к Firebase методам
-window.doc = doc;
-window.getDoc = getDoc;
-
-2. Замени блок самовызывающейся функции авторизации внизу `chat.html`:
-```javascript
-(async () => {
-    await ensureAuth();
-    await checkAuthSession();
-})();
-
-**на этот чистый, использующий `SpaceAuth.requireAuth()` код:**
-
-```javascript
-(async () => {
-    try {
-        await ensureAuth();
-        // Передаем инстанс бд в синглтон авторизации
-        window.SpaceAuth.setDb(db);
-        
-        // Самая строгая асинхронная проверка через Firestore
-        const user = await window.SpaceAuth.withTimeout(
-            window.SpaceAuth.requireAuth(),
-            10000,
-            'Служба аутентификации временно недоступна'
-        );
-
-        if (user) {
-            myId = user.id;
-            myRole = user.role;
-            myNameSaved = user.name;
-
-            // Настройка UI в зависимости от роли
-            if (myRole === 'owner') {
-                const btn = document.getElementById('create-channel-btn');
-                if (btn) btn.classList.remove('hidden');
-                const lbl = document.getElementById('back-link-text');
-                if (lbl) lbl.textContent = 'Панель Администратора';
-            }
-
-            document.getElementById('auth-gate-screen').classList.add('hidden');
-            applyCabinetLinks();
-            await loadMyProfile();
-            await loadSidebar();
-            subscribePresence();
-            initEmojiPicker();
-        } else {
-            document.getElementById('auth-gate-screen').classList.remove('hidden');
+    <script src="space-auth.js"></script>
+    <script>
+        // SpaceAuth v4: fallback если space-auth.js не загрузился.
+        // Версия v4 не хранит сессию в localStorage — только утилиты.
+        if (!window.SpaceAuth) {
+            window.SpaceAuth = {
+                withTimeout: (promise, ms, message) => new Promise((resolve, reject) => {
+                    const timer = setTimeout(() => reject(new Error(message || 'Timeout')), ms);
+                    promise.then(v => { clearTimeout(timer); resolve(v); }, e => { clearTimeout(timer); reject(e); });
+                }),
+                rememberCabinet: (f) => { try { localStorage.setItem('space_last_cabinet', f); } catch(e){} },
+                getCabinetUrl: (role) => role === 'owner' ? 'space_control.html' : 'space_team.html',
+                saveImpersonation: () => {},
+                consumeImpersonation: () => null,
+                hasImpersonation: () => false
+            };
         }
-    } catch (e) {
-        console.error("Auth Exception:", e);
-        showToast(e.message || 'Ошибка входа в систему', 'error');
-        document.getElementById('auth-gate-screen').classList.remove('hidden');
-    }
-})();
-
----
-
-### 3. Изменения в `space_control.html`
-
-#### ❌ Что удалить из `space_control.html`:
-Полностью удали устаревшую локальную функцию `checkSession()` (строки 502–521) и прямые вызовы `readSpaceSession` / `writeSpaceSession` при логине.
-
-####  Что заменить в `space_control.html`:
-
-1. В начале блочного `<script type="module">` пробрось нужные методы Firestore в глобальный контекст `window`:
-```javascript
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import {
-    getFirestore, initializeFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
-    collection, getDocs, query, where, orderBy, onSnapshot, limit
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-window.doc = doc;
-window.getDoc = getDoc;
-
-2. Замени всю функцию инициализации входа `window.executeLogin` на новую:
-```javascript
-window.executeLogin = async function() {
-    const login = document.getElementById('login-input').value.trim();
-    const pass = document.getElementById('pass-input').value;
-    if (!login || !pass) { showToast('Заполните данные', 'error'); return; }
-
-    const hash = CryptoJS.SHA256(pass).toString();
-    const submitBtn = document.getElementById('login-submit-btn');
-
-    try {
-        if (submitBtn) { submitBtn.disabled = true; }
-        showToast('Проверка ключей доступа SPACE...', 'info');
-
-        await withTimeout(ensureAuth(), 12000, 'Не удалось установить соединение');
-        window.SpaceAuth.setDb(db);
-
-        // Читаем хеш пароля и логин из site_config
-        const configRef = doc(db, ...BASE('site_config'), 'main');
-        const configSnap = await withTimeout(getDoc(configRef), 12000, 'Сервер не отвечает');
-
-        const hasCredentials = configSnap.exists() && configSnap.data().ownerLogin && configSnap.data().adminPassHash;
-
-        if (!hasCredentials) {
-            // Первичная регистрация
-            await withTimeout(
-                setDoc(configRef, { ownerLogin: login, adminPassHash: hash }, { merge: true }),
-                12000,
-                'Не удалось сохранить учетные данные администратора'
-            );
-            
-            // Также создаем пользователя в коллекции users
-            await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', 'owner'), {
-                role: 'owner',
-                active: true,
-                name: 'Администратор'
-            });
-
-            await triggerLoader('Администратор');
-            window.SpaceAuth.login('owner');
-            checkSession();
-            showToast('Учётные данные администратора успешно заданы!', 'success');
-            return;
+    </script>
         }
-
-        const expectedLogin = configSnap.data().ownerLogin;
-        const expectedHash = configSnap.data().adminPassHash;
-
-        if (login === expectedLogin && hash === expectedHash) {
-            // Обновляем/убеждаемся, что запись в users/{uid} существует для правил доступа
-            await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', 'owner'), {
-                role: 'owner',
-                active: true,
-                name: 'Администратор'
-            }, { merge: true });
-
-            await triggerLoader('Администратор');
-            window.SpaceAuth.login('owner');
-            checkSession();
-        } else {
-            showToast('Неверные ключи доступа администратора', 'error');
-        }
-    } catch(e) {
-        console.error("Login sequence crash:", e);
-        showToast('Не удалось войти: ' + e.message, 'error');
-    } finally {
-        if (submitBtn) { submitBtn.disabled = false; }
-    }
-};
-
-3. Замени инициализирующую функцию запуска `checkSession` и обработчик `onload`:
-```javascript
-async function checkSession() {
-    window.SpaceAuth.setDb(db);
-    try {
-        const user = await window.SpaceAuth.requireRole('owner');
-        if (user) {
-            currentRole = user.role;
-            currentUserId = user.id;
-            currentUserName = user.name;
-
-            // Возврат в чат после auth-gate
-            const _rtParams = new URLSearchParams(window.location.search);
-            const _returnTo = _rtParams.get('returnTo');
-            if (_returnTo === 'chat.html') {
-                const _et = _rtParams.get('editor');
-                window.SpaceAuth.navigateWithSession('chat.html', currentUserId, _et ? { editor: _et } : {});
-                return;
-            }
-
-            document.getElementById('screen-login').classList.add('hidden');
-            document.getElementById('screen-dashboard').classList.remove('hidden');
-            renderSegmentTabs();
-            initRealtimeListeners();
-        } else {
-            logout();
-        }
-    } catch (e) {
-        logout();
-        showToast(e.message || 'Требуется авторизация', 'error');
-    }
-}
-
-window.logout = function() {
-    window.SpaceAuth.clearSession();
-    currentRole = null; currentUserId = null; currentUserName = null;
-    document.getElementById('screen-dashboard').classList.add('hidden');
-    document.getElementById('screen-login').classList.remove('hidden');
-};
-
-// При создании нового монтажёра администратором — автоматически создаем ему запись в users/{editorId}
-// Заменяем оригинальную функцию createEditor на следующую:
-window.createEditor = async function() {
-    const name = document.getElementById('e-name').value.trim();
-    const login = document.getElementById('e-login').value.trim();
-    const pass = document.getElementById('e-pass').value;
-    if(!name || !login || !pass) { showToast('Заполните все поля', 'error'); return; }
-    try {
-        await ensureAuth();
-        const hash = CryptoJS.SHA256(pass).toString();
-        
-        // Создаем монтажёра
-        const docRef = await addDoc(collection(db, ...BASE('editors')), {
-            name, login, passwordHash: hash, isBlocked: false, createdAt: new Date().toISOString()
-        });
-
-        // Создаем системный аккаунт в users
-        await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', docRef.id), {
-            role: 'editor',
-            active: true,
-            name: name
-        });
-
-        showToast('Монтажер успешно добавлен!', 'success');
-        closeModal('modal-editor');
-    } catch(e) { showToast('Ошибка создания: ' + e.message, 'error'); }
-};
-
-// При блокировке монтажёра администратором — обновляем его статус и в users/{id}
-// Находим функцию toggleBlockEditor и заменяем на:
-window.toggleBlockEditor = async function() {
-    const id = document.getElementById('manage-editor-id').value;
-    const ed = _editors.find(e => e.id === id);
-    if(!ed) return;
-    try {
-        await ensureAuth();
-        const nextStatus = !ed.isBlocked;
-        await updateDoc(doc(db, ...BASE('editors'), id), { isBlocked: nextStatus });
-        
-        // Синхронизируем флаг активности в users
-        await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', id), {
-            active: !nextStatus
-        });
-
-        showToast(nextStatus ? 'Монтажер заблокирован' : 'Монтажер разблокирован', 'success');
-        closeModal('modal-manage-editor');
-    } catch(e) { showToast('Ошибка изменения статуса', 'error'); }
-};
-
-// При удалении монтажёра — удаляем и users/{id}
-// Находим функцию удаления монтажёра и заменяем на:
-window.deleteEditorConfirm = async function() {
-    const id = document.getElementById('manage-editor-id').value;
-    customConfirm('Удаление аккаунта', 'Вы уверены, что хотите полностью удалить аккаунт монтажера?', async () => {
-        try {
-            await ensureAuth();
-            await deleteDoc(doc(db, ...BASE('editors'), id));
-            await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', id));
-            showToast('Аккаунт удален', 'success');
-            closeModal('modal-manage-editor');
-        } catch(e) { showToast('Ошибка удаления', 'error'); }
-    });
-};
-
----
-
-### 4. Изменения в `space_team.html`
-
-#### ❌ Что удалить из `space_team.html`:
-Полностью удали функции `checkSession` и устаревшие проверки `readSession`/`writeSession`.
-
-####  Что заменить в `space_team.html`:
-
-1. Аналогично пробрось методы Firestore в глобальный контекст `window` в `<script type="module">`:
-```javascript
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import {
-    getFirestore, initializeFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
-    collection, getDocs, query, where, onSnapshot
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-window.doc = doc;
-window.getDoc = getDoc;
-
-2. Перепиши логику входа монтажёра `executeLogin`:
-```javascript
-window.executeLogin = async function() {
-    const loginEl = document.getElementById('login-input');
-    const passEl = document.getElementById('pass-input');
-    const login = loginEl.value.trim();
-    const pass = passEl.value;
-    
-    if (!login || !pass) { 
-        showToast('Заполните логин и пароль', 'error'); 
-        return; 
-    }
-
-    const hash = CryptoJS.SHA256(pass).toString();
-    const submitBtn = document.getElementById('login-submit-btn');
-
-    try {
-        if (submitBtn) { submitBtn.disabled = true; }
-        showToast('Проверка учетных данных SPACE...', 'info');
-
-        await withTimeout(ensureAuth(), 12000, 'Не удалось установить соединение');
-        window.SpaceAuth.setDb(db);
-
-        const q = query(collection(db, ...BASE('editors')), where('login', '==', login));
-        const snap = await withTimeout(getDocs(q), 12000, 'Сервер не отвечает');
-        
-        if (snap.empty) { 
-            showToast('Монтажёр не найден', 'error'); 
-            return; 
-        }
-        
-        const edDoc = snap.docs[0];
-        const edData = edDoc.data();
-        
-        if (edData.isBlocked) { 
-            showToast('Ваш аккаунт заблокирован', 'error'); 
-            return; 
-        }
-        if (edData.passwordHash !== hash) { 
-            showToast('Неверный пароль', 'error'); 
-            return; 
-        }
-
-        // Синхронизируем / создаем документ в users/{id} для правил безопасности
-        await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', edDoc.id), {
-            role: 'editor',
-            active: true,
-            name: edData.name || edData.login
-        }, { merge: true });
-
-        await withTimeout(updateDoc(doc(db, ...BASE('editors'), edDoc.id), { 
-            lastLogin: new Date().toISOString() 
-        }), 8000, 'Сбой обновления статуса');
-        
-        await triggerLoader(edData.name || edData.login);
-        
-        // Авторизуем UID в синглтоне
-        window.SpaceAuth.login(edDoc.id);
-        await checkSession();
-    } catch(e) { 
-        console.error("Login error:", e);
-        showToast('Ошибка авторизации: ' + e.message, 'error'); 
-    } finally {
-        if (submitBtn) { submitBtn.disabled = false; }
-    }
-};
-
-3. Обнови функцию проверки сессии `checkSession` и выход:
-```javascript
-async function checkSession() {
-    window.SpaceAuth.setDb(db);
-    try {
-        const user = await window.SpaceAuth.requireRole('editor');
-        if (user) {
-            currentRole = user.role;
-            currentUserId = user.id;
-            currentUserName = user.name;
-
-            document.getElementById('screen-login').classList.add('hidden');
-
-            subscribeData();
-            loadServicesCatalog();
-            startFrontendClock();
-            setupPWA();
-
-            // Обработка режима просмотра администратором
-            const ownerBackBtns = document.querySelectorAll('.js-exit-editor-mode');
-            if (window.SpaceAuth.hasOwnerBackup()) {
-                ownerBackBtns.forEach(btn => btn.classList.remove('hidden'));
-            } else {
-                ownerBackBtns.forEach(btn => btn.classList.add('hidden'));
-            }
-
-            // Обновляем имя в интерфейсе
-            const nameEls = [
-                document.getElementById('my-name'),
-                document.getElementById('top-user-name'),
-                document.getElementById('mobile-my-name')
-            ];
-            nameEls.forEach(el => { if (el) el.textContent = currentUserName || ''; });
-
-            // Возврат в чат после auth-gate
-            const _rtParams = new URLSearchParams(window.location.search);
-            const _returnTo = _rtParams.get('returnTo');
-            if (_returnTo === 'chat.html') {
-                const _et = _rtParams.get('editor');
-                window.SpaceAuth.navigateWithSession('chat.html', currentUserId, _et ? { editor: _et } : {});
-                return;
-            }
-
-            document.getElementById('screen-dashboard').classList.remove('hidden');
-            renderSegmentTabs();
-        } else {
-            logout();
-        }
-    } catch (e) {
-        logout();
-        showToast(e.message || 'Аккаунт не авторизован', 'error');
-    }
-}
-
-window.logout = function() {
-    window.SpaceAuth.clearSession();
-    currentRole = null; currentUserId = null; currentUserName = null;
-    document.getElementById('screen-dashboard').classList.add('hidden');
-    document.getElementById('screen-login').classList.remove('hidden');
-};
-
----
-
-### 5. Точные шаги в Firebase Console
-
-#### Шаг А: Создание коллекции `users`
-1. Открой **Firebase Console** -> выбери свой проект `space-video-agency`.
-2. Перейди в раздел **Firestore Database**.
-3. В корневом разделе кликни по кнопке **Запустить коллекцию** (Start collection) и назови её:
-   `artifacts` (или перейди вглубь существующей иерархии, если она уже создана).
-4. Пройди по следующему точному пути (создавая новые коллекции и документы по очереди):
-   `/artifacts/space-video-agency/public/data/users`
-   *(где `users` — это коллекция, находящаяся внутри документа `data`)*.
-
-#### Шаг Б: Первичное наполнение для администратора (документ `owner`)
-1. В созданной коллекции `users` нажми кнопку **Добавить документ** (Add document).
-2. Задай **Идентификатор документа** вручную: `owner`
-3. Добавь следующие поля:
-   * `role` (строка, string): `owner`
-   * `active` (логическое, boolean): `true`
-   * `name` (строка, string): `Администратор`
-4. Сохрани документ.
-
-#### Шаг В: Настройка Firestore Rules
-Перейди во вкладку **Rules** в Firestore Database и вставь следующие премиальные правила безопасности. Они надёжно защищают базу данных, предотвращают подмену ролей со стороны пользователей и разрешают доступ только верифицированному персоналу:
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    
-    // Вспомогательная функция проверки: авторизован ли пользователь анонимно/custom в Firebase Auth
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    // Вспомогательная функция получения профиля пользователя из доверенного пути
-    function getUserData(userId) {
-      return get(/databases/$(database)/documents/artifacts/space-video-agency/public/data/users/$(userId)).data;
-    }
-    
-    // Проверка, является ли пользователь администратором (owner)
-    function isOwner(userId) {
-      return getUserData(userId).role == 'owner' && getUserData(userId).active == true;
-    }
-    
-    // Проверка, является ли пользователь монтажером (editor)
-    function isEditor(userId) {
-      return getUserData(userId).role == 'editor' && getUserData(userId).active == true;
-    }
-
-    // Правила для коллекции users
-    match /artifacts/space-video-agency/public/data/users/{userId} {
-      // Пользователь может читать свой собственный профиль, если он авторизован. Администратор может всё.
-      allow read: if isAuthenticated() && (request.auth.uid == userId || isOwner(request.auth.uid));
-      // Создавать и изменять роли пользователей в users может только верифицированный Администратор (owner)
-      allow write: if isAuthenticated() && isOwner(request.auth.uid);
-    }
-    
-    // Правила для чатов и каналов
-    match /artifacts/space-video-agency/public/data/chats/{chatId}/{document=**} {
-      allow read, write: if isAuthenticated() && (isOwner(request.auth.uid) || isEditor(request.auth.uid));
-    }
-    
-    match /artifacts/space-video-agency/public/data/channels/{channelId}/{document=**} {
-      allow read: if isAuthenticated() && (isOwner(request.auth.uid) || isEditor(request.auth.uid));
-      allow write: if isAuthenticated() && isOwner(request.auth.uid);
-    }
-    
-    // Правила для проектов, окладов и CRM
-    match /artifacts/space-video-agency/public/data/projects/{projectId} {
-      allow read: if isAuthenticated() && (isOwner(request.auth.uid) || (isEditor(request.auth.uid) && resource.data.editorId == request.auth.uid));
-      allow write: if isAuthenticated() && isOwner(request.auth.uid);
-    }
-    
-    // Правила по умолчанию для остальных служебных коллекций (presence, site_config, submissions, и т.д.)
-    match /artifacts/space-video-agency/public/data/{collectionName}/{document=**} {
-      allow read, write: if isAuthenticated() && (isOwner(request.auth.uid) || isEditor(request.auth.uid));
-    }
-  }
-}
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- PWA Meta tags -->
@@ -1222,7 +737,7 @@ service cloud.firestore {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
     getFirestore, initializeFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
     collection, getDocs, query, where, orderBy, onSnapshot,
@@ -1248,15 +763,14 @@ const db = initializeFirestore(app, {
     useFetchStreams: false
 });
 
-const { readSession: readSpaceSession, writeSession: writeSpaceSession,
-        clearSession: destroySpaceSession, getCabinetUrl: getCabinetUrlForRole,
-        navigateWithSession } = window.SpaceAuth;
+const { withTimeout, getCabinetUrl: getCabinetUrlForRole } = window.SpaceAuth;
 
-// myRole и myId НЕ инициализируются здесь синхронно (#4).
-// Единственная точка установки — checkAuthSession() ниже.
+// myRole и myId устанавливаются только внутри initAuthListener()
+// myId = editorDocId (Firestore doc ID) — не Firebase UID.
+// Это сохраняет совместимость с chatId, profiles, presence.
 let myRole = null;
 let myId   = null;
-let myNameSaved = null; // Загружается динамически из Firestore
+let myNameSaved = null;
 
 function getCabinetUrl() {
     return getCabinetUrlForRole(myRole);
@@ -1321,9 +835,8 @@ if (window.visualViewport) {
     });
 }
 
-async function ensureAuth() {
-    if (!auth.currentUser) await signInAnonymously(auth);
-}
+// ensureAuth удалена — в v4 Firebase Auth сессия восстанавливается автоматически
+// через onAuthStateChanged без signInAnonymously.
 
 const GRADIENT_PRESETS = [
     'linear-gradient(135deg, #1b172a 0%, #151121 100%)',
@@ -1363,7 +876,6 @@ function applyAvatarStyle(el, nameString, avatarUrl = '') {
 async function setMyPresence(online) {
     if (!myId || myId === 'unauthorized_user') return;
     try {
-        await ensureAuth();
         await setDoc(doc(db, ...BASE('presence'), myId), {
             online,
             lastSeen: new Date().toISOString(),
@@ -1445,7 +957,6 @@ let _allProjects = [];
 let _drafts = {};
 
 async function loadMyProfile() {
-    await ensureAuth();
     if (myRole === 'owner') {
         document.getElementById('create-channel-btn').classList.remove('hidden');
         document.getElementById('back-link-text').textContent = 'Панель Администратора';
@@ -1496,7 +1007,6 @@ window.selectStatusEmoji = function(emoji, event) {
 
 async function loadServicesCatalog() {
     try {
-        await ensureAuth();
     } catch(e) {}
 }
 
@@ -2595,140 +2105,106 @@ window.createChannel = async function() {
     } catch(e) {}
 };
 
-async function checkAuthSession() {
-    const session = readSpaceSession();
-    if (session && session.role && session.id) {
-        // Единственная точка установки myRole/myId (#4)
-        myRole = session.role;
-        myId = session.id;
+// ─── AUTH LISTENER (chat.html) ──────────────────────────────────────────────
+// Заменяет checkAuthSession() + ensureAuth() + IIFE.
+// Firebase Auth автоматически восстанавливает сессию при загрузке страницы.
+// myId = editorDocId (Firestore) — для совместимости с chatId = 'owner__'+editorDocId.
+function initAuthListener() {
+    onAuthStateChanged(auth, async (firebaseUser) => {
+        if (!firebaseUser) {
+            myRole = null; myId = null; myNameSaved = null;
+            document.getElementById('auth-gate-screen').classList.remove('hidden');
+            applyCabinetLinks();
+            return;
+        }
 
         try {
-            await ensureAuth();
+            // Читаем роль из Firestore users/{uid}
+            const userSnap = await withTimeout(
+                getDoc(doc(db, 'users', firebaseUser.uid)),
+                10000, 'Не удалось загрузить профиль'
+            );
 
-            if (myRole === 'editor') {
-                const edDoc = await getDoc(doc(db, ...BASE('editors'), myId));
-                if (!edDoc.exists() || edDoc.data().isBlocked) {
-                    destroySpaceSession();
+            if (!userSnap.exists()) {
+                await signOut(auth);
+                document.getElementById('auth-gate-screen').classList.remove('hidden');
+                applyCabinetLinks();
+                showToast('Профиль не найден', 'error');
+                return;
+            }
+
+            const userData = userSnap.data();
+
+            if (userData.role === 'editor') {
+                if (userData.active === false) {
+                    await signOut(auth);
                     document.getElementById('auth-gate-screen').classList.remove('hidden');
-                    showToast(edDoc.exists() ? 'Ваш аккаунт заблокирован' : 'Аккаунт не найден', 'error');
+                    showToast('Аккаунт ожидает активации', 'error');
                     return;
                 }
-                const edData = edDoc.data();
-                myNameSaved = edData.name || edData.login;
-            } else if (myRole === 'owner') {
-                const configRef = doc(db, ...BASE('site_config'), 'main');
-                const configSnap = await getDoc(configRef);
-                if (!configSnap.exists()) {
-                    destroySpaceSession();
+
+                // Находим editorDocId по uid
+                const q = query(collection(db, ...BASE('editors')), where('uid', '==', firebaseUser.uid));
+                const snap = await withTimeout(getDocs(q), 10000, 'Ошибка загрузки профиля');
+
+                if (snap.empty) {
+                    // Запись editors ещё не создана (создаётся при первом входе в space_team)
+                    await signOut(auth);
                     document.getElementById('auth-gate-screen').classList.remove('hidden');
-                    showToast('Конфигурация админа не найдена', 'error');
+                    showToast('Войдите сначала в личный кабинет', 'error');
+                    applyCabinetLinks();
                     return;
                 }
-                myNameSaved = 'Администратор';
+
+                const edDoc = snap.docs[0];
+                if (edDoc.data().isBlocked) {
+                    await signOut(auth);
+                    document.getElementById('auth-gate-screen').classList.remove('hidden');
+                    showToast('Ваш аккаунт заблокирован', 'error');
+                    return;
+                }
+
+                myRole = 'editor';
+                myId   = edDoc.id;  // editorDocId — ключ для chatId, profiles, presence
+                myNameSaved = edDoc.data().name || edDoc.data().login || '';
+
+            } else if (userData.role === 'owner') {
+                myRole = 'owner';
+                myId   = 'owner';  // owner всегда использует 'owner' как ключ для chatId
+                myNameSaved = userData.name || 'Администратор';
             } else {
-                // Неизвестная роль — не пускаем (#1)
-                destroySpaceSession();
+                await signOut(auth);
                 document.getElementById('auth-gate-screen').classList.remove('hidden');
                 return;
             }
 
+            // Сессия валидна — запускаем чат
             document.getElementById('auth-gate-screen').classList.add('hidden');
             await loadMyProfile();
             await loadSidebar();
             subscribePresence();
             initEmojiPicker();
 
-        } catch (e) {
-            // #5: При сетевой ошибке не пускаем редактора без верификации —
-            // он может быть заблокирован. Owner пропускаем (у него нет isBlocked).
-            console.warn("Сбой верификации сессии по сети:", e);
-            if (myRole === 'editor') {
-                // Нет соединения — показываем экран с предупреждением, не разлогиниваем.
-                // Разлогинивание было бы слишком агрессивным при временном обрыве сети.
-                showToast('Нет соединения. Попробуйте обновить страницу.', 'error');
+        } catch(e) {
+            console.error('initAuthListener (chat) error:', e);
+            // При сетевой ошибке: owner пропускаем (конфиг стабилен),
+            // editor блокируем (может быть заблокирован)
+            if (myRole === 'owner' && myId) {
+                document.getElementById('auth-gate-screen').classList.add('hidden');
+                await loadMyProfile();
+                await loadSidebar();
+                subscribePresence();
+                initEmojiPicker();
+            } else {
+                showToast('Нет соединения. Обновите страницу.', 'error');
                 document.getElementById('auth-gate-screen').classList.remove('hidden');
-                return;
+                applyCabinetLinks();
             }
-            // Owner при сетевой ошибке — разрешаем (конфиг не меняется в рантайме).
-            document.getElementById('auth-gate-screen').classList.add('hidden');
-            await loadMyProfile();
-            await loadSidebar();
-            subscribePresence();
-            initEmojiPicker();
         }
-    } else {
-        document.getElementById('auth-gate-screen').classList.remove('hidden');
-    }
+    });
 }
 
-window.closeSidebar = function() { document.getElementById('app').classList.remove('chat-open'); };
-
-function scrollToBottom(smooth) {
-    const wrap = document.getElementById('messages-wrap');
-    if (!wrap) return;
-    wrap.scrollTo({ top: wrap.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
-    _unreadIncomingCount = 0;
-    updateScrollBadge();
-}
-
-window.autoResizeInput = function(el) {
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 128) + 'px';
-    document.getElementById('send-btn').disabled = !el.value.trim();
-    saveDraft(el.value);
-    
-    if (_activeConvType === 'dm') {
-        setTyping(true);
-        clearTimeout(_myTypingTimeout);
-        _myTypingTimeout = setTimeout(() => setTyping(false), 4000);
-    }
-};
-
-window.handleMsgKey = function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-    }
-};
-
-function escapeHtml(str) {
-    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-window.openModal = id => {
-    const m = document.getElementById(id);
-    if (!m) return;
-    m.classList.remove('hidden');
-    if (id === 'modal-profile') {
-        document.getElementById('profile-name-input').value = myProfile.name || '';
-        document.getElementById('profile-bio-input').value = myProfile.bio || '';
-        applyAvatarStyle(document.getElementById('profile-avatar-preview'), myProfile.name, myProfile.avatar);
-        selectStatusEmoji(myProfile.statusEmoji || '');
-    }
-};
-window.closeModal = id => {
-    const m = document.getElementById(id);
-    if (m) m.classList.add('hidden');
-};
-
-window.openProfileModal = function() {
-    window.openModal('modal-profile');
-};
-
-let _toastTimeout;
-window.showToast = function(msg, type = 'info') {
-    const el = document.getElementById('toast');
-    if (!el) return;
-    el.textContent = msg;
-    el.className = `show ${type}`;
-    clearTimeout(_toastTimeout);
-    _toastTimeout = setTimeout(() => { el.className = type; }, 2500);
-};
-
-(async () => {
-    await ensureAuth();
-    await checkAuthSession();
-})();
+initAuthListener();
 </script>
 </body>
 </html>
