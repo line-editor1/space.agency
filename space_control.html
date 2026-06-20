@@ -900,12 +900,30 @@ function initRealtimeListeners() {
         updateSidebarAnalytics();
     });
 
-    // 1b. Pending editors: users с role=editor и active=false — ждут активации
+    // 1b. Pending editors: users с role=editor, active=false и не отклонённые
     onSnapshot(
-        query(collection(db, 'users'), where('role', '==', 'editor'), where('active', '==', false)),
+        query(
+            collection(db, 'users'),
+            where('role', '==', 'editor'),
+            where('active', '==', false),
+            where('rejected', '==', false)
+        ),
         (snap) => {
             const pending = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
             renderPendingEditors(pending);
+        },
+        // Firestore не умеет фильтровать по отсутствующему полю — fallback:
+        // если индекс не создан, читаем без фильтра rejected и фильтруем локально
+        () => {
+            onSnapshot(
+                query(collection(db, 'users'), where('role', '==', 'editor'), where('active', '==', false)),
+                (snap) => {
+                    const pending = snap.docs
+                        .map(d => ({ uid: d.id, ...d.data() }))
+                        .filter(u => !u.rejected);
+                    renderPendingEditors(pending);
+                }
+            );
         }
     );
 
@@ -1335,34 +1353,13 @@ window.toggleMobileMenu = function(open) {
     }
 };
 
-// Показывает список монтажёров, ожидающих активации.
-// Вставляется в существующий контейнер #pending-editors-list если он есть,
-// иначе добавляет toast-уведомление о новых заявках.
+// Вызывается из onSnapshot подписки на users (role=editor, active=false).
+// Сохраняет список в _pendingEditors и обновляет вкладку «Запросы».
 function renderPendingEditors(pending) {
-    const container = document.getElementById('pending-editors-list');
-    if (container) {
-        if (pending.length === 0) {
-            container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">Нет ожидающих активации</p>';
-        } else {
-            container.innerHTML = pending.map(p => `
-                <div class="flex items-center justify-between gap-3 py-3 border-b border-white/5 last:border-0">
-                    <div>
-                        <p class="text-xs font-medium text-white">${p.name || '—'}</p>
-                        <p class="text-[10px] text-slate-400">${p.email || ''}</p>
-                    </div>
-                    <button onclick="activateEditor('${p.uid}')"
-                        class="pressable px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/20 transition">
-                        Активировать
-                    </button>
-                </div>`).join('');
-        }
-    }
-    // Обновляем бейдж количества ожидающих
-    const badge = document.getElementById('pending-editors-badge');
-    if (badge) {
-        badge.textContent = pending.length;
-        badge.classList.toggle('hidden', pending.length === 0);
-    }
+    _pendingEditors = pending;
+    // Перерисовываем вкладку «Запросы» если она сейчас активна
+    if (activeTab === 'requests') renderAdminRequests();
+    updateAdminBadges();
 }
 
 function renderSegmentTabs() {
@@ -1945,64 +1942,108 @@ function renderAdminSubmissions() {
     updateAdminBadges();
 }
 
+// _pendingEditors хранит монтажёров ожидающих активации (users с active: false)
+let _pendingEditors = [];
+
 function renderAdminRequests() {
     const list = document.getElementById('dashboard-viewport');
     const pending = _editRequests.filter(r => r.status === 'pending');
-    
+
     list.innerHTML = `
         <div class="fade-in-up space-y-6">
-            <div class="flex items-center justify-between">
-                <h3 class="text-xs font-space font-bold text-slate-400 uppercase tracking-widest">Запросы изменений от монтажёров</h3>
-                <span class="text-[10px] text-slate-500 font-mono">${pending.length} на рассмотрении</span>
-            </div>
 
-            <div class="space-y-4">
-                ${pending.map(r => {
-                    const orig = _projects.find(p => p.id === r.projectId);
-                    const origStageLabel = stageLabels[orig?.stage] || orig?.stage || '—';
-                    const reqStageLabel = stageLabels[r.stage] || r.stage || '—';
-                    
-                    return `
-                        <div class="glass-card premium-border p-5 rounded-3xl flex flex-col gap-4 border-l-4 border-indigo-500">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="text-sm font-bold font-space text-indigo-400">${escapeHtml(r.projectName)}</h4>
-                                    <p class="text-[10px] text-slate-400 mt-1">Отправитель: <span class="text-white font-bold font-space">${escapeHtml(r.editorName)}</span></p>
+            ${_pendingEditors.length > 0 ? `
+            <!-- Заявки на активацию монтажёров -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-space font-bold text-slate-400 uppercase tracking-widest">Заявки на доступ</h3>
+                    <span class="text-[10px] px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold font-mono">${_pendingEditors.length} ожидают</span>
+                </div>
+                <div class="space-y-3">
+                    ${_pendingEditors.map(p => `
+                        <div class="glass-card premium-border p-4 rounded-2xl flex items-center justify-between gap-4 border-l-4 border-amber-500/60">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-user-clock text-amber-400 text-sm"></i>
                                 </div>
-                                <span class="text-[9px] text-slate-500 font-mono">${new Date(r.createdAt).toLocaleString('ru')}</span>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs bg-black/40 p-4 rounded-2xl border border-white/[0.02]">
-                                <div>
-                                    <span class="text-[10px] text-slate-500 uppercase block mb-2">Текущая версия проекта</span>
-                                    <div class="space-y-1 text-slate-400 text-[11px]">
-                                        <p>Стадия: <span class="text-slate-300 font-bold">${escapeHtml(origStageLabel)}</span></p>
-                                        <p>Прогресс: <span class="text-slate-300 font-bold">${orig?.progress || 0}%</span></p>
-                                        <p>Заметки: <span class="text-slate-300">${escapeHtml(orig?.notes || 'нет')}</span></p>
-                                    </div>
-                                </div>
-                                <div class="border-t md:border-t-0 md:border-l border-white/[0.04] pt-4 md:pt-0 md:pl-4">
-                                    <span class="text-[10px] text-slate-500 uppercase block mb-2">Предложенные изменения</span>
-                                    <div class="space-y-1 text-indigo-300 text-[11px]">
-                                        <p>Стадия: <span class="font-bold">${escapeHtml(reqStageLabel)}</span></p>
-                                        <p>Прогресс: <span class="font-bold">${r.progress}%</span></p>
-                                        <p>Заметки: <span class="text-indigo-200">${escapeHtml(r.notes || 'нет')}</span></p>
-                                    </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-white truncate">${escapeHtml(p.name || '—')}</p>
+                                    <p class="text-[10px] text-slate-400 truncate">${escapeHtml(p.email || '')}</p>
+                                    <p class="text-[9px] text-slate-600 font-mono mt-0.5">${p.createdAt ? new Date(p.createdAt).toLocaleString('ru') : ''}</p>
                                 </div>
                             </div>
-                            
-                            <div class="flex gap-2 mt-2">
-                                <button onclick="rejectEditRequest('${r.id}')" class="pressable flex-1 py-2.5 rounded-xl border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-[10px] font-bold text-red-400 transition-all">Отклонить</button>
-                                <button onclick="approveEditRequest('${r.id}', '${r.projectId}')" class="pressable flex-1 py-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-[10px] font-bold text-emerald-400 transition-all">Одобрить</button>
+                            <div class="flex gap-2 shrink-0">
+                                <button onclick="rejectPendingEditor('${p.uid}')"
+                                    class="pressable px-3 py-2 rounded-xl border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-[10px] font-bold text-red-400 transition-all">
+                                    Отклонить
+                                </button>
+                                <button onclick="activateEditor('${p.uid}')"
+                                    class="pressable px-3 py-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-[10px] font-bold text-emerald-400 transition-all">
+                                    Активировать
+                                </button>
                             </div>
                         </div>
-                    `;
-                }).join('') || `
-                    <div class="glass-card premium-border p-10 rounded-3xl text-center text-xs text-slate-500">
-                        Нет запросов на изменения
-                    </div>
-                `}
+                    `).join('')}
+                </div>
             </div>
+            <div class="border-t border-white/[0.04]"></div>
+            ` : ''}
+
+            <!-- Запросы изменений от монтажёров -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-space font-bold text-slate-400 uppercase tracking-widest">Запросы изменений от монтажёров</h3>
+                    <span class="text-[10px] text-slate-500 font-mono">${pending.length} на рассмотрении</span>
+                </div>
+                <div class="space-y-4">
+                    ${pending.map(r => {
+                        const orig = _projects.find(p => p.id === r.projectId);
+                        const origStageLabel = stageLabels[orig?.stage] || orig?.stage || '—';
+                        const reqStageLabel = stageLabels[r.stage] || r.stage || '—';
+
+                        return `
+                            <div class="glass-card premium-border p-5 rounded-3xl flex flex-col gap-4 border-l-4 border-indigo-500">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="text-sm font-bold font-space text-indigo-400">${escapeHtml(r.projectName)}</h4>
+                                        <p class="text-[10px] text-slate-400 mt-1">Отправитель: <span class="text-white font-bold font-space">${escapeHtml(r.editorName)}</span></p>
+                                    </div>
+                                    <span class="text-[9px] text-slate-500 font-mono">${new Date(r.createdAt).toLocaleString('ru')}</span>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs bg-black/40 p-4 rounded-2xl border border-white/[0.02]">
+                                    <div>
+                                        <span class="text-[10px] text-slate-500 uppercase block mb-2">Текущая версия проекта</span>
+                                        <div class="space-y-1 text-slate-400 text-[11px]">
+                                            <p>Стадия: <span class="text-slate-300 font-bold">${escapeHtml(origStageLabel)}</span></p>
+                                            <p>Прогресс: <span class="text-slate-300 font-bold">${orig?.progress || 0}%</span></p>
+                                            <p>Заметки: <span class="text-slate-300">${escapeHtml(orig?.notes || 'нет')}</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="border-t md:border-t-0 md:border-l border-white/[0.04] pt-4 md:pt-0 md:pl-4">
+                                        <span class="text-[10px] text-slate-500 uppercase block mb-2">Предложенные изменения</span>
+                                        <div class="space-y-1 text-indigo-300 text-[11px]">
+                                            <p>Стадия: <span class="font-bold">${escapeHtml(reqStageLabel)}</span></p>
+                                            <p>Прогресс: <span class="font-bold">${r.progress}%</span></p>
+                                            <p>Заметки: <span class="text-indigo-200">${escapeHtml(r.notes || 'нет')}</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-2 mt-2">
+                                    <button onclick="rejectEditRequest('${r.id}')" class="pressable flex-1 py-2.5 rounded-xl border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-[10px] font-bold text-red-400 transition-all">Отклонить</button>
+                                    <button onclick="approveEditRequest('${r.id}', '${r.projectId}')" class="pressable flex-1 py-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-[10px] font-bold text-emerald-400 transition-all">Одобрить</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('') || `
+                        <div class="glass-card premium-border p-10 rounded-3xl text-center text-xs text-slate-500">
+                            Нет запросов на изменения
+                        </div>
+                    `}
+                </div>
+            </div>
+
         </div>
     `;
     updateAdminBadges();
@@ -2015,7 +2056,9 @@ window.updateAdminBadges = function() {
     const reqsBadgeMobile = document.getElementById('badge-reqs-mobile');
 
     const subsPending = _submissions.filter(s => s.status === 'pending').length === 0;
-    const reqsPending = _editRequests.filter(r => r.status === 'pending').length === 0;
+    // Бейдж «Запросы» — edit_requests + заявки на активацию монтажёров
+    const totalReqsPending = _editRequests.filter(r => r.status === 'pending').length + _pendingEditors.length;
+    const reqsPending = totalReqsPending === 0;
 
     if (subsBadge) subsBadge.classList.toggle('hidden', subsPending);
     if (reqsBadge) reqsBadge.classList.toggle('hidden', reqsPending);
@@ -2559,6 +2602,21 @@ window.activateEditor = async function(uid) {
     } catch(e) {
         showToast('Ошибка активации: ' + (e.message || e.code), 'error');
     }
+};
+
+// Отклонить заявку — деактивируем и помечаем как rejected
+window.rejectPendingEditor = async function(uid) {
+    customConfirm('Отклонить заявку', 'Отклонить регистрацию этого монтажёра?', async () => {
+        try {
+            await updateDoc(doc(db, 'users', uid), {
+                active: false,
+                rejected: true
+            });
+            showToast('Заявка отклонена', 'info');
+        } catch(e) {
+            showToast('Ошибка: ' + (e.message || e.code), 'error');
+        }
+    });
 };
 
 window.deleteEditorConfirm = async function() {
