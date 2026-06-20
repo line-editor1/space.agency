@@ -763,7 +763,30 @@ const db = initializeFirestore(app, {
     useFetchStreams: false
 });
 
-const { withTimeout, getCabinetUrl: getCabinetUrlForRole } = window.SpaceAuth;
+const withTimeout = (promise, ms = 10000, message = "Timeout") => {
+
+    return Promise.race([
+
+        promise,
+
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(message)), ms)
+        )
+
+    ]);
+
+};
+
+
+const getCabinetUrlForRole = (role) => {
+
+    if (role === "owner") {
+        return "space_control.html";
+    }
+
+    return "space_team.html";
+
+};
 
 // myRole и myId устанавливаются только внутри initAuthListener()
 // myId = editorDocId (Firestore doc ID) — не Firebase UID.
