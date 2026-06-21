@@ -809,6 +809,110 @@ let _pendingTargetEditorId = null;
     }
 })();
 
+// ─── ОТСУТСТВОВАВШИЕ УТИЛИТЫ (восстановлены) ────────────────────────────────
+// escapeHtml и showToast использовались по всему файлу (16+ мест), но нигде
+// не были определены — отсюда ReferenceError при первом же рендере сайдбара
+// (renderSidebar -> escapeHtml) и при попытке показать тост об ошибке.
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+let _toastTimer;
+function showToast(msg, type = 'info') {
+    const el = document.getElementById('toast');
+    if (!el) { console.warn('Toast:', msg); return; }
+    el.textContent = msg;
+    el.className = `show ${type}`;
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => { el.className = type; }, 3000);
+}
+window.showToast = showToast;
+
+function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('hidden');
+}
+
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+}
+
+function scrollToBottom(smooth) {
+    const wrap = document.getElementById('messages-wrap');
+    if (!wrap) return;
+    wrap.scrollTo({ top: wrap.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    _unreadIncomingCount = 0;
+    updateScrollBadge();
+}
+
+function autoResizeInput(el) {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 128) + 'px';
+}
+
+window.openProfileModal = function() {
+    document.getElementById('profile-name-input').value = myProfile.name || '';
+    document.getElementById('profile-bio-input').value = myProfile.bio || '';
+    document.getElementById('profile-emoji-select').value = myProfile.statusEmoji || '';
+    applyAvatarStyle(document.getElementById('profile-avatar-preview'), myProfile.name, myProfile.avatar);
+    document.querySelectorAll('.status-option-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === myProfile.statusEmoji);
+    });
+    openModal('modal-profile');
+};
+
+window.saveProfile = async function() {
+    const name = document.getElementById('profile-name-input').value.trim();
+    const bio = document.getElementById('profile-bio-input').value.trim();
+    const statusEmoji = document.getElementById('profile-emoji-select').value;
+
+    if (!name) { showToast('Введите имя', 'error'); return; }
+
+    myProfile.name = name;
+    myProfile.bio = bio;
+    myProfile.statusEmoji = statusEmoji;
+
+    try {
+        await setDoc(doc(db, ...BASE('profiles'), myId), {
+            name, bio, statusEmoji,
+            avatar: myProfile.avatar || ''
+        }, { merge: true });
+        renderMyHeader();
+        closeModal('modal-profile');
+        showToast('Профиль сохранён', 'success');
+    } catch (e) {
+        console.error('saveProfile error:', e);
+        showToast('Не удалось сохранить профиль: ' + (e.code || e.message), 'error');
+    }
+};
+
+window.openCreateChannelModal = function() {
+    const nameEl = document.getElementById('ch-name-input');
+    const descEl = document.getElementById('ch-desc-input');
+    if (nameEl) nameEl.value = '';
+    if (descEl) descEl.value = '';
+    openModal('modal-create-channel');
+};
+
+window.closeSidebar = function() {
+    document.getElementById('app').classList.remove('chat-open');
+};
+
+window.handleMsgKey = function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+};
+
 const EMOJI_PACK = [
     '😀', '😂', '🥰', '😍', '😎', '😡', 
     '😮', '😢', '👍', '🔥', '🚀', '💻', 
