@@ -874,7 +874,9 @@ const auth = getAuth(app);
 // Сессия привязана к вкладке (sessionStorage), а не ко всему браузеру (IndexedDB/localStorage).
 // Без этого вход в space_control.html выбивал активную сессию в space_team.html и наоборот,
 // т.к. browserLocalPersistence (дефолт) общая для всех вкладок одного origin.
-try { await setPersistence(auth, browserSessionPersistence); } catch(e) { console.error('setPersistence error:', e); }
+// Вызов не блокирующий (без await на верхнем уровне модуля) — Firebase сам ставит
+// последующие операции с auth (signIn и т.п.) в очередь после смены persistence.
+setPersistence(auth, browserSessionPersistence).catch(e => console.error('setPersistence error:', e));
 const db = initializeFirestore(app, {
     experimentalAutoDetectLongPolling: true,
     useFetchStreams: false
