@@ -406,6 +406,19 @@
             backdrop-filter: blur(3px);
             display: flex; align-items: center; justify-content: center; padding: 14px;
         }
+        /* Тот же баг, что был у #auth-gate-screen: .modal-bg задаёт display:flex
+           с той же специфичностью (0,1,0), что и .hidden от Tailwind CDN.
+           Какое правило "выигрывает" зависит от порядка инъекции Tailwind-стилей
+           в <head> (он подключается отдельным <script>, асинхронно) — то есть
+           это гонка состояний, а не стабильное поведение. Все модалки (профиль,
+           проект, канал, история правок, закреплённые) используют класс modal-bg,
+           поэтому без этого правила любая из них может "залипнуть" открытой
+           на старте страницы. Явное правило с более высокой специфичностью
+           (0,2,0) убирает гонку полностью.
+        */
+        .modal-bg.hidden {
+            display: none;
+        }
         .input-dark {
             background: #08070F; border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 10px; padding: 8px 12px; color: white; outline: none;
@@ -425,6 +438,14 @@
         #auth-gate-screen {
             position: fixed; inset: 0; z-index: 900; background: #08070F;
             display: flex; align-items: center; justify-content: center; padding: 16px;
+        }
+        /* ВАЖНО: ID-селектор (#auth-gate-screen, специфичность 1-0-0) всегда
+           побеждает класс .hidden от Tailwind (специфичность 0-1-0), даже если
+           classList.add('hidden') отработал в JS без единой ошибки. В итоге
+           экран навсегда оставался display:flex и перекрывал собой весь чат.
+           Это правило явно отдаёт приоритет .hidden именно на этом элементе. */
+        #auth-gate-screen.hidden {
+            display: none;
         }
     </style>
 </head>
