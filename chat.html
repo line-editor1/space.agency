@@ -763,30 +763,7 @@ const db = initializeFirestore(app, {
     useFetchStreams: false
 });
 
-const withTimeout = (promise, ms = 10000, message = "Timeout") => {
-
-    return Promise.race([
-
-        promise,
-
-        new Promise((_, reject) =>
-            setTimeout(() => reject(new Error(message)), ms)
-        )
-
-    ]);
-
-};
-
-
-const getCabinetUrlForRole = (role) => {
-
-    if (role === "owner") {
-        return "space_control.html";
-    }
-
-    return "space_team.html";
-
-};
+const { withTimeout, getCabinetUrl: getCabinetUrlForRole } = window.SpaceAuth;
 
 // myRole и myId устанавливаются только внутри initAuthListener()
 // myId = editorDocId (Firestore doc ID) — не Firebase UID.
@@ -2149,10 +2126,12 @@ function initAuthListener() {
             );
 
             if (!userSnap.exists()) {
-                await signOut(auth);
+                // users/{uid} нет — возможно ещё не задеплоены Rules или документ не создан.
+                // НЕ делаем signOut: пользователь залогинен в Firebase, просто нет Firestore записи.
+                // Показываем auth-gate с подсказкой.
                 document.getElementById('auth-gate-screen').classList.remove('hidden');
                 applyCabinetLinks();
-                showToast('Профиль не найден', 'error');
+                showToast('Профиль не найден. Войдите через личный кабинет.', 'error');
                 return;
             }
 
@@ -2160,44 +2139,79 @@ function initAuthListener() {
 
             if (userData.role === 'editor') {
                 if (userData.active === false) {
-                    await signOut(auth);
+                    // Не выходим из Firebase Auth — просто блокируем доступ к чату.
+                    // Пользователь может зайти в space_team и увидеть статус активации.
                     document.getElementById('auth-gate-screen').classList.remove('hidden');
-                    showToast('Аккаунт ожидает активации', 'error');
-                    return;
-                }
-
-                // Находим editorDocId по uid
-                const q = query(collection(db, ...BASE('editors')), where('uid', '==', firebaseUser.uid));
-                const snap = await withTimeout(getDocs(q), 10000, 'Ошибка загрузки профиля');
-
-                if (snap.empty) {
-                    // Запись editors ещё не создана (создаётся при первом входе в space_team)
-                    await signOut(auth);
-                    document.getElementById('auth-gate-screen').classList.remove('hidden');
-                    showToast('Войдите сначала в личный кабинет', 'error');
                     applyCabinetLinks();
+                    showToast('Аккаунт ожидает активации администратором', 'error');
                     return;
                 }
 
-                const edDoc = snap.docs[0];
-                if (edDoc.data().isBlocked) {
-                    await signOut(auth);
-                    document.getElementById('auth-gate-screen').classList.remove('hidden');
-                    showToast('Ваш аккаунт заблокирован', 'error');
-                    return;
+                // Ищем editorDocId по uid в коллекции editors.
+                // Причина №1: query может упасть если нет Firestore индекса.
+                // Причина №4: запись может ещё не существовать если editor не заходил в space_team.
+                let editorDocId = null;
+                let editorName  = '';
+
+                try {
+                    const q = query(
+                        collection(db, ...BASE('editors')),
+                        where('uid', '==', firebaseUser.uid)
+                    );
+                    const snap = await withTimeout(getDocs(q), 10000, 'Ошибка загрузки профиля');
+
+                    if (!snap.empty) {
+                        const edDoc = snap.docs[0];
+                        if (edDoc.data().isBlocked) {
+                            document.getElementById('auth-gate-screen').classList.remove('hidden');
+                            showToast('Ваш аккаунт заблокирован', 'error');
+                            return;
+                        }
+                        editorDocId = edDoc.id;
+                        editorName  = edDoc.data().name || edDoc.data().login || '';
+                    }
+                } catch(queryErr) {
+                    // Индекс не создан или сетевая ошибка — логируем, продолжаем без editorDocId.
+                    console.warn('editors query failed:', queryErr.message);
+                }
+
+                // Если editorDocId не найден — создаём запись editors на лету.
+                // Это устраняет зависимость "сначала зайди в space_team".
+                if (!editorDocId) {
+                    try {
+                        const newEdRef = await addDoc(collection(db, ...BASE('editors')), {
+                            uid:       firebaseUser.uid,
+                            name:      userData.name || '',
+                            email:     userData.email || firebaseUser.email || '',
+                            login:     userData.email || firebaseUser.email || '',
+                            isBlocked: false,
+                            lastLogin: new Date().toISOString(),
+                            createdAt: new Date().toISOString()
+                        });
+                        editorDocId = newEdRef.id;
+                        editorName  = userData.name || '';
+                    } catch(createErr) {
+                        console.error('editors create failed:', createErr);
+                        document.getElementById('auth-gate-screen').classList.remove('hidden');
+                        applyCabinetLinks();
+                        showToast('Ошибка инициализации профиля. Войдите через личный кабинет.', 'error');
+                        return;
+                    }
                 }
 
                 myRole = 'editor';
-                myId   = edDoc.id;  // editorDocId — ключ для chatId, profiles, presence
-                myNameSaved = edDoc.data().name || edDoc.data().login || '';
+                myId   = editorDocId;
+                myNameSaved = editorName;
 
             } else if (userData.role === 'owner') {
                 myRole = 'owner';
-                myId   = 'owner';  // owner всегда использует 'owner' как ключ для chatId
+                myId   = 'owner';
                 myNameSaved = userData.name || 'Администратор';
+
             } else {
-                await signOut(auth);
+                // Неизвестная роль — блокируем доступ, но не разлогиниваем.
                 document.getElementById('auth-gate-screen').classList.remove('hidden');
+                applyCabinetLinks();
                 return;
             }
 
@@ -2210,58 +2224,22 @@ function initAuthListener() {
 
         } catch(e) {
             console.error('initAuthListener (chat) error:', e);
-            // При сетевой ошибке: owner пропускаем (конфиг стабилен),
-            // editor блокируем (может быть заблокирован)
-            if (myRole === 'owner' && myId) {
-                document.getElementById('auth-gate-screen').classList.add('hidden');
-                await loadMyProfile();
-                await loadSidebar();
-                subscribePresence();
-                initEmojiPicker();
-            } else {
-                showToast('Нет соединения. Обновите страницу.', 'error');
-                document.getElementById('auth-gate-screen').classList.remove('hidden');
-                applyCabinetLinks();
-            }
+            // Причина №2: catch срабатывает до установки myRole.
+            // Решение: читаем users/{uid} СИНХРОННО из firebaseUser чтобы определить роль.
+            // Если Firestore недоступен — owner пропускаем по принципу "доверяем Firebase Auth".
+            // Editor блокируем — он может быть заблокирован в Firestore.
+            //
+            // Определяем роль из кеша onAuthStateChanged (firebaseUser.email не даёт роль,
+            // но можно использовать Custom Claims если настроены).
+            // Пока: показываем понятную ошибку без signOut.
+            showToast('Нет соединения с сервером. Обновите страницу.', 'error');
+            document.getElementById('auth-gate-screen').classList.remove('hidden');
+            applyCabinetLinks();
         }
     });
 }
 
 initAuthListener();
-    // FIX: missing chat helpers
-
-window.escapeHtml = function(str) {
-
-    if (!str) return "";
-
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-};
-
-
-
-window.scrollToBottom = function(smooth = false) {
-
-    const wrap =
-        document.getElementById("messages-wrap");
-
-    if (!wrap) return;
-
-
-    wrap.scrollTo({
-
-        top: wrap.scrollHeight,
-
-        behavior:
-            smooth ? "smooth" : "auto"
-
-    });
-
-};
 </script>
 </body>
 </html>
