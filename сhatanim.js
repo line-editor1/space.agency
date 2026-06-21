@@ -130,9 +130,56 @@
                 pointer-events: none;
                 z-index: 9999;
             }
+
+            /* ─── Индикатор статуса онлайн/офлайн (анимированная точка) ─── */
+            /* Используется вместо текстовых эмодзи 🟢/⚫ — живая пульсирующая
+               точка: зелёная и "дышащая" когда пользователь онлайн, тусклая
+               красная (без пульсации) когда офлайн. */
+            .status-dot {
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                position: relative;
+            }
+            .status-dot.online {
+                background: #10b981;
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55);
+                animation: statusDotPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .status-dot.offline {
+                background: #ef4444;
+                opacity: 0.75;
+            }
+            @keyframes statusDotPulse {
+                0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55); }
+                70%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            }
+
+            /* Точка в шапке открытого чата (#chat-online-dot, поверх аватара)
+               и точка в списке диалогов (.online-dot-conv) — общая палитра. */
+            .online-dot.online,
+            .online-dot-conv.online {
+                background: #10b981 !important;
+                animation: statusDotPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .online-dot.offline,
+            .online-dot-conv.offline {
+                background: #ef4444 !important;
+                opacity: 0.85;
+                animation: none !important;
+            }
         `;
         document.head.appendChild(style);
     }
+
+    // ─── Хелпер: генерация HTML точки статуса ───
+    // Использование: SpaceStatusDot(true) -> '<span class="status-dot online"></span>'
+    window.SpaceStatusDot = function (isOnline) {
+        return `<span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>`;
+    };
 
     // ─── 2. ИНИЦИАЛИЗАЦИЯ ИНСТРУМЕНТОВ ЭФФЕКТОВ ───
     let canvas, ctx;
