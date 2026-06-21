@@ -921,6 +921,12 @@ function initRealtimeListeners() {
                 .map(d => ({ uid: d.id, ...d.data() }))
                 .filter(u => !u.rejected);
             renderPendingEditors(pending);
+        },
+        (err) => {
+            // Если это не всплывает — почти наверняка Firestore Security Rules
+            // запрещают owner'у делать list/query по чужим документам в users.
+            console.error('Pending editors query error:', err);
+            showToast('Не удалось загрузить заявки на регистрацию: ' + (err.message || err.code), 'error');
         }
     );
 
