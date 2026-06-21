@@ -2247,6 +2247,7 @@ function initAuthListener() {
                 // users/{uid} нет — возможно ещё не задеплоены Rules или документ не создан.
                 // НЕ делаем signOut: пользователь залогинен в Firebase, просто нет Firestore записи.
                 // Показываем auth-gate с подсказкой.
+                console.warn('[auth-gate] причина: users/' + firebaseUser.uid + ' не существует в Firestore');
                 document.getElementById('auth-gate-screen').classList.remove('hidden');
                 applyCabinetLinks();
                 showToast('Профиль не найден. Войдите через личный кабинет.', 'error');
@@ -2254,11 +2255,13 @@ function initAuthListener() {
             }
 
             const userData = userSnap.data();
+            console.log('[auth] users/' + firebaseUser.uid + ' data =', userData);
 
             if (userData.role === 'editor') {
                 if (userData.active === false) {
                     // Не выходим из Firebase Auth — просто блокируем доступ к чату.
                     // Пользователь может зайти в space_team и увидеть статус активации.
+                    console.warn('[auth-gate] причина: users/' + firebaseUser.uid + ' role=editor, active=false');
                     document.getElementById('auth-gate-screen').classList.remove('hidden');
                     applyCabinetLinks();
                     showToast('Аккаунт ожидает активации администратором', 'error');
@@ -2281,6 +2284,7 @@ function initAuthListener() {
                     if (!snap.empty) {
                         const edDoc = snap.docs[0];
                         if (edDoc.data().isBlocked) {
+                            console.warn('[auth-gate] причина: editors/' + edDoc.id + ' isBlocked=true');
                             document.getElementById('auth-gate-screen').classList.remove('hidden');
                             showToast('Ваш аккаунт заблокирован', 'error');
                             return;
@@ -2328,12 +2332,14 @@ function initAuthListener() {
 
             } else {
                 // Неизвестная роль — блокируем доступ, но не разлогиниваем.
+                console.warn('[auth-gate] причина: неизвестная роль "' + userData.role + '" в users/' + firebaseUser.uid);
                 document.getElementById('auth-gate-screen').classList.remove('hidden');
                 applyCabinetLinks();
                 return;
             }
 
             // Сессия валидна — запускаем чат
+            console.log('[auth] Доступ разрешён. myRole=' + myRole + ', myId=' + myId);
             document.getElementById('auth-gate-screen').classList.add('hidden');
             await loadMyProfile();
             await loadSidebar();
@@ -2341,7 +2347,8 @@ function initAuthListener() {
             initEmojiPicker();
 
         } catch(e) {
-            console.error('initAuthListener (chat) error:', e);
+            console.error('[auth-gate] причина: исключение внутри initAuthListener:', e);
+            console.error('[auth-gate] stack:', e.stack);
             // Причина №2: catch срабатывает до установки myRole.
             // Решение: читаем users/{uid} СИНХРОННО из firebaseUser чтобы определить роль.
             // Если Firestore недоступен — owner пропускаем по принципу "доверяем Firebase Auth".
