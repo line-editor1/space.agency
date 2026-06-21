@@ -1807,7 +1807,7 @@ function renderAdminEditors() {
                         <div class="glass-card premium-border p-5 rounded-3xl flex flex-col gap-4 relative shadow-lg">
                             <div class="flex items-center gap-3">
                                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-lg font-bold text-white relative shadow-inner border border-white/5">
-                                    ${(e.name || e.login)[0].toUpperCase()}
+                                    ${(e.name || e.login || '?')[0].toUpperCase()}
                                     ${isOnline ? '<div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#030208]"></div>' : ''}
                                 </div>
                                 <div>
@@ -2597,10 +2597,32 @@ window.toggleBlockEditor = async function() {
     } catch(e) { showToast('Ошибка изменения статуса', 'error'); }
 };
 
-// Активировать монтажёра из очереди ожидающих (active: false в users/{uid})
+// Активировать монтажёра из очереди ожидающих (active: false в users/{uid}).
+// Сразу создаём запись в editors, чтобы монтажёр появился во вкладке
+// «Монтажёры» немедленно, не дожидаясь его первого входа в кабинет.
 window.activateEditor = async function(uid) {
     try {
-        await updateDoc(doc(db, 'users', uid), { active: true });
+        const pendingUser = _pendingEditors.find(p => p.uid === uid);
+
+        // Проверяем, нет ли уже записи editors с этим uid (на случай повторной активации)
+        const existing = _editors.find(e => e.uid === uid);
+
+        if (!existing) {
+            await addDoc(collection(db, ...BASE('editors')), {
+                uid:       uid,
+                name:      pendingUser?.name || '',
+                email:     pendingUser?.email || '',
+                login:     pendingUser?.email || '',
+                isBlocked: false,
+                lastLogin: null,
+                createdAt: new Date().toISOString()
+            });
+        } else if (existing.isBlocked) {
+            // Повторная активация ранее заблокированного — снимаем блокировку
+            await updateDoc(doc(db, ...BASE('editors'), existing.id), { isBlocked: false });
+        }
+
+        await updateDoc(doc(db, 'users', uid), { active: true, rejected: false });
         showToast('Монтажёр активирован', 'success');
     } catch(e) {
         showToast('Ошибка активации: ' + (e.message || e.code), 'error');
@@ -2622,19 +2644,24 @@ window.rejectPendingEditor = async function(uid) {
     });
 };
 
+// Полное удаление монтажёра: запись editors стирается, а users/{uid}
+// помечается rejected: true + active: false — это блокирует повторный вход
+// навсегда (Firebase Auth логин из клиента удалить нельзя без Admin SDK,
+// но так аккаунт становится полностью недействительным в системе).
 window.deleteEditorConfirm = async function() {
     const id = document.getElementById('manage-editor-id').value;
-    customConfirm('Удаление аккаунта', 'Вы уверены, что хотите полностью удалить аккаунт монтажёра?', async () => {
+    customConfirm('Удаление аккаунта', 'Вы уверены, что хотите полностью удалить аккаунт монтажёра? Это действие необратимо — он больше не сможет войти в систему.', async () => {
         try {
             const ed = _editors.find(e => e.id === id);
             await deleteDoc(doc(db, ...BASE('editors'), id));
-            // Деактивируем запись в users/{uid} (удалить её нельзя из клиента без Admin SDK)
+            // Полностью деактивируем и помечаем как отклонённого в users/{uid},
+            // чтобы повторный вход был невозможен.
             if (ed && ed.uid) {
                 try {
-                    await updateDoc(doc(db, 'users', ed.uid), { active: false });
+                    await updateDoc(doc(db, 'users', ed.uid), { active: false, rejected: true, deleted: true });
                 } catch(e) { console.warn('users deactivate failed:', e); }
             }
-            showToast('Аккаунт удалён. Деактивирован в системе.', 'success');
+            showToast('Аккаунт полностью удалён', 'success');
             closeModal('modal-manage-editor');
         } catch(e) { showToast('Ошибка удаления', 'error'); }
     });

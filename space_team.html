@@ -2023,7 +2023,13 @@ function initAuthListener() {
 
             if (userData.role === 'editor' && userData.active === false) {
                 await signOut(auth);
-                showToast('Аккаунт ожидает активации администратором', 'error');
+                if (userData.deleted) {
+                    showToast('Аккаунт удалён администратором. Доступ закрыт.', 'error');
+                } else if (userData.rejected) {
+                    showToast('Заявка отклонена администратором', 'error');
+                } else {
+                    showToast('Аккаунт ожидает активации администратором', 'error');
+                }
                 return;
             }
 
