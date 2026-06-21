@@ -844,7 +844,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
     getFirestore, initializeFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
     collection, getDocs, query, where, orderBy, onSnapshot, limit
@@ -871,6 +871,10 @@ try { rememberCabinet('space_control.html'); } catch(e) {}
 
 const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
+// Сессия привязана к вкладке (sessionStorage), а не ко всему браузеру (IndexedDB/localStorage).
+// Без этого вход в space_control.html выбивал активную сессию в space_team.html и наоборот,
+// т.к. browserLocalPersistence (дефолт) общая для всех вкладок одного origin.
+try { await setPersistence(auth, browserSessionPersistence); } catch(e) { console.error('setPersistence error:', e); }
 const db = initializeFirestore(app, {
     experimentalAutoDetectLongPolling: true,
     useFetchStreams: false
@@ -900,30 +904,21 @@ function initRealtimeListeners() {
         updateSidebarAnalytics();
     });
 
-    // 1b. Pending editors: users с role=editor, active=false и не отклонённые
+    // 1b. Pending editors: users с role=editor, active=false и не отклонённые.
+    // Фильтр по rejected — на клиенте: Firestore where('rejected','==',false) не находит
+    // документы, где поля rejected вообще нет (а executeRegister его не пишет),
+    // из-за чего вкладка «Запросы» оставалась пустой.
     onSnapshot(
         query(
             collection(db, 'users'),
             where('role', '==', 'editor'),
-            where('active', '==', false),
-            where('rejected', '==', false)
+            where('active', '==', false)
         ),
         (snap) => {
-            const pending = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+            const pending = snap.docs
+                .map(d => ({ uid: d.id, ...d.data() }))
+                .filter(u => !u.rejected);
             renderPendingEditors(pending);
-        },
-        // Firestore не умеет фильтровать по отсутствующему полю — fallback:
-        // если индекс не создан, читаем без фильтра rejected и фильтруем локально
-        () => {
-            onSnapshot(
-                query(collection(db, 'users'), where('role', '==', 'editor'), where('active', '==', false)),
-                (snap) => {
-                    const pending = snap.docs
-                        .map(d => ({ uid: d.id, ...d.data() }))
-                        .filter(u => !u.rejected);
-                    renderPendingEditors(pending);
-                }
-            );
         }
     );
 

@@ -676,7 +676,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
     getFirestore, initializeFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
     collection, getDocs, query, where, onSnapshot
@@ -702,6 +702,10 @@ try { rememberCabinet('space_team.html'); } catch(e) {}
 
 const app = initializeApp(FB_CONFIG);
 const auth = getAuth(app);
+// Сессия привязана к вкладке (sessionStorage), а не ко всему браузеру (IndexedDB/localStorage).
+// Без этого вход в space_team.html выбивал активную сессию в space_control.html и наоборот,
+// т.к. browserLocalPersistence (дефолт) общая для всех вкладок одного origin.
+try { await setPersistence(auth, browserSessionPersistence); } catch(e) { console.error('setPersistence error:', e); }
 const db = initializeFirestore(app, {
     experimentalAutoDetectLongPolling: true,
     useFetchStreams: false
