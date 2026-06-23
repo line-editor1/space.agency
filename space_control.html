@@ -332,7 +332,7 @@
                 <button id="header-pwa-install-btn" onclick="triggerPwaInstall()" class="pressable hidden px-3.5 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-[10px] font-bold text-indigo-300 hover:bg-indigo-500/20 transition-all flex items-center gap-1.5">
                     <i class="fas fa-download text-[10px]"></i><span>Установить</span>
                 </button>
-                <a href="admin.html" target="_blank" class="pressable px-3.5 py-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-[10px] font-bold text-cyan-300 hover:bg-cyan-500/20 transition-all flex items-center gap-1.5">
+                <a href="admin.html" class="pressable px-3.5 py-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-[10px] font-bold text-cyan-300 hover:bg-cyan-500/20 transition-all flex items-center gap-1.5">
                     <i class="fas fa-user-cog text-[10px]"></i><span>В админку</span>
                 </a>
                 <button onclick="openChatLink()" class="pressable px-3.5 py-1.5 rounded-full border border-white/[0.04] bg-white/[0.02] text-[10px] font-bold text-slate-300 hover:bg-white/[0.06] transition-all flex items-center gap-1.5">
@@ -368,7 +368,7 @@
                     <i class="fas fa-comments text-indigo-400 text-xs"></i>
                 </button>
                 <!-- Admin page link -->
-                <a href="admin.html" target="_blank" class="pressable w-8 h-8 flex items-center justify-center rounded-full text-cyan-300 hover:bg-white/[0.04] transition">
+                <a href="admin.html" class="pressable w-8 h-8 flex items-center justify-center rounded-full text-cyan-300 hover:bg-white/[0.04] transition">
                     <i class="fas fa-user-cog text-xs"></i>
                 </a>
                 <!-- Logout action button -->
@@ -492,74 +492,32 @@
             </div>
         </div>
 
-        <!-- ХАРАКТЕРИСТИКИ РОЛИКА -->
+        <!-- ДОП. УСЛУГИ ДЛЯ КЛИЕНТА (заменяет «Характеристики ролика») -->
         <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.04] space-y-3">
-            <h4 class="text-[10px] text-blue-400 uppercase tracking-wider font-bold">Характеристики ролика</h4>
-            <div class="grid grid-cols-2 gap-3.5">
-                <div>
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Формат ролика</label>
-                    <select id="p-video-format" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
-                        <option value="9:16">Вертикальный (9:16)</option>
-                        <option value="16:9">Горизонтальный (16:9)</option>
-                        <option value="1:1">Квадратный (1:1)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Разрешение</label>
-                    <select id="p-video-resolution" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
-                        <option value="1080p">FullHD (1080p)</option>
-                        <option value="4K">4K UHD</option>
-                        <option value="2K">2K QHD</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Хронометраж</label>
-                    <input type="text" id="p-video-duration" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="до 60 сек">
-                </div>
-                <div>
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Субтитры</label>
-                    <select id="p-video-subtitles" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
-                        <option value="yes_animated">Да (с анимацией)</option>
-                        <option value="yes_simple">Да (простые)</option>
-                        <option value="no">Не требуются</option>
-                    </select>
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Целевая платформа</label>
-                    <input type="text" id="p-video-platform" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="YouTube, Shorts, Reels">
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Музыкальное сопровождение</label>
-                    <input type="text" id="p-video-music" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Динамичная без АП">
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Ссылка на референс</label>
-                    <input type="url" id="p-video-reference" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="https://...">
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Ссылка на исходники</label>
-                    <input type="url" id="p-video-sources" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="https://disk.yandex.ru/...">
-                </div>
+            <h4 class="text-[10px] text-pink-400 uppercase tracking-wider font-bold"><i class="fas fa-user mr-1"></i> Доп. услуги клиента</h4>
+            <!-- Выбор из каталога -->
+            <div class="flex gap-2">
+                <select id="catalog-client-select" class="flex-1 bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-pink-500/30">
+                    <option value="">— выбрать из каталога —</option>
+                </select>
+                <button type="button" onclick="addClientServiceFromCatalog()" class="pressable px-3 py-2 bg-pink-500/15 text-pink-400 hover:bg-pink-500/25 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 flex-shrink-0">
+                    <i class="fas fa-plus text-[9px]"></i> Добавить
+                </button>
             </div>
+            <div id="p-client-extra-services-container" class="space-y-2 max-h-44 overflow-y-auto pr-1"></div>
+            <button type="button" onclick="addClientExtraServiceRow()" class="text-[9px] text-slate-600 hover:text-slate-400 transition-all flex items-center gap-1">
+                <i class="fas fa-plus text-[9px]"></i> Добавить новую вручную
+            </button>
+            <input type="hidden" id="p-client-extra-salary" value="0">
         </div>
 
-        <!-- РАСЧЕТ С КЛИЕНТОМ И ДОП. УСЛУГИ -->
+        <!-- РАСЧЕТ С КЛИЕНТОМ -->
         <div class="bg-black/20 p-4 rounded-2xl border border-white/[0.04] space-y-3">
             <h4 class="text-[10px] text-indigo-400 uppercase tracking-wider font-bold">Стоимость работы для Клиента</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Базовый оклад клиента (₽)</label>
                     <input type="number" id="p-base-salary" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="3000">
-                </div>
-                <div class="col-span-1 md:col-span-2 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-[9px] text-slate-500 font-bold uppercase">Доп. услуги для клиента</label>
-                        <button type="button" onclick="addClientExtraServiceRow()" class="pressable px-2 py-1 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 text-[9px] font-bold rounded-lg transition-all flex items-center gap-1">
-                            <i class="fas fa-plus text-[8px]"></i> Добавить услугу
-                        </button>
-                    </div>
-                    <div id="p-client-extra-services-container" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
-                    <input type="hidden" id="p-client-extra-salary" value="0">
                 </div>
             </div>
         </div>
@@ -571,18 +529,22 @@
                     <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Оклад монтажёра за проект (₽)</label>
                     <input type="number" id="p-editor-salary" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="2000">
                 </div>
-                
                 <div class="col-span-1 md:col-span-2 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-[9px] text-slate-500 font-bold uppercase">Доп. услуги монтажёра</label>
-                        <button type="button" onclick="addExtraServiceRow()" class="pressable px-2 py-1 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 text-[9px] font-bold rounded-lg transition-all flex items-center gap-1">
-                            <i class="fas fa-plus text-[8px]"></i> Добавить услугу
+                    <!-- Выбор из каталога для монтажёра -->
+                    <div class="flex gap-2">
+                        <select id="catalog-editor-select" class="flex-1 bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/30">
+                            <option value="">— выбрать доп. услугу монтажёра —</option>
+                        </select>
+                        <button type="button" onclick="addEditorServiceFromCatalog()" class="pressable px-3 py-2 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 flex-shrink-0">
+                            <i class="fas fa-plus text-[9px]"></i> Добавить
                         </button>
                     </div>
                     <div id="p-extra-services-container" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+                    <button type="button" onclick="addExtraServiceRow()" class="text-[9px] text-slate-600 hover:text-slate-400 transition-all flex items-center gap-1">
+                        <i class="fas fa-plus text-[9px]"></i> Добавить новую вручную
+                    </button>
                     <input type="hidden" id="p-editor-extra-salary" value="0">
                 </div>
-                
                 <div>
                     <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Наименование бонуса</label>
                     <input type="text" id="p-editor-bonus-name" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="За скорость">
@@ -893,6 +855,8 @@ let _submissions = [];
 let _notifications = [];
 let _editRequests = [];
 let _globalChecklist = ["Проверить цветокоррекцию", "Проверить звук", "Проверить субтитры", "Проверить орфографию", "Проверить настройки экспорта"];
+let _serviceCatalogClient = []; // каталог готовых доп. услуг для клиента
+let _serviceCatalogEditor = []; // каталог готовых доп. услуг для монтажёра
 
 let isListenersInitialized = false;
 function initRealtimeListeners() {
@@ -965,6 +929,20 @@ function initRealtimeListeners() {
                 _globalChecklist = d.checklist;
             }
         }
+    });
+
+    // 7. Каталог готовых доп. услуг для клиента (realtime)
+    onSnapshot(collection(db, ...BASE('service_catalog_client')), (snap) => {
+        _serviceCatalogClient = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderServiceCatalogLists();
+        refreshServiceCatalogDropdowns();
+    });
+
+    // 8. Каталог готовых доп. услуг для монтажёра (realtime)
+    onSnapshot(collection(db, ...BASE('service_catalog_editor')), (snap) => {
+        _serviceCatalogEditor = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderServiceCatalogLists();
+        refreshServiceCatalogDropdowns();
     });
 }
 
@@ -1386,6 +1364,10 @@ function renderSegmentTabs() {
             <i class="fas fa-scissors text-sm text-amber-400"></i>
             <span>Монтажёры</span>
         </button>
+        <button onclick="switchTab('services')" id="tab-services" class="tab-segment shrink-0 py-3 px-4 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all flex items-center gap-2 w-full justify-start">
+            <i class="fas fa-layer-group text-sm text-teal-400"></i>
+            <span>Услуги</span>
+        </button>
         <button onclick="switchTab('submissions')" id="tab-submissions" class="tab-segment shrink-0 py-3 px-4 text-[10px] sm:text-xs font-bold font-space rounded-xl text-slate-400 hover:text-white transition-all flex items-center gap-2 w-full justify-start relative">
             <i class="fas fa-circle-check text-sm text-emerald-400"></i>
             <span>Приёмка</span>
@@ -1425,6 +1407,10 @@ function renderSegmentTabs() {
             <i class="fas fa-scissors text-lg text-amber-400"></i>
             <span>Монтажёры</span>
         </button>
+        <button onclick="switchTab('services'); toggleMobileMenu(false);" id="m-tab-services" class="tab-segment py-4 px-3 text-xs font-bold font-space rounded-2xl text-slate-400 hover:text-white transition-all flex flex-col items-center justify-center gap-2 bg-white/[0.02] border border-white/[0.04]">
+            <i class="fas fa-layer-group text-lg text-teal-400"></i>
+            <span>Услуги</span>
+        </button>
         <button onclick="switchTab('submissions'); toggleMobileMenu(false);" id="m-tab-submissions" class="tab-segment py-4 px-3 text-xs font-bold font-space rounded-2xl text-slate-400 hover:text-white transition-all flex flex-col items-center justify-center gap-2 bg-white/[0.02] border border-white/[0.04] relative">
             <i class="fas fa-circle-check text-lg text-emerald-400"></i>
             <span>Приёмка</span>
@@ -1454,6 +1440,7 @@ function renderActiveTabContent() {
     else if (activeTab === 'projects') renderAdminProjects();
     else if (activeTab === 'clients') renderAdminClients();
     else if (activeTab === 'editors') renderAdminEditors();
+    else if (activeTab === 'services') renderServiceCatalogTab();
     else if (activeTab === 'submissions') renderAdminSubmissions();
     else if (activeTab === 'requests') renderAdminRequests();
     else if (activeTab === 'archive') renderAdminArchive();
@@ -1802,13 +1789,18 @@ function renderAdminEditors() {
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 ${_editors.map(e => {
-                    const isOnline = (new Date() - new Date(e.lastLogin||0)) < 86400000;
+                    // Презенс в реальном времени: монтажёр шлёт heartbeat каждые 30 сек
+                    // пока его вкладка открыта (поле online + lastSeenAt в editors).
+                    // Если последний heartbeat старше 90 сек — считаем оффлайн
+                    // (например, вкладка закрылась без события beforeunload).
+                    const lastSeen = e.lastSeenAt || e.lastLogin || null;
+                    const isOnline = !!e.online && lastSeen && (new Date() - new Date(lastSeen)) < 90000;
                     return `
                         <div class="glass-card premium-border p-5 rounded-3xl flex flex-col gap-4 relative shadow-lg">
                             <div class="flex items-center gap-3">
                                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-lg font-bold text-white relative shadow-inner border border-white/5">
                                     ${(e.name || e.login || '?')[0].toUpperCase()}
-                                    ${isOnline ? '<div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#030208]"></div>' : ''}
+                                    ${isOnline ? '<div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#030208] animate-pulse"></div>' : ''}
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-bold text-white font-space truncate">${escapeHtml(e.name || e.login)}</h4>
@@ -1908,6 +1900,224 @@ function renderDeadlineCountdown(createdAt, deadline) {
 
     return `<span class="text-[9px] border px-2.5 py-0.5 rounded-xl font-bold font-space uppercase ${colorClass}"><i class="far fa-clock"></i> ${text}</span>`;
 }
+
+// ════════════════════════════════════════════════════════════
+// КАТАЛОГ ДОПУСЛУГ — вкладка «Услуги»
+// Две независимые коллекции: service_catalog_client (для клиента)
+// и service_catalog_editor (для монтажёра). CRUD только для owner.
+// ════════════════════════════════════════════════════════════
+
+// Рендер вкладки «Услуги»
+function renderServiceCatalogTab() {
+    const vp = document.getElementById('dashboard-viewport');
+    if (!vp) return;
+
+    const makeList = (catalog, type) => {
+        if (!catalog.length) return `<p class="text-slate-600 text-xs text-center py-4">Каталог пуст — добавьте первую услугу</p>`;
+        return catalog.map(s => `
+            <div class="flex items-center gap-3 py-2.5 border-b border-white/[0.04] last:border-0">
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs text-white font-medium truncate">${escapeHtml(s.name || '—')}</p>
+                </div>
+                <span class="text-xs font-mono text-emerald-400 font-bold shrink-0">${Number(s.price || 0).toLocaleString('ru')} ₽</span>
+                <button onclick="openEditServiceModal('${s.id}','${type}')" class="pressable w-7 h-7 rounded-lg bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all flex-shrink-0"><i class="fas fa-pen text-[9px]"></i></button>
+                <button onclick="deleteCatalogService('${s.id}','${type}')" class="pressable w-7 h-7 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center transition-all flex-shrink-0"><i class="fas fa-trash text-[9px]"></i></button>
+            </div>`).join('');
+    };
+
+    vp.innerHTML = `
+        <div class="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
+            <div>
+                <h2 class="text-base font-space font-black text-white">Каталог допуслуг</h2>
+                <p class="text-slate-500 text-xs mt-1">Шаблоны услуг для быстрого добавления при создании или редактировании проекта. Цену можно изменить прямо в проекте.</p>
+            </div>
+
+            <!-- Клиентские услуги -->
+            <div class="bg-white/[0.02] border border-white/[0.04] rounded-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-lg bg-pink-500/15 flex items-center justify-center">
+                            <i class="fas fa-user text-pink-400 text-[10px]"></i>
+                        </div>
+                        <span class="text-xs font-bold font-space text-white">Для клиента</span>
+                        <span class="text-[9px] text-slate-600 font-space">${_serviceCatalogClient.length} позиций</span>
+                    </div>
+                    <button onclick="openAddServiceModal('client')" class="pressable px-3 py-1.5 rounded-xl bg-pink-500/15 text-pink-400 text-[10px] font-bold font-space hover:bg-pink-500/25 transition-all flex items-center gap-1.5">
+                        <i class="fas fa-plus text-[9px]"></i> Добавить
+                    </button>
+                </div>
+                <div class="px-4 py-1">
+                    ${makeList(_serviceCatalogClient, 'client')}
+                </div>
+            </div>
+
+            <!-- Монтажёрские услуги -->
+            <div class="bg-white/[0.02] border border-white/[0.04] rounded-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-lg bg-amber-500/15 flex items-center justify-center">
+                            <i class="fas fa-scissors text-amber-400 text-[10px]"></i>
+                        </div>
+                        <span class="text-xs font-bold font-space text-white">Для монтажёра</span>
+                        <span class="text-[9px] text-slate-600 font-space">${_serviceCatalogEditor.length} позиций</span>
+                    </div>
+                    <button onclick="openAddServiceModal('editor')" class="pressable px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-400 text-[10px] font-bold font-space hover:bg-amber-500/25 transition-all flex items-center gap-1.5">
+                        <i class="fas fa-plus text-[9px]"></i> Добавить
+                    </button>
+                </div>
+                <div class="px-4 py-1">
+                    ${makeList(_serviceCatalogEditor, 'editor')}
+                </div>
+            </div>
+        </div>
+
+        <!-- Модалка добавления/редактирования услуги в каталоге -->
+        <div id="modal-service-catalog" class="hidden fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div class="w-full max-w-sm bg-[#0d0d14] border border-white/[0.08] rounded-3xl p-6 shadow-2xl">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 id="modal-service-title" class="text-sm font-bold font-space text-white">Услуга</h3>
+                    <button onclick="closeModal('modal-service-catalog')" class="w-8 h-8 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all"><i class="fas fa-times text-xs"></i></button>
+                </div>
+                <input type="hidden" id="service-modal-id">
+                <input type="hidden" id="service-modal-type">
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[9px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Название услуги</label>
+                        <input id="service-modal-name" type="text" class="w-full bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-teal-500/40" placeholder="Например: Цветокоррекция">
+                    </div>
+                    <div>
+                        <label class="block text-[9px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Цена по умолчанию, ₽</label>
+                        <input id="service-modal-price" type="number" min="0" class="w-full bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-teal-500/40" placeholder="0">
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-5">
+                    <button onclick="saveCatalogService()" class="flex-1 py-2.5 rounded-xl bg-teal-500/20 text-teal-400 text-xs font-bold font-space hover:bg-teal-500/30 transition-all">Сохранить</button>
+                    <button onclick="closeModal('modal-service-catalog')" class="px-4 py-2.5 rounded-xl bg-white/5 text-slate-400 text-xs font-bold font-space hover:bg-white/10 transition-all">Отмена</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Вызывается из onSnapshot — обновляет список если вкладка активна
+function renderServiceCatalogLists() {
+    if (activeTab === 'services') renderServiceCatalogTab();
+}
+
+// Открыть модалку добавления новой услуги в каталог
+window.openAddServiceModal = function(type) {
+    document.getElementById('service-modal-id').value = '';
+    document.getElementById('service-modal-type').value = type;
+    document.getElementById('service-modal-name').value = '';
+    document.getElementById('service-modal-price').value = '';
+    document.getElementById('modal-service-title').textContent =
+        type === 'client' ? 'Новая услуга для клиента' : 'Новая услуга для монтажёра';
+    document.getElementById('modal-service-catalog').classList.remove('hidden');
+    setTimeout(() => document.getElementById('service-modal-name').focus(), 80);
+};
+
+// Открыть модалку редактирования существующей услуги каталога
+window.openEditServiceModal = function(id, type) {
+    const catalog = type === 'client' ? _serviceCatalogClient : _serviceCatalogEditor;
+    const svc = catalog.find(s => s.id === id);
+    if (!svc) return;
+    document.getElementById('service-modal-id').value = id;
+    document.getElementById('service-modal-type').value = type;
+    document.getElementById('service-modal-name').value = svc.name || '';
+    document.getElementById('service-modal-price').value = svc.price || '';
+    document.getElementById('modal-service-title').textContent =
+        type === 'client' ? 'Редактировать услугу (клиент)' : 'Редактировать услугу (монтажёр)';
+    document.getElementById('modal-service-catalog').classList.remove('hidden');
+    setTimeout(() => document.getElementById('service-modal-name').focus(), 80);
+};
+
+// Сохранить (create or update) услугу в каталоге
+window.saveCatalogService = async function() {
+    const id    = document.getElementById('service-modal-id').value.trim();
+    const type  = document.getElementById('service-modal-type').value;
+    const name  = document.getElementById('service-modal-name').value.trim();
+    const price = parseFloat(document.getElementById('service-modal-price').value) || 0;
+    if (!name) { showToast('Введите название услуги', 'error'); return; }
+    const col = type === 'client' ? 'service_catalog_client' : 'service_catalog_editor';
+    try {
+        if (id) {
+            await updateDoc(doc(db, ...BASE(col), id), { name, price });
+        } else {
+            await addDoc(collection(db, ...BASE(col)), { name, price, createdAt: new Date().toISOString() });
+        }
+        closeModal('modal-service-catalog');
+        showToast(id ? 'Услуга обновлена' : 'Услуга добавлена в каталог', 'success');
+    } catch(e) { showToast('Ошибка сохранения: ' + (e.message || e.code), 'error'); }
+};
+
+// Удалить услугу из каталога
+window.deleteCatalogService = function(id, type) {
+    customConfirm('Удалить услугу', 'Удалить эту услугу из каталога? Уже добавленные в проекты позиции останутся нетронутыми.', async () => {
+        const col = type === 'client' ? 'service_catalog_client' : 'service_catalog_editor';
+        try {
+            await deleteDoc(doc(db, ...BASE(col), id));
+            showToast('Услуга удалена из каталога', 'success');
+        } catch(e) { showToast('Ошибка удаления', 'error'); }
+    });
+};
+
+// Вызывается при открытии модалки проекта — наполняет выпадающие списки услуг каталога
+function refreshServiceCatalogDropdowns() {
+    const buildOptions = (catalog, placeholder) =>
+        `<option value="">${placeholder}</option>` +
+        catalog.map(s => `<option value="${s.id}" data-price="${s.price}" data-name="${escapeHtml(s.name)}">${escapeHtml(s.name)} — ${Number(s.price||0).toLocaleString('ru')} ₽</option>`).join('');
+
+    // Клиентские услуги (модалка редактирования проекта)
+    const cDrop = document.getElementById('catalog-client-select');
+    if (cDrop) cDrop.innerHTML = buildOptions(_serviceCatalogClient, '— выбрать из каталога —');
+    // Монтажёрские услуги (модалка редактирования проекта)
+    const eDrop = document.getElementById('catalog-editor-select');
+    if (eDrop) eDrop.innerHTML = buildOptions(_serviceCatalogEditor, '— выбрать доп. услугу монтажёра —');
+    // Клиентские услуги (CRM-форма создания проекта)
+    const cCrm = document.getElementById('crm-catalog-client-select');
+    if (cCrm) cCrm.innerHTML = buildOptions(_serviceCatalogClient, '— выбрать из каталога —');
+    // Монтажёрские услуги (CRM-форма создания проекта)
+    const eCrm = document.getElementById('crm-catalog-editor-select');
+    if (eCrm) eCrm.innerHTML = buildOptions(_serviceCatalogEditor, '— из каталога —');
+}
+
+// Добавить услугу клиента из каталога (CRM-форма создания)
+window.addCrmClientServiceFromCatalog = function() {
+    const sel = document.getElementById('crm-catalog-client-select');
+    if (!sel || !sel.value) return;
+    const opt = sel.selectedOptions[0];
+    addCrmExtraServiceRow(opt.dataset.name || opt.text.split(' —')[0], opt.dataset.price || '');
+    sel.value = '';
+};
+
+// Добавить услугу монтажёра из каталога (CRM-форма создания)
+window.addCrmEditorServiceFromCatalog = function() {
+    const sel = document.getElementById('crm-catalog-editor-select');
+    if (!sel || !sel.value) return;
+    const opt = sel.selectedOptions[0];
+    addCrmEditorExtraServiceRow(opt.dataset.name || opt.text.split(' —')[0], opt.dataset.price || '');
+    sel.value = '';
+};
+
+
+
+// Добавить услугу клиента выбранную из каталога (модалка редактирования)
+window.addClientServiceFromCatalog = function() {
+    const sel = document.getElementById('catalog-client-select');
+    if (!sel || !sel.value) return;
+    const opt = sel.selectedOptions[0];
+    addClientExtraServiceRow(opt.dataset.name || opt.text.split(' —')[0], opt.dataset.price || '');
+    sel.value = '';
+};
+
+// Добавить услугу монтажёра выбранную из каталога (модалка редактирования)
+window.addEditorServiceFromCatalog = function() {
+    const sel = document.getElementById('catalog-editor-select');
+    if (!sel || !sel.value) return;
+    const opt = sel.selectedOptions[0];
+    addExtraServiceRow(opt.dataset.name || opt.text.split(' —')[0], opt.dataset.price || '');
+    sel.value = '';
+};
 
 function renderAdminSubmissions() {
     const list = document.getElementById('dashboard-viewport');
@@ -2183,72 +2393,30 @@ function renderAdminClients() {
                     </div>
                 </div>
 
-                <!-- Блок 2: Характеристики ролика -->
-                <div class="rounded-3xl border border-blue-500/15 p-6 space-y-4" style="background: linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(99,102,241,0.03) 100%);">
+                <!-- Блок 2: Доп. услуги клиента -->
+                <div class="rounded-3xl border border-pink-500/15 p-6 space-y-4" style="background: linear-gradient(135deg, rgba(236,72,153,0.06) 0%, rgba(99,102,241,0.03) 100%);">
                     <div class="flex items-center gap-3 border-b border-white/[0.05] pb-4">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-500/15 border border-blue-500/25">
-                            <i class="fas fa-sliders text-blue-400 text-xs"></i>
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-pink-500/15 border border-pink-500/25">
+                            <i class="fas fa-layer-group text-pink-400 text-xs"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-bold text-white font-space">2. Характеристики Ролика</p>
-                            <p class="text-[10px] text-slate-500">Техническое ТЗ готового видео</p>
+                            <p class="text-sm font-bold text-white font-space">2. Доп. услуги клиента</p>
+                            <p class="text-[10px] text-slate-500">Выберите из каталога или добавьте вручную</p>
                         </div>
                     </div>
-
-                    <div class="space-y-3.5">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Format ролика</label>
-                                <select id="crm-video-format" class="w-full bg-white/[0.02] border border-white/[0.06] text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-indigo-500/40 transition">
-                                    <option value="9:16" class="bg-slate-900 text-white">Вертикальный (9:16)</option>
-                                    <option value="16:9" class="bg-slate-900 text-white">Горизонтальный (16:9)</option>
-                                    <option value="1:1" class="bg-slate-900 text-white">Квадратный (1:1)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Разрешение</label>
-                                <select id="crm-video-resolution" class="w-full bg-white/[0.02] border border-white/[0.06] text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-indigo-500/40 transition">
-                                    <option value="1080p" class="bg-slate-900 text-white">FullHD (1080p)</option>
-                                    <option value="4K" class="bg-slate-900 text-white">4K UHD</option>
-                                    <option value="2K" class="bg-slate-900 text-white">2K QHD</option>
-                                </select>
-                            </div>
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <select id="crm-catalog-client-select" class="flex-1 bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-pink-500/30">
+                                <option value="">— выбрать из каталога —</option>
+                            </select>
+                            <button type="button" onclick="addCrmClientServiceFromCatalog()" class="pressable px-3 py-2 bg-pink-500/15 text-pink-400 hover:bg-pink-500/25 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 flex-shrink-0">
+                                <i class="fas fa-plus text-[9px]"></i> Добавить
+                            </button>
                         </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Хронометраж</label>
-                                <input type="text" id="crm-video-duration" placeholder="до 60 сек" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-indigo-500/40 transition">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Субтитры</label>
-                                <select id="crm-video-subtitles" class="w-full bg-white/[0.02] border border-white/[0.06] text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-indigo-500/40 transition">
-                                    <option value="yes_animated" class="bg-slate-900 text-white">Да (с анимацией)</option>
-                                    <option value="yes_simple" class="bg-slate-900 text-white">Да (простые)</option>
-                                    <option value="no" class="bg-slate-900 text-white">Не требуются</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Целевая платформа</label>
-                            <input type="text" id="crm-video-platform" placeholder="YouTube, Instagram, TikTok" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Музыкальное сопровождение</label>
-                            <input type="text" id="crm-video-music" placeholder="Динамичная без АП, трендовые звуки" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space"><i class="fas fa-link text-indigo-400 mr-1"></i> Ссылка на референс</label>
-                            <input type="url" id="crm-video-reference" placeholder="https://..." class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space"><i class="fas fa-folder-open text-indigo-400 mr-1"></i> Ссылка на исходники</label>
-                            <input type="url" id="crm-video-sources" placeholder="https://disk.yandex.ru/..." class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
-                        </div>
+                        <div id="crm-extra-services-container" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+                        <button type="button" onclick="addCrmExtraServiceRow()" class="text-[9px] text-slate-600 hover:text-slate-400 transition-all flex items-center gap-1">
+                            <i class="fas fa-plus text-[9px]"></i> Добавить вручную
+                        </button>
                     </div>
                 </div>
 
@@ -2305,9 +2473,19 @@ function renderAdminClients() {
                         <div class="bg-black/20 p-4 rounded-xl border border-white/[0.04] space-y-3">
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-[10px] text-slate-500 uppercase tracking-widest font-space">Доп. услуги монтажёра</label>
-                                <button type="button" onclick="addCrmEditorExtraServiceRow()" class="text-[9px] text-purple-400 hover:text-purple-300 font-bold px-2 py-1 bg-purple-500/10 rounded-lg"><i class="fas fa-plus"></i> Добавить</button>
+                            </div>
+                            <div class="flex gap-2 mb-2">
+                                <select id="crm-catalog-editor-select" class="flex-1 bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/30">
+                                    <option value="">— из каталога —</option>
+                                </select>
+                                <button type="button" onclick="addCrmEditorServiceFromCatalog()" class="pressable px-3 py-2 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 flex-shrink-0">
+                                    <i class="fas fa-plus text-[9px]"></i>
+                                </button>
                             </div>
                             <div id="crm-editor-extra-services-container" class="space-y-2"></div>
+                            <button type="button" onclick="addCrmEditorExtraServiceRow()" class="text-[9px] text-slate-600 hover:text-slate-400 transition-all flex items-center gap-1">
+                                <i class="fas fa-plus text-[9px]"></i> Добавить вручную
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2373,16 +2551,6 @@ window.crmCreateClientProject = async function() {
     const deadline  = document.getElementById('crm-new-deadline')?.value || '';
     const basePrice = parseFloat(document.getElementById('crm-new-base-price')?.value) || 0;
     
-    // Video Characteristics values
-    const videoFormat     = document.getElementById('crm-video-format')?.value || '9:16';
-    const videoResolution = document.getElementById('crm-video-resolution')?.value || '1080p';
-    const videoDuration   = document.getElementById('crm-video-duration')?.value.trim() || '';
-    const videoSubtitles  = document.getElementById('crm-video-subtitles')?.value || 'yes_animated';
-    const videoPlatform   = document.getElementById('crm-video-platform')?.value.trim() || '';
-    const videoMusic      = document.getElementById('crm-video-music')?.value.trim() || '';
-    const videoReference  = document.getElementById('crm-video-reference')?.value.trim() || '';
-    const videoSources    = document.getElementById('crm-video-sources')?.value.trim() || '';
-
     // Монтажёр
     const editorId  = document.getElementById('crm-new-editor')?.value || '';
     const editorName = editorId ? (_editors.find(e => e.id === editorId)?.name || '') : '';
@@ -2423,16 +2591,6 @@ window.crmCreateClientProject = async function() {
         baseSalary: basePrice,
         basePrice: basePrice,
         clientExtraServices: clientExtraServices,
-        
-        // Video Specs
-        videoFormat,
-        videoResolution,
-        videoDuration,
-        videoSubtitles,
-        videoPlatform,
-        videoMusic,
-        videoReference,
-        videoSources,
 
         // Монтажер
         editorId: editorId,
@@ -2458,7 +2616,7 @@ window.crmCreateClientProject = async function() {
         showToast('Проект и личный кабинет успешно созданы!', 'success');
         
         // Сброс полей
-        ['crm-new-code','crm-new-name','crm-new-project','crm-new-category','crm-new-base-price','crm-new-deadline', 'crm-new-editor-salary', 'crm-new-notes', 'crm-new-tk-link', 'crm-video-duration', 'crm-video-platform', 'crm-video-music', 'crm-video-reference', 'crm-video-sources'].forEach(id => {
+        ['crm-new-code','crm-new-name','crm-new-project','crm-new-category','crm-new-base-price','crm-new-deadline', 'crm-new-editor-salary', 'crm-new-notes', 'crm-new-tk-link'].forEach(id => {
             const el = document.getElementById(id); if (el) el.value = '';
         });
         const containerClient = document.getElementById('crm-extra-services-container');
@@ -2717,22 +2875,15 @@ window.openEditProjectModal = function(id) {
     document.getElementById('p-client-category').value = p.clientCategory || '';
     document.getElementById('p-tk-link').value = p.tkLink || '';
 
-    // Populating video characteristics
-    document.getElementById('p-video-format').value = p.videoFormat || '9:16';
-    document.getElementById('p-video-resolution').value = p.videoResolution || '1080p';
-    document.getElementById('p-video-duration').value = p.videoDuration || '';
-    document.getElementById('p-video-subtitles').value = p.videoSubtitles || 'yes_animated';
-    document.getElementById('p-video-platform').value = p.videoPlatform || '';
-    document.getElementById('p-video-music').value = p.videoMusic || '';
-    document.getElementById('p-video-reference').value = p.videoReference || '';
-    document.getElementById('p-video-sources').value = p.videoSources || '';
-
     if(p.deadline) {
         const d = new Date(p.deadline); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
         document.getElementById('p-deadline').value = d.toISOString().slice(0,16);
     }
     document.getElementById('p-base-salary').value = p.baseSalary || '';
     
+    // Обновить dropdowns каталога перед заполнением
+    refreshServiceCatalogDropdowns();
+
     // Client extra services render inside the Project Modal
     const clientExtraContainer = document.getElementById('p-client-extra-services-container');
     clientExtraContainer.innerHTML = '';
@@ -2823,16 +2974,6 @@ window.saveProject = async function() {
         tkLink: document.getElementById('p-tk-link').value.trim(),
         editorId: editorId,
         deadline: new Date(document.getElementById('p-deadline').value).toISOString(),
-        
-        // Video Specs Sync
-        videoFormat: document.getElementById('p-video-format').value,
-        videoResolution: document.getElementById('p-video-resolution').value,
-        videoDuration: document.getElementById('p-video-duration').value.trim(),
-        videoSubtitles: document.getElementById('p-video-subtitles').value,
-        videoPlatform: document.getElementById('p-video-platform').value.trim(),
-        videoMusic: document.getElementById('p-video-music').value.trim(),
-        videoReference: document.getElementById('p-video-reference').value.trim(),
-        videoSources: document.getElementById('p-video-sources').value.trim(),
 
         // Client Money
         baseSalary: parseInt(document.getElementById('p-base-salary').value) || 0,

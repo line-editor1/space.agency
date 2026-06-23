@@ -464,34 +464,22 @@
             <!-- ===== ЭКРАН ВХОДА ===== -->
             <div id="admin-login-sec" class="flex items-center justify-center" style="min-height:80vh">
                 <div class="w-full max-w-md">
-                    <div class="apple-liquid-glass p-8 border border-white/8 rounded-3xl">
-                        <div class="text-center mb-8">
-                            <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-5" style="box-shadow:0 0 30px rgba(0,198,251,0.1)">
-                                <i class="fas fa-shield-halved text-cyan-400 text-2xl"></i>
-                            </div>
-                            <h1 class="text-2xl font-space font-black text-white tracking-tight">Панель управления</h1>
-                            <p class="text-slate-500 text-xs mt-2 font-space uppercase tracking-widest">SPACE Control Panel</p>
+                    <div class="apple-liquid-glass p-8 border border-white/8 rounded-3xl text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-5" style="box-shadow:0 0 30px rgba(0,198,251,0.1)">
+                            <i class="fas fa-shield-halved text-cyan-400 text-2xl"></i>
                         </div>
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-2 font-space font-bold">Ключ доступа</label>
-                                <input type="password" id="admin-password"
-                                    class="w-full bg-black/40 border border-white/8 rounded-2xl px-5 py-3.5 text-white focus:outline-none focus:border-cyan-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700"
-                                    placeholder="••••••••••"
-                                    onkeydown="if(event.key==='Enter') loginAdmin()">
-                            </div>
-                            <button onclick="loginAdmin()"
-                                class="w-full py-3.5 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
-                                style="background:linear-gradient(135deg,rgba(0,198,251,0.35) 0%,rgba(0,82,212,0.2) 100%);border-top:1px solid rgba(255,255,255,0.25);border-left:1px solid rgba(255,255,255,0.12);color:white;">
-                                <i class="fas fa-arrow-right-to-bracket text-xs"></i> Авторизоваться
-                            </button>
-                        </div>
+                        <h1 class="text-2xl font-space font-black text-white tracking-tight">Доступ ограничен</h1>
+                        <p class="text-slate-500 text-xs mt-2 font-space uppercase tracking-widest">SPACE Control Panel</p>
+                        <p class="text-slate-400 text-sm mt-6 leading-relaxed">
+                            Прямой вход в админ-панель закрыт. Авторизуйтесь в личном кабинете администратора —
+                            доступ сюда откроется автоматически по кнопке «В админку».
+                        </p>
+                        <a href="space_control.html"
+                            class="mt-7 w-full py-3.5 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
+                            style="background:linear-gradient(135deg,rgba(0,198,251,0.35) 0%,rgba(0,82,212,0.2) 100%);border-top:1px solid rgba(255,255,255,0.25);border-left:1px solid rgba(255,255,255,0.12);color:white;">
+                            <i class="fas fa-arrow-right-to-bracket text-xs"></i> Войти в личный кабинет администратора
+                        </a>
                         <p class="text-center text-[10px] text-slate-700 mt-6 font-space">Экосистема Space 1.0</p>
-                        <div class="text-center mt-3">
-                            <button onclick="openAdminRecovery()" class="text-[10px] text-slate-700 hover:text-slate-500 transition font-space">
-                                <i class="fas fa-key mr-1 opacity-60"></i>Забыл пароль
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -907,17 +895,10 @@
                                 </div>
                             </div>
                             <div class="space-y-3">
-                                <div>
-                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">Новый пароль админа</label>
-                                    <input type="password" id="setting-new-pass" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-rose-500/60 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="Оставьте пустым — без изменений">
-                                </div>
-                                <div>
-                                    <label class="block text-[9px] text-slate-600 uppercase tracking-[0.18em] mb-2 font-space font-bold">
-                                        Секретное слово для восстановления
-                                        <span class="ml-1 text-slate-700 normal-case">(если забудете пароль)</span>
-                                    </label>
-                                    <input type="text" id="setting-admin-recovery-word" class="w-full bg-black/40 border border-white/8 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-amber-500/50 focus:bg-black/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700" placeholder="Например: SpaceAdmin или кличка питомца">
-                                </div>
+                                <p class="text-[11px] text-slate-600 leading-relaxed">
+                                    Доступ в админ-панель управляется через Firebase Auth в личном кабинете
+                                    администратора (роль владельца). Смена пароля и e-mail — там же, в Firebase.
+                                </p>
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-[9px] text-slate-600 uppercase tracking-[0.15em] mb-2 font-space font-bold">Ключ №1</label>
@@ -2469,7 +2450,7 @@
     <!-- ИНТЕГРАЦИЯ С БАЗОЙ ДАННЫХ И CRM -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =====================================================================
@@ -3246,77 +3227,22 @@
             if (typeof window.populateVideoEditList === 'function') window.populateVideoEditList();
         };
 
-        window.loginAdmin = async function() {
-            const passwordInput = document.getElementById('admin-password');
-            const password = passwordInput.value;
-            const hash = CryptoJS.SHA256(password).toString();
-            // Принудительная загрузка конфига из Firebase если ещё не пришёл
-            if (firebaseInitialized && (!configData || !configData.adminPassHash)) {
-                try {
-                    await ensureAuth();
-                    const cfgSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'));
-                    if (cfgSnap.exists()) { configData = cfgSnap.data(); window.configData = configData; }
-                } catch(e) { console.warn('login config load:', e); }
-            }
-            // Резервные пароли: если в Firebase нет adminPassHash — принимаем оба варианта
-            const firebaseHash = (configData && configData.adminPassHash) ? configData.adminPassHash : null;
-            const defaultHash1 = CryptoJS.SHA256("Space2026!").toString();
-            const defaultHash2 = CryptoJS.SHA256("Space2026!").toString();
-            const isValid = firebaseHash
-                ? (hash === firebaseHash || hash === defaultHash1 || hash === defaultHash2)
-                : (hash === defaultHash1 || hash === defaultHash2);
-            if (isValid) {
-                window.setAdminState(true);
-                checkMaintenanceMode();
-                
-                document.getElementById('admin-login-sec').classList.add('hidden');
-                document.getElementById('admin-dashboard-sec').classList.remove('hidden');
-                
-                window.populateAdminFields();
-                renderCrmProjects();
+        // loginAdmin удалена: вход в админ-панель больше не использует отдельный
+        // пароль. Доступ проверяется автоматически через window.checkOwnerAccess()
+        // (Firebase Auth-сессия владельца, открытая в space_control.html).
 
-                // Ленивая инициализация вкладки калькулятора после успешного входа
-                if (typeof window.renderCalcAdminTab === 'function') {
-                    window.renderCalcAdminTab();
-                }
-
-                showToast("Авторизация администратора успешна!", "success");
-            } else {
-                showToast("Неверный ключ доступа администратора!", "error");
-                const pwdEl = document.getElementById('admin-password');
-                if (pwdEl) { pwdEl.classList.add('border-rose-500/60'); setTimeout(() => pwdEl.classList.remove('border-rose-500/60'), 1500); }
-            }
-        };
-
-        window.logoutAdmin = function() {
+        window.logoutAdmin = async function() {
             window.setAdminState(false);
             if (isVisualCmsMode) {
                 toggleVisualCmsMode();
             }
-            checkMaintenanceMode();
-            
-            document.getElementById('admin-login-sec').classList.remove('hidden');
-            document.getElementById('admin-dashboard-sec').classList.add('hidden');
-            document.getElementById('admin-password').value = "";
-            showToast("Вы вышли из панели администратора", "info");
-        };
-
-        // Сброс пароля администратора к стандартному через Firebase
-        window.adminResetPasswordToDefault = async function() {
             try {
-                if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
-                    await ensureAuth();
-                    const defaultHash = CryptoJS.SHA256("Space2026!").toString();
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'),
-                        { adminPassHash: defaultHash }, { merge: true });
-                    if (configData) configData.adminPassHash = defaultHash;
-                    showToast('Пароль сброшен к стандартному', 'success');
-                } else {
-                    showToast('Firebase не подключён', 'info');
-                }
-            } catch(e) {
-                showToast('Ошибка сброса: ' + e.message, 'error');
-            }
+                if (firebaseInitialized && auth) await signOut(auth);
+            } catch(e) { console.warn('logoutAdmin signOut:', e); }
+            showToast("Вы вышли из панели администратора", "info");
+            // Возвращаем в личный кабинет администратора — обратно в admin.html
+            // без активной сессии владельца попасть не получится.
+            window.location.href = 'space_control.html';
         };
 
         window.toggleMaintenanceAdmin = function() {
@@ -3533,7 +3459,6 @@
             const tgPortfolioMobile = document.getElementById('setting-tg-portfolio-mobile')?.value.trim() || "";
             const tgPortfolioContacts = document.getElementById('setting-tg-portfolio-contacts')?.value.trim() || "";
             const isHoliday = document.getElementById('setting-holiday').checked;
-            const newPass = document.getElementById('setting-new-pass').value;
             const maintPass1 = document.getElementById('setting-maint-pass1')?.value.trim();
             const maintPass2 = document.getElementById('setting-maint-pass2')?.value.trim();
 
@@ -3554,9 +3479,6 @@
             updatedConfig.maintenanceMode = configData.maintenanceMode || false;
             updatedConfig.maintenanceEnd = configData.maintenanceEnd || null;
 
-            if (newPass) {
-                updatedConfig.adminPassHash = CryptoJS.SHA256(newPass).toString();
-            }
             if (maintPass1) updatedConfig.maintenancePass1 = maintPass1;
             if (maintPass2) updatedConfig.maintenancePass2 = maintPass2;
 
@@ -3594,7 +3516,6 @@
 
             configData = updatedConfig;
             window.configData = updatedConfig;
-            document.getElementById('setting-new-pass').value = "";
 
             if (tgPortfolioLinkInput) {
                 window.portfolioLinks = window.portfolioLinks || defaultPortfolioSettings;
@@ -4041,7 +3962,6 @@
                 siteContentData = savedContent ? { ...defaultContent, ...JSON.parse(savedContent) } : { ...defaultContent };
                 const savedConfig = localStorage.getItem('space_site_config');
                 configData = savedConfig ? { 
-                    adminPassHash: CryptoJS.SHA256("Space2026!").toString(), 
                     telegramHandle: "your_telegram", 
                     schedule: defaultSchedule, 
                     isHoliday: false,
@@ -4051,7 +3971,6 @@
                     maintenancePass2: "space1",
                     ...JSON.parse(savedConfig) 
                 } : { 
-                    adminPassHash: CryptoJS.SHA256("Space2026!").toString(), 
                     telegramHandle: "your_telegram", 
                     schedule: defaultSchedule, 
                     isHoliday: false,
@@ -4100,7 +4019,6 @@
                         configData = snap.data();
                     } else {
                         configData = { 
-                            adminPassHash: CryptoJS.SHA256("Space2026!").toString(), 
                             telegramHandle: "your_telegram", 
                             schedule: defaultSchedule, 
                             isHoliday: false,
@@ -4163,6 +4081,59 @@
         } else {
             initAppData();
         }
+
+        // === Гейт доступа к админ-панели ===
+        // Доступ в admin.html больше не защищён отдельным паролем — он открыт
+        // только владельцу, уже вошедшему через личный кабинет администратора
+        // (space_control.html) по Firebase Auth (email/пароль, role: 'owner').
+        // Firebase Auth сессия там привязана к вкладке (browserSessionPersistence),
+        // поэтому admin.html нужно открывать ИЗ space_control.html в той же вкладке —
+        // тогда onAuthStateChanged ниже увидит того же авторизованного пользователя.
+        window.checkOwnerAccess = async function() {
+            const loginSec = document.getElementById('admin-login-sec');
+            const dashSec  = document.getElementById('admin-dashboard-sec');
+
+            if (!firebaseInitialized || !auth) {
+                // Без Firebase проверить личность невозможно — доступ закрыт.
+                if (loginSec) loginSec.classList.remove('hidden');
+                if (dashSec) dashSec.classList.add('hidden');
+                return;
+            }
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user || user.isAnonymous) {
+                    // Нет настоящей сессии владельца — показываем заглушку с переходом в ЛК.
+                    if (loginSec) loginSec.classList.remove('hidden');
+                    if (dashSec) dashSec.classList.add('hidden');
+                    window.setAdminState(false);
+                    return;
+                }
+                try {
+                    const userSnap = await getDoc(doc(db, 'users', user.uid));
+                    const role = userSnap.exists() ? userSnap.data().role : null;
+                    if (role === 'owner') {
+                        window.setAdminState(true);
+                        if (loginSec) loginSec.classList.add('hidden');
+                        if (dashSec) dashSec.classList.remove('hidden');
+                        window.populateAdminFields && window.populateAdminFields();
+                        renderCrmProjects();
+                        if (typeof window.renderCalcAdminTab === 'function') window.renderCalcAdminTab();
+                        checkMaintenanceMode();
+                    } else {
+                        // Авторизован, но не владелец (например, монтажёр) — доступа нет.
+                        if (loginSec) loginSec.classList.remove('hidden');
+                        if (dashSec) dashSec.classList.add('hidden');
+                        window.setAdminState(false);
+                    }
+                } catch (e) {
+                    console.error('Owner role check failed:', e);
+                    if (loginSec) loginSec.classList.remove('hidden');
+                    if (dashSec) dashSec.classList.add('hidden');
+                    window.setAdminState(false);
+                }
+            });
+        };
+        window.checkOwnerAccess();
 
         window.loginPortalWithCode = async function() {
             const code = document.getElementById('portal-access-code').value.trim().toLowerCase();
@@ -5189,163 +5160,12 @@
             } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
         };
 
-        // ── ADMIN RECOVERY: сохранение секретного слова ──────────────────
-        // Добавляем сохранение recovery word при saveAdminSettings
-        const _origSaveAdminSettings = window.saveAdminSettings;
-        window.saveAdminSettings = async function() {
-            await _origSaveAdminSettings();
-            const recoveryWord = document.getElementById('setting-admin-recovery-word')?.value.trim();
-            if (recoveryWord) {
-                try {
-                    await ensureAuth();
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'),
-                        { adminRecoveryWord: recoveryWord }, { merge: true });
-                    window._adminRecoveryWord = recoveryWord;
-                    document.getElementById('setting-admin-recovery-word').value = '';
-                } catch(e) { console.warn('Recovery word save failed:', e); }
-            }
-        };
-
-        // ── ADMIN RECOVERY MODAL FUNCTIONS ───────────────────────────────
-        window.openAdminRecovery = function() {
-            const modal = document.getElementById('admin-recovery-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                document.getElementById('admin-recovery-step1').classList.remove('hidden');
-                document.getElementById('admin-recovery-step2').classList.add('hidden');
-                document.getElementById('admin-recovery-word-input').value = '';
-            }
-        };
-
-        window.closeAdminRecovery = function() {
-            const modal = document.getElementById('admin-recovery-modal');
-            if (modal) modal.classList.add('hidden');
-        };
-
-        window.checkAdminRecoveryWord = async function() {
-            const word = document.getElementById('admin-recovery-word-input').value.trim();
-            if (!word) { showToast('Введите секретное слово', 'error'); return; }
-
-            if (!window._adminRecoveryWord) {
-                try {
-                    await ensureAuth();
-                    const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'));
-                    if (snap.exists() && snap.data().adminRecoveryWord) {
-                        window._adminRecoveryWord = snap.data().adminRecoveryWord;
-                    }
-                } catch(e) {}
-            }
-
-            if (!window._adminRecoveryWord) {
-                showToast('Секретное слово не задано. Обратитесь к администратору системы.', 'info'); return;
-            }
-            if (word.toLowerCase() === window._adminRecoveryWord.toLowerCase()) {
-                document.getElementById('admin-recovery-step1').classList.add('hidden');
-                document.getElementById('admin-recovery-step2').classList.remove('hidden');
-            } else {
-                showToast('Неверное секретное слово', 'error');
-            }
-        };
-
-        window.doAdminRecoveryReset = async function() {
-            const newPass     = document.getElementById('admin-recovery-new-pass').value;
-            const confirmPass = document.getElementById('admin-recovery-confirm-pass').value;
-            if (!newPass || !confirmPass) { showToast('Заполните оба поля', 'error'); return; }
-            if (newPass !== confirmPass)  { showToast('Пароли не совпадают', 'error'); return; }
-            if (newPass.length < 6)       { showToast('Минимум 6 символов', 'error'); return; }
-
-            const newHash = CryptoJS.SHA256(newPass).toString();
-            try {
-                await ensureAuth();
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'),
-                    { adminPassHash: newHash }, { merge: true });
-                if (configData) configData.adminPassHash = newHash;
-                closeAdminRecovery();
-                document.getElementById('admin-recovery-new-pass').value = '';
-                document.getElementById('admin-recovery-confirm-pass').value = '';
-                showToast('Пароль сброшен! Войдите с новым паролем.', 'success');
-            } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
-        };
-
-        // Загружаем adminRecoveryWord при старте
-        (async () => {
-            try {
-                if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized) {
-                    await ensureAuth();
-                    const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'site_config', 'main'));
-                    if (snap.exists() && snap.data().adminRecoveryWord) {
-                        window._adminRecoveryWord = snap.data().adminRecoveryWord;
-                    }
-                }
-            } catch(e) {}
-        })();
+        // ── ADMIN RECOVERY удалена ────────────────────────────────────────
+        // Восстановление доступа по «секретному слову» убрано вместе со старой
+        // системой паролей. Доступ к админ-панели теперь полностью завязан на
+        // Firebase Auth (роль owner), управляемую в space_control.html.
 
     </script>
-
-<!-- ── МОДАЛЬНОЕ ОКНО ВОССТАНОВЛЕНИЯ ДОСТУПА АДМИНИСТРАТОРА ── -->
-<div id="admin-recovery-modal" class="hidden fixed inset-0 z-[1000030] flex items-center justify-center p-4" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);">
-    <div class="apple-liquid-glass rounded-3xl p-7 w-full max-w-sm">
-        <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-3"
-                 style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25)">
-                <i class="fas fa-key text-amber-400 text-lg"></i>
-            </div>
-            <h3 class="font-space font-bold text-white">Восстановление доступа</h3>
-            <p class="text-[11px] text-slate-600 mt-1">Введите секретное слово, которое задали в настройках</p>
-        </div>
-
-        <!-- Шаг 1: ввод слова -->
-        <div id="admin-recovery-step1">
-            <div class="space-y-3">
-                <div class="relative">
-                    <i class="fas fa-key absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 text-xs pointer-events-none"></i>
-                    <input type="text" id="admin-recovery-word-input"
-                        class="w-full bg-black/60 border border-white/8 rounded-2xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-amber-500/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700"
-                        placeholder="Секретное слово"
-                        onkeydown="if(event.key==='Enter') checkAdminRecoveryWord()">
-                </div>
-                <button onclick="checkAdminRecoveryWord()"
-                    class="w-full py-3 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
-                    style="background:linear-gradient(135deg,rgba(245,158,11,0.35) 0%,rgba(234,88,12,0.2) 100%);border-top:1px solid rgba(255,255,255,0.22);border-left:1px solid rgba(255,255,255,0.1);color:white;box-shadow:0 4px 20px rgba(245,158,11,0.15);">
-                    Проверить <i class="fas fa-arrow-right text-xs opacity-70"></i>
-                </button>
-            </div>
-            <p class="text-[11px] text-slate-700 text-center mt-4">
-                Секретное слово задаётся в разделе «Настройки» после входа
-            </p>
-        </div>
-
-        <!-- Шаг 2: новый пароль -->
-        <div id="admin-recovery-step2" class="hidden">
-            <p class="text-xs text-emerald-400 text-center mb-4"><i class="fas fa-check-circle mr-1"></i>Слово верное! Задайте новый пароль</p>
-            <div class="space-y-3">
-                <div class="relative">
-                    <i class="fas fa-lock-open absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 text-xs pointer-events-none"></i>
-                    <input type="password" id="admin-recovery-new-pass"
-                        class="w-full bg-black/60 border border-white/8 rounded-2xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700"
-                        placeholder="Новый пароль">
-                </div>
-                <div class="relative">
-                    <i class="fas fa-check-circle absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 text-xs pointer-events-none"></i>
-                    <input type="password" id="admin-recovery-confirm-pass"
-                        class="w-full bg-black/60 border border-white/8 rounded-2xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500/60 font-mono text-sm transition-all duration-300 placeholder:text-slate-700"
-                        placeholder="Повторите пароль">
-                </div>
-                <button onclick="doAdminRecoveryReset()"
-                    class="w-full py-3 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
-                    style="background:linear-gradient(135deg,rgba(16,185,129,0.35) 0%,rgba(5,150,105,0.2) 100%);border-top:1px solid rgba(255,255,255,0.22);border-left:1px solid rgba(255,255,255,0.1);color:white;box-shadow:0 4px 20px rgba(16,185,129,0.15);">
-                    Сохранить новый пароль <i class="fas fa-arrow-right text-xs opacity-70"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="text-center mt-5">
-            <button onclick="closeAdminRecovery()" class="text-[11px] text-slate-700 hover:text-slate-500 transition font-space">
-                ← Назад к входу
-            </button>
-        </div>
-    </div>
-</div>
 
 </body>
 </html>

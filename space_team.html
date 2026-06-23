@@ -718,6 +718,11 @@ let currentRole = null;
 let currentUserId = null;   // editorDocId из коллекции editors (не Firebase UID!)
 let currentUserName = null;
 
+// --- Presence (онлайн-статус) ---
+let _presenceEditorDocId = null;
+let _presenceHeartbeatInterval = null;
+const PRESENCE_HEARTBEAT_MS = 30000; // обновляем lastSeenAt каждые 30 секунд
+
 // При loginAsEditor: owner просматривает кабинет монтажёра.
 // _impersonatedEditorDocId — Firestore doc ID монтажёра для показа его данных.
 let _impersonatedEditorDocId = null;
@@ -1040,6 +1045,7 @@ window.executeRegister = async function() {
 window.logout = function() {
     window.customConfirm('Выход из системы', 'Вы действительно хотите выйти из своего личного кабинета?', async () => {
         try {
+            stopPresenceHeartbeat();
             currentRole = null; currentUserId = null; currentUserName = null;
             _impersonatedEditorDocId = null;
             await signOut(auth);
@@ -1050,6 +1056,59 @@ window.logout = function() {
         }
     });
 };
+
+// --- Presence: помечаем монтажёра online/offline в реальном времени ---
+// Админка слушает коллекцию editors через onSnapshot, поэтому простое
+// обновление поля online + lastSeenAt уже долетает до space_control.html
+// без какого-либо ручного обновления страницы.
+function startPresenceHeartbeat(editorDocId) {
+    if (!editorDocId) return;
+    _presenceEditorDocId = editorDocId;
+
+    const beat = (isOnline) => {
+        updateDoc(doc(db, ...BASE('editors'), editorDocId), {
+            online: isOnline,
+            lastSeenAt: new Date().toISOString()
+        }).catch(() => {});
+    };
+
+    beat(true);
+
+    if (_presenceHeartbeatInterval) clearInterval(_presenceHeartbeatInterval);
+    _presenceHeartbeatInterval = setInterval(() => {
+        // Если вкладка скрыта (свёрнута/в фоне) долго — всё равно шлём heartbeat,
+        // онлайн считается "вкладка открыта", а не "вкладка активна".
+        beat(true);
+    }, PRESENCE_HEARTBEAT_MS);
+
+    // Вкладка закрывается / переходит на другой сайт — помечаем offline.
+    window.addEventListener('beforeunload', presenceMarkOfflineSync);
+    // pagehide надёжнее на мобильных при сворачивании/закрытии вкладки
+    window.addEventListener('pagehide', presenceMarkOfflineSync);
+}
+
+function presenceMarkOfflineSync() {
+    if (!_presenceEditorDocId) return;
+    try {
+        updateDoc(doc(db, ...BASE('editors'), _presenceEditorDocId), {
+            online: false,
+            lastSeenAt: new Date().toISOString()
+        }).catch(() => {});
+    } catch(e) {}
+}
+
+function stopPresenceHeartbeat() {
+    if (_presenceHeartbeatInterval) {
+        clearInterval(_presenceHeartbeatInterval);
+        _presenceHeartbeatInterval = null;
+    }
+    if (_presenceEditorDocId) {
+        presenceMarkOfflineSync();
+    }
+    window.removeEventListener('beforeunload', presenceMarkOfflineSync);
+    window.removeEventListener('pagehide', presenceMarkOfflineSync);
+    _presenceEditorDocId = null;
+}
 
 
 function updateActiveTabHeader(tabName) {
@@ -1984,6 +2043,7 @@ function initAuthListener() {
     onAuthStateChanged(auth, async (firebaseUser) => {
         if (!firebaseUser) {
             // Нет Firebase сессии → показываем экран логина
+            stopPresenceHeartbeat();
             currentRole = null;
             currentUserId = null;
             currentUserName = null;
@@ -2024,9 +2084,9 @@ function initAuthListener() {
             if (userData.role === 'editor' && userData.active === false) {
                 await signOut(auth);
                 if (userData.deleted) {
-                    showToast('Аккаунт удалён администратором. Доступ закрыт.', 'error');
+                    showToast('Вы больше не имеете доступа к экосистеме Space', 'error');
                 } else if (userData.rejected) {
-                    showToast('Заявка отклонена администратором', 'error');
+                    showToast('Вы больше не имеете доступа к экосистеме Space', 'error');
                 } else {
                     showToast('Аккаунт ожидает активации администратором', 'error');
                 }
@@ -2067,7 +2127,7 @@ function initAuthListener() {
 
                     if (editorData.isBlocked) {
                         await signOut(auth);
-                        showToast('Ваш аккаунт заблокирован', 'error');
+                        showToast('Вы больше не имеете доступа к экосистеме Space', 'error');
                         return;
                     }
 
@@ -2083,6 +2143,13 @@ function initAuthListener() {
 
             currentUserId = editorDocId;
             currentUserName = editorData ? (editorData.name || editorData.login || '') : (userData.name || '');
+
+            // --- Presence (онлайн-статус для админки) ---
+            // Помечаем монтажёра "online" пока вкладка открыта; owner-impersonation
+            // не должен влиять на реальный онлайн-статус монтажёра.
+            if (!isImpersonating) {
+                startPresenceHeartbeat(editorDocId);
+            }
 
             // Показываем кнопку «В панель» если owner impersonates
             const backBtns = document.querySelectorAll('.js-exit-editor-mode');

@@ -485,64 +485,6 @@
             <button onclick="openPortalModal()" class="px-8 py-4 bg-[#00c6fb]/10 hover:bg-[#00c6fb]/20 border border-[#00c6fb]/30 text-cyan-400 rounded-full font-bold transition duration-300">
                 <i class="fas fa-user-astronaut mr-2"></i> Личный кабинет
             </button>
-
-            <button onclick="openAdminModalWith2FA()" class="px-4 py-4 bg-white/5 border border-white/10 text-slate-500 rounded-full hover:text-cyan-400 transition" title="Вход для персонала">
-                <i class="fas fa-lock"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- Модалка двойного пароля для входа с экрана техработ -->
-    <div id="admin-2fa-modal" class="fixed inset-0 z-[1000030] hidden flex items-center justify-center bg-black/95 backdrop-blur-xl p-4">
-        <div class="w-full max-w-md" id="admin-2fa-inner">
-            <div class="apple-liquid-glass border border-cyan-500/15 overflow-hidden" style="border-radius:32px;">
-                <div class="glass-shine"></div>
-                <!-- Шапка -->
-                <div class="flex items-center justify-between px-6 pt-6 pb-0">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                            <i class="fas fa-shield-halved text-cyan-400 text-sm"></i>
-                        </div>
-                        <div>
-                            <p class="text-[9px] text-cyan-400 uppercase tracking-[0.2em] font-space font-bold">SPACE Video Agency</p>
-                            <h3 class="text-base font-space font-black text-white leading-none mt-0.5">Вход для персонала</h3>
-                        </div>
-                    </div>
-                    <button onclick="closeAdmin2FAModal()" class="w-8 h-8 rounded-xl bg-white/5 border border-white/8 hover:bg-white/10 text-slate-500 hover:text-white transition-all duration-300 flex items-center justify-center">
-                        <i class="fas fa-times text-sm"></i>
-                    </button>
-                </div>
-                <!-- Форма -->
-                <div class="px-6 py-7">
-                    <div class="text-center mb-7">
-                        <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-500/15 to-blue-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-lock text-cyan-400 text-2xl"></i>
-                        </div>
-                        <h4 class="text-xl font-space font-black text-white mb-1.5">Двойная авторизация</h4>
-                        <p class="text-slate-500 text-xs leading-relaxed">Введите оба <span class="text-cyan-400 font-semibold">ключа доступа</span> для входа в систему</p>
-                    </div>
-                    <div class="space-y-3 mb-5">
-                        <div>
-                            <label class="block text-[9px] text-slate-600 uppercase tracking-[0.2em] mb-2 font-space font-bold text-center">Ключ доступа 1</label>
-                            <input type="password" id="admin-2fa-pass1"
-                                class="w-full bg-black/50 border border-white/8 rounded-2xl px-5 py-4 text-center text-lg font-mono text-cyan-300 tracking-[0.1em] focus:outline-none focus:border-cyan-500/60 focus:bg-black/70 placeholder:text-slate-800 transition-all duration-300"
-                                placeholder="••••••••••">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] text-slate-600 uppercase tracking-[0.2em] mb-2 font-space font-bold text-center">Ключ доступа 2</label>
-                            <input type="password" id="admin-2fa-pass2"
-                                class="w-full bg-black/50 border border-white/8 rounded-2xl px-5 py-4 text-center text-lg font-mono text-cyan-300 tracking-[0.1em] focus:outline-none focus:border-cyan-500/60 focus:bg-black/70 placeholder:text-slate-800 transition-all duration-300"
-                                placeholder="••••••••••">
-                        </div>
-                    </div>
-                    <button onclick="verifyAdmin2FACode()"
-                        class="w-full py-4 rounded-2xl font-black font-space uppercase tracking-wider text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] min-h-[52px]"
-                        style="background:linear-gradient(135deg,#0052d4 0%,#00c6fb 100%);color:white;text-shadow:0 1px 3px rgba(0,0,0,0.3);">
-                        <i class="fas fa-arrow-right-to-bracket mr-2"></i>Войти в систему
-                    </button>
-                    <p class="text-center text-[10px] text-slate-700 mt-4 font-space">Экосистема Space 01</p>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -1212,10 +1154,8 @@
             const modal = document.getElementById('portal-modal');
             if (modal) modal.classList.add('hidden');
         };
-        window.openAdminModal = function() {
-            // Админка вынесена в отдельную страницу
-            window.location.href = 'admin.html';
-        };
+        // openAdminModal удалена: прямой обход в админку с главного сайта закрыт.
+        // Доступ к admin.html — только через личный кабинет администратора (space_control.html).
         window.closeAdminModal = function() {
             // Ничего не делаем
         };
@@ -1724,74 +1664,10 @@
 
         });
 
-        // === ДВОЙНОЙ ПАРОЛЬ ДЛЯ ЭКРАНА ТЕХРАБОТ ===
-        window.openAdminModalWith2FA = function() {
-            const p1 = document.getElementById("admin-2fa-pass1");
-            const p2 = document.getElementById("admin-2fa-pass2");
-            if (p1) p1.value = "";
-            if (p2) p2.value = "";
-            const modal = document.getElementById("admin-2fa-modal");
-            if (modal) modal.classList.remove('hidden');
-            // фокус на первое поле
-            setTimeout(() => { if(p1) p1.focus(); }, 100);
-        };
-
-        window.closeAdmin2FAModal = function() {
-            const modal = document.getElementById("admin-2fa-modal");
-            if (modal) modal.classList.add('hidden');
-        };
-
-        window.verifyAdmin2FACode = async function() {
-            const pass1 = (document.getElementById("admin-2fa-pass1")?.value || "").trim();
-            const pass2 = (document.getElementById("admin-2fa-pass2")?.value || "").trim();
-            
-            // Загружаем сохранённые пароли:
-            // 1. Если Firebase инициализирован — принудительно грузим актуальный конфиг
-            // 2. Затем из window.configData
-            // 3. Затем из localStorage как fallback
-            // 4. Дефолты spaceadmin / space1
-
-            let cfgData = window.configData || {};
-
-            // Если configData не содержит паролей — грузим свежо из Firebase
-            if (!cfgData.maintenancePass1 && typeof window._spaceDb !== 'undefined' && window._spaceDb) {
-                try {
-                    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-                    const snap = await getDoc(doc(window._spaceDb, 'artifacts', 'space-video-agency', 'public', 'data', 'site_config', 'main'));
-                    if (snap.exists()) {
-                        cfgData = snap.data();
-                        window.configData = cfgData;
-                    }
-                } catch(e) { console.warn("2FA config load:", e); }
-            }
-
-            let savedCfg = {};
-            try { savedCfg = JSON.parse(localStorage.getItem('space_site_config')) || {}; } catch(e) {}
-            const expectedPass1 = cfgData.maintenancePass1 || savedCfg.maintenancePass1 || "spaceadmin";
-            const expectedPass2 = cfgData.maintenancePass2 || savedCfg.maintenancePass2 || "space1";
-
-            if (pass1 === expectedPass1 && pass2 === expectedPass2) {
-                window.closeAdmin2FAModal();
-                // Сохраняем флаг сессии
-                try { sessionStorage.setItem('space_staff_auth', '1'); } catch(e) {}
-                showToast("Доступ персонала открыт", "success");
-                // Небольшая задержка и редирект в админку
-                setTimeout(() => { window.open('admin.html', '_blank'); }, 500);
-            } else {
-                showToast("Один или оба ключа введены неверно!", "error");
-                // Подсветить ошибку
-                const p1el = document.getElementById("admin-2fa-pass1");
-                const p2el = document.getElementById("admin-2fa-pass2");
-                [p1el, p2el].forEach(el => {
-                    if (el) { el.classList.add('border-rose-500'); setTimeout(() => el.classList.remove('border-rose-500'), 1500); }
-                });
-            }
-        };
-        // Enter в полях 2FA
+        // === Вход персонала/администратора убран с главного сайта ===
+        // Доступ в админ-панель теперь только через личный кабинет администратора
+        // (space_control.html), где есть собственный безопасный вход через Firebase Auth.
         document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("admin-2fa-pass1")?.addEventListener("keydown", e => { if(e.key==="Enter") document.getElementById("admin-2fa-pass2")?.focus(); });
-            document.getElementById("admin-2fa-pass2")?.addEventListener("keydown", e => { if(e.key==="Enter") window.verifyAdmin2FACode(); });
-
             // Показываем статус Firebase в UI
             const hasFbConfig = !!localStorage.getItem('space_firebase_config');
             const statusEl = document.getElementById('firebase-sync-status');
@@ -2248,7 +2124,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot, collection, addDoc, getDocs, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =====================================================================
         // FIREBASE CONFIG — загружается ТОЛЬКО из localStorage (настройки → Firebase)
@@ -2992,19 +2868,8 @@
             if (typeof window.populateVideoEditList === 'function') window.populateVideoEditList();
         };
 
-        window.loginAdmin = function() {
-            // Админ-панель на отдельной странице — редирект
-            window.location.href = 'admin.html';
-        };
-
-        window.logoutAdmin = function() {
-            window.setAdminState(false);
-            if (typeof isVisualCmsMode !== 'undefined' && isVisualCmsMode && typeof toggleVisualCmsMode === 'function') {
-                toggleVisualCmsMode();
-            }
-            showToast("Выход выполнен", "info");
-            setTimeout(() => { window.location.href = 'admin.html'; }, 600);
-        };
+        // loginAdmin / logoutAdmin удалены: прямой обход в админку с главного
+        // сайта закрыт, вход — только через space_control.html.
 
         window.toggleMaintenanceAdmin = function() {
             if (configData.maintenanceMode) {
@@ -3851,65 +3716,76 @@
             initAppData();
         }
 
+        // === ПОРТАЛ КЛИЕНТА — Space CRM-схема с realtime onSnapshot ===
+        // Код доступа: plaintext accessCode (поле в Firestore, не шифруется).
+        // Доп. услуги: clientExtraServices [{ name, price }] (вместо addons).
+        // Без characteristicsrolika / stats / s1-s5.
+
+        let _portalUnsubscribe = null; // функция отписки от onSnapshot текущего проекта
+
         window.loginPortalWithCode = async function() {
             const code = document.getElementById('portal-access-code').value.trim().toLowerCase();
             if (!code) { showToast("Введите ваш уникальный код доступа!", "error"); return; }
 
-            let foundProject = null;
-
-            if (firebaseInitialized) {
-                try {
-                    await ensureAuth();
-                    if (!auth.currentUser) return;
-                    const qSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'projects'));
-                    qSnap.forEach(doc => {
-                        const data = doc.data();
-                        try {
-                            const decrypted = CryptoJS.AES.decrypt(data.code, cryptoSecret).toString(CryptoJS.enc.Utf8);
-                            if (decrypted && decrypted.trim().toLowerCase() === code) foundProject = { id: doc.id, ...data };
-                        } catch (e) {
-                            if (data.code && data.code.trim().toLowerCase() === code) foundProject = { id: doc.id, ...data };
-                        }
-                    });
-                } catch (err) { console.error("Firebase load error:", err); }
-            } else {
-                foundProject = localDemoProjects.find(p => {
-                    try {
-                        const decrypted = CryptoJS.AES.decrypt(p.code, cryptoSecret).toString(CryptoJS.enc.Utf8);
-                        return decrypted && decrypted.trim().toLowerCase() === code;
-                    } catch (e) { return p.code.toLowerCase() === code; }
-                });
+            if (!firebaseInitialized) {
+                showToast("Сервис временно недоступен. Попробуйте позже.", "error");
+                return;
             }
 
-            if (foundProject) {
-                showToast("Успешный вход в Личный кабинет!", "success");
-                showClientDashboard(foundProject);
-            } else {
-                showToast("Код не найден! Проверьте правильность ввода.", "error");
+            try {
+                await ensureAuth();
+                const qSnap = await getDocs(
+                    query(collection(db, 'artifacts', appId, 'public', 'data', 'projects'), where('accessCode', '==', code))
+                );
+                if (qSnap.empty) {
+                    showToast("Код не найден! Проверьте правильность ввода.", "error");
+                    return;
+                }
+                const docSnap = qSnap.docs[0];
+                showToast("Добро пожаловать в личный кабинет!", "success");
+                subscribeClientDashboard(docSnap.id);
+            } catch (err) {
+                console.error("Portal login error:", err);
+                showToast("Ошибка соединения. Попробуйте снова.", "error");
             }
         };
 
-        window.logoutPortal = function() {
+        // Realtime-подписка на документ проекта — автоматически обновляет дашборд клиента
+        function subscribeClientDashboard(projectId) {
+            if (_portalUnsubscribe) { _portalUnsubscribe(); _portalUnsubscribe = null; }
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'projects', projectId);
+            _portalUnsubscribe = onSnapshot(docRef, (snap) => {
+                if (!snap.exists()) {
+                    showToast("Проект не найден.", "error");
+                    logoutPortalInternal();
+                    return;
+                }
+                showClientDashboard({ id: snap.id, ...snap.data() });
+            });
+        }
+
+        function logoutPortalInternal() {
+            if (_portalUnsubscribe) { _portalUnsubscribe(); _portalUnsubscribe = null; }
             document.getElementById('portal-dashboard-sec').classList.add('hidden');
             document.getElementById('portal-auth-sec').classList.remove('hidden');
             document.getElementById('portal-access-code').value = "";
+        }
+
+        window.logoutPortal = function() {
+            logoutPortalInternal();
             showToast("Вы вышли из личного кабинета", "success");
         };
 
+        // Отображает/обновляет дашборд клиента. Вызывается из onSnapshot — т.е.
+        // любое изменение администратором в Firestore сразу отражается здесь.
         function showClientDashboard(project) {
             document.getElementById('portal-auth-sec').classList.add('hidden');
             document.getElementById('portal-dashboard-sec').classList.remove('hidden');
 
             document.getElementById('client-project-name').textContent = project.projectName || "Ролик на монтаже";
-            
-            let plainCode = "...";
-            try { plainCode = CryptoJS.AES.decrypt(project.code, cryptoSecret).toString(CryptoJS.enc.Utf8); } 
-            catch (e) { plainCode = project.code; }
-            
-            document.getElementById('client-user-name').textContent = `${project.clientName} (Код: ${plainCode})`;
-            
-            // Встраиваем персональную ссылку менеджера
-            const managerTgLink = project.managerTg || ('https://t.me/' + (configData.telegramHandle || 'your_telegram'));
+            document.getElementById('client-user-name').textContent = `${project.clientName || ''} (Код: ${project.accessCode || '—'})`;
+
+            const managerTgLink = project.managerTg || ('https://t.me/' + (configData?.telegramHandle || 'your_telegram'));
             document.getElementById('client-manager-contact').innerHTML = `
                 <span class="text-slate-500">Ваш менеджер:</span>
                 <a href="${managerTgLink}" target="_blank" class="px-4 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-full font-bold transition flex items-center gap-1.5"><i class="fab fa-telegram"></i> Написать</a>
@@ -3917,31 +3793,32 @@
 
             const progressValue = project.progress || 0;
             document.getElementById('client-progress-value').textContent = `${progressValue}%`;
-            
             const circleBar = document.getElementById('hologram-circle-bar');
             if (circleBar) {
                 const strokeLength = 364.4;
-                const offset = strokeLength - (progressValue / 100) * strokeLength;
-                circleBar.style.strokeDashoffset = offset;
+                circleBar.style.strokeDashoffset = strokeLength - (progressValue / 100) * strokeLength;
             }
 
             document.getElementById('client-project-notes').textContent = project.notes || "Менеджер работает над проектом. Скоро здесь появится комментарий.";
             document.getElementById('client-project-deadline').textContent = formatDateRussian(project.deadline);
 
-            const basePrice = project.basePrice || 0;
-            document.getElementById('client-base-price').textContent = `${basePrice.toLocaleString()} ₽`;
-            
+            // Стоимость: базовая ставка + доп. услуги клиента
+            const basePrice = project.basePrice || project.baseSalary || 0;
+            document.getElementById('client-base-price').textContent = `${basePrice.toLocaleString('ru')} ₽`;
+
             const addonsContainer = document.getElementById('client-addons-container');
+            const extraListContainer = document.getElementById('client-extra-services-list');
             let totalAddonsPrice = 0;
-            
+            const services = project.clientExtraServices || [];
+
             if (addonsContainer) {
-                if (project.addons && project.addons.length > 0) {
-                    addonsContainer.innerHTML = project.addons.map(addon => {
-                        totalAddonsPrice += addon.price;
+                if (services.length > 0) {
+                    addonsContainer.innerHTML = services.map(s => {
+                        totalAddonsPrice += (s.price || 0);
                         return `
                             <div class="flex justify-between text-slate-500 pl-2 border-l border-white/5">
-                                <span>+ ${addon.label}:</span>
-                                <span class="font-mono">${addon.price.toLocaleString()} ₽</span>
+                                <span>+ ${s.name || '—'}:</span>
+                                <span class="font-mono">${(s.price || 0).toLocaleString('ru')} ₽</span>
                             </div>
                         `;
                     }).join('');
@@ -3950,86 +3827,65 @@
                 }
             }
 
-            const totalPrice = basePrice + totalAddonsPrice;
-            document.getElementById('client-total-price').textContent = `${totalPrice.toLocaleString()} ₽`;
-
-            // УБРАН ТЕМПОРИТМ: Оставлено только 4 характеристики
-            const pStats = project.stats || { dynamics: 50, sound: 50, color: 50, vfx: 50 };
-            const statsContainer = document.getElementById('client-radar-bars');
-            if (statsContainer) {
-                const statsMap = [
-                    { label: "Динамика монтажа", val: pStats.dynamics || 50, color: "bg-cyan-400" },
-                    { label: "Саунд-дизайн (SFX / музыка)", val: pStats.sound || 50, color: "bg-blue-400" },
-                    { label: "Цветокоррекция (стилистика)", val: pStats.color || 50, color: "bg-purple-400" },
-                    { label: "VFX / Графика & Анимация", val: pStats.vfx || 50, color: "bg-pink-400" }
-                ];
-                
-                statsContainer.innerHTML = statsMap.map(st => `
-                    <div>
-                        <div class="flex justify-between text-[10px] uppercase font-space text-slate-400 mb-1">
-                            <span>${st.label}</span>
-                            <span class="font-bold text-white">${st.val}%</span>
+            if (extraListContainer) {
+                if (services.length > 0) {
+                    extraListContainer.innerHTML = services.map(s => `
+                        <div class="flex items-center justify-between py-2 border-b border-white/[0.04] last:border-0">
+                            <div class="flex items-center gap-2">
+                                <div class="w-1.5 h-1.5 rounded-full bg-pink-400 flex-shrink-0"></div>
+                                <span class="text-xs text-slate-300">${s.name || '—'}</span>
+                            </div>
+                            <span class="text-xs font-mono font-bold text-pink-400">${(s.price || 0).toLocaleString('ru')} ₽</span>
                         </div>
-                        <div class="w-full h-2.5 bg-black/50 border border-white/10 rounded-full overflow-hidden">
-                            <div class="h-full ${st.color} transition-all duration-1000" style="width: ${st.val}%"></div>
-                        </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                } else {
+                    extraListContainer.innerHTML = `<p class="text-[11px] text-slate-600 italic">Дополнительные услуги не подключены</p>`;
+                }
             }
+            document.getElementById('client-total-price').textContent = `${(basePrice + totalAddonsPrice).toLocaleString('ru')} ₽`;
 
-            const s1 = project.s1 || "ТЗ & Бриф"; const s2 = project.s2 || "Черновик";
-            const s3 = project.s3 || "Звук & FX"; const s4 = project.s4 || "Цвет"; const s5 = project.s5 || "Сдача";
+            // Этапы производства (из поля stage в Space CRM)
+            const stageLabels = { brief: "ТЗ & Бриф", edit: "Черновик", effects: "Звук & FX", color: "Цвет", done: "Сдача" };
+            const stageIcons  = { brief: "fa-file-signature", edit: "fa-film", effects: "fa-wand-magic-sparkles", color: "fa-palette", done: "fa-rocket" };
+            const stageKeys   = ["brief", "edit", "effects", "color", "done"];
+            const currentStepIdx = stageKeys.indexOf(project.stage || "brief");
 
             const container = document.getElementById('client-stages-container');
-            const steps = ["brief", "edit", "effects", "color", "done"];
-            const currentStepIdx = steps.indexOf(project.stage || "brief");
+            if (container) {
+                container.innerHTML = stageKeys.map((key, idx) => {
+                    const isActive = idx <= currentStepIdx;
+                    return `
+                        <div class="stage-step p-4 rounded-2xl bg-[#020110] border border-white/5 text-center flex flex-col items-center justify-between transition-all duration-500 ${isActive ? 'step-active' : 'step-inactive'}">
+                            <i class="fas ${stageIcons[key]} text-2xl text-cyan-400 mb-2"></i>
+                            <span class="text-[10px] sm:text-xs font-bold block text-white font-space">${stageLabels[key]}</span>
+                            <span class="text-[9px] text-slate-500 mt-1 uppercase">${idx === 4 ? 'Готово' : `Стадия ${idx + 1}`}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
 
-            const stagesHtml = steps.map((stepKey, idx) => {
-                const title = [s1, s2, s3, s4, s5][idx];
-                const icons = ["fa-file-signature", "fa-film", "fa-wand-magic-sparkles", "fa-palette", "fa-rocket"];
-                const icon = icons[idx];
-                const isActive = idx <= currentStepIdx;
-                const activeClass = isActive ? "step-active" : "step-inactive";
-                const num = idx + 1;
-                const bottomLabel = idx === 4 ? "Готово" : `Стадия ${num}`;
-
-                return `
-                    <div class="stage-step p-4 rounded-2xl bg-[#020110] border border-white/5 text-center flex flex-col items-center justify-between transition-all duration-500 ${activeClass}">
-                        <i class="fas ${icon} text-2xl text-cyan-400 mb-2"></i>
-                        <span class="text-[10px] sm:text-xs font-bold block text-white font-space">${title}</span>
-                        <span class="text-[9px] text-slate-500 mt-1 uppercase">${bottomLabel}</span>
-                    </div>
-                `;
-            }).join('');
-
-            container.innerHTML = stagesHtml;
-
+            // Бортовой журнал
             const logsContainer = document.getElementById('client-logs-list');
             if (logsContainer) {
                 const logsList = project.logs && project.logs.length > 0 ? project.logs : [
                     { text: "Орбитальный бриф успешно согласован", blink: false, date: "Система получила техническое задание." },
                     { text: "Исходные материалы загружены в бортовой архив", blink: false, date: "Все файлы импортированы." }
                 ];
-
-                logsContainer.innerHTML = logsList.map(log => {
-                    const indicatorDot = `
+                logsContainer.innerHTML = logsList.map(log => `
+                    <div class="flex items-start gap-3 bg-white/[0.01] border border-white/5 p-3 rounded-2xl">
                         <span class="relative flex h-2 w-2 mt-1.5 flex-shrink-0">
                             <span class="${log.blink ? 'animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75' : ''}"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 ${log.blink ? 'bg-cyan-400' : 'bg-emerald-500'}"></span>
                         </span>
-                    `;
-                    return `
-                        <div class="flex items-start gap-3 bg-white/[0.01] border border-white/5 p-3 rounded-2xl">
-                            ${indicatorDot}
-                            <div>
-                                <p class="text-white font-semibold leading-relaxed">${log.text}</p>
-                                <p class="text-[10px] text-slate-500 mt-0.5">${log.date || ''}</p>
-                            </div>
+                        <div>
+                            <p class="text-white font-semibold leading-relaxed">${log.text}</p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">${log.date || ''}</p>
                         </div>
-                    `;
-                }).join('');
+                    </div>
+                `).join('');
             }
         }
+
 
         function loadCrmProjectsRealtime() {
             if (!firebaseInitialized) return;
