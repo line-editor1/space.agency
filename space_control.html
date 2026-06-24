@@ -2316,188 +2316,310 @@ function renderAdminClients() {
     ).join('');
 
     vp.innerHTML = `
-        <div class="fade-in-up space-y-6">
-            <div class="relative overflow-hidden rounded-3xl border border-white/[0.05] p-6" style="background: linear-gradient(135deg, rgba(99,102,241,0.07) 0%, rgba(139,92,246,0.04) 100%);">
+        <div class="fade-in-up space-y-5">
+
+            <!-- Шапка -->
+            <div class="relative overflow-hidden rounded-3xl border border-white/[0.05] p-5 sm:p-6" style="background: linear-gradient(135deg, rgba(99,102,241,0.07) 0%, rgba(139,92,246,0.04) 100%);">
                 <div class="absolute top-0 right-0 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
                         <p class="text-[10px] text-indigo-400 uppercase tracking-[0.2em] font-space font-bold mb-1">CRM — Личные кабинеты</p>
-                        <h3 class="text-xl font-space font-black text-white mb-1">Управление клиентами</h3>
+                        <h3 class="text-lg font-space font-black text-white mb-1">Управление клиентами</h3>
                         <p class="text-slate-400 text-xs">Создавайте кабинеты, назначайте монтажёров и отслеживайте проекты</p>
                     </div>
-                    <div class="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-full">
+                    <div class="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-full shrink-0">
                         <span class="text-indigo-400 text-xs font-bold font-space">${_projects.length} проектов</span>
                     </div>
                 </div>
             </div>
 
+            <!-- Список активных кабинетов -->
             <div>
                 <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-space font-bold mb-3 flex items-center gap-2">
-                    <i class="fas fa-list text-indigo-400"></i> Активные кабинеты клиентов
+                    <i class="fas fa-list text-indigo-400"></i> Активные кабинеты
                 </p>
                 <div class="rounded-2xl border border-white/[0.04] overflow-hidden" style="background:rgba(255,255,255,0.015)">
-                    <div class="space-y-0 max-h-[420px] overflow-y-auto" id="crm-clients-list">
+                    <div class="space-y-0 max-h-[360px] overflow-y-auto" id="crm-clients-list">
                         ${renderCrmClientsList(_projects)}
                     </div>
                 </div>
             </div>
 
-            <!-- CRM ИНИЦИАЛИЗАЦИЯ И РЕГУЛИРОВКА ХАРАКТЕРИСТИК (ВЕРТИКАЛЬНАЯ СЕТКА) -->
-            <div class="flex flex-col gap-6 w-full">
-                <!-- Блок 1: Кабинет Клиента -->
-                <div class="rounded-3xl border border-indigo-500/15 p-6 space-y-4" style="background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(139,92,246,0.03) 100%);">
-                    <div class="flex items-center gap-3 border-b border-white/[0.05] pb-4">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-indigo-500/15 border border-indigo-500/25">
-                            <i class="fas fa-user-plus text-indigo-400 text-xs"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-white font-space">1. Кабинет Клиента</p>
-                            <p class="text-[10px] text-slate-500">Регистрация и доступ заказчика</p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-3.5">
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Код доступа клиента</label>
-                            <input type="text" id="crm-new-code" placeholder="client777" class="w-full bg-white/[0.04] border border-indigo-500/20 text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/50 font-mono font-bold transition">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Имя клиента</label>
-                            <input type="text" id="crm-new-name" placeholder="Алексей" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Дедлайн</label>
-                            <input type="date" id="crm-new-deadline" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Название проекта</label>
-                            <input type="text" id="crm-new-project" placeholder="Продуктовый ролик" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Категория монтажа</label>
-                            <input type="text" id="crm-new-category" placeholder="VIP / Базовый" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
-                        </div>
-                        <div class="bg-black/20 p-4 rounded-xl border border-white/[0.04] space-y-3">
-                            <div>
-                                <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Базовая ставка (клиент) (₽)</label>
-                                <input type="number" id="crm-new-base-price" placeholder="3000" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 font-mono transition">
-                            </div>
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <label class="block text-[10px] text-slate-500 uppercase tracking-widest font-space">Доп. услуги клиента</label>
-                                    <button type="button" onclick="addCrmExtraServiceRow()" class="text-[9px] text-indigo-400 hover:text-indigo-300 font-bold px-2 py-1 bg-indigo-500/10 rounded-lg"><i class="fas fa-plus"></i> Добавить</button>
-                                </div>
-                                <div id="crm-extra-services-container" class="space-y-2"></div>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Мини-вкладки -->
+            <div>
+                <div class="flex gap-2 mb-4 p-1 bg-white/[0.03] border border-white/[0.05] rounded-2xl">
+                    <button id="crm-subtab-client" onclick="switchCrmSubTab('client')"
+                        class="crm-sub-tab flex-1 py-2.5 rounded-xl text-xs font-bold font-space transition-all duration-200 flex items-center justify-center gap-2 active-crm-sub">
+                        <i class="fas fa-user text-[10px]"></i><span>Для клиента</span>
+                    </button>
+                    <button id="crm-subtab-editor" onclick="switchCrmSubTab('editor')"
+                        class="crm-sub-tab flex-1 py-2.5 rounded-xl text-xs font-bold font-space transition-all duration-200 flex items-center justify-center gap-2">
+                        <i class="fas fa-scissors text-[10px]"></i><span>Для монтажёра</span>
+                    </button>
                 </div>
 
-                <!-- Блок 2: Доп. услуги клиента -->
-                <div class="rounded-3xl border border-pink-500/15 p-6 space-y-4" style="background: linear-gradient(135deg, rgba(236,72,153,0.06) 0%, rgba(99,102,241,0.03) 100%);">
-                    <div class="flex items-center gap-3 border-b border-white/[0.05] pb-4">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-pink-500/15 border border-pink-500/25">
-                            <i class="fas fa-layer-group text-pink-400 text-xs"></i>
+                <!-- ══ ПАНЕЛЬ: ДЛЯ КЛИЕНТА ══ -->
+                <div id="crm-panel-client" class="space-y-4">
+
+                    <!-- Основные поля -->
+                    <div class="rounded-3xl border border-indigo-500/15 p-5 space-y-3" style="background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(139,92,246,0.03) 100%);">
+                        <div class="flex items-center gap-3 border-b border-white/[0.05] pb-3">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-indigo-500/15 border border-indigo-500/25 shrink-0">
+                                <i class="fas fa-user-plus text-indigo-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-white font-space">Кабинет клиента</p>
+                                <p class="text-[10px] text-slate-500">Данные отображаются у клиента сразу</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm font-bold text-white font-space">2. Доп. услуги клиента</p>
-                            <p class="text-[10px] text-slate-500">Выберите из каталога или добавьте вручную</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Код доступа <span class="text-rose-400">*</span></label>
+                                <input type="text" id="crm-new-code" placeholder="client777" class="w-full bg-white/[0.04] border border-indigo-500/20 text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/50 font-mono font-bold transition">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Имя клиента <span class="text-rose-400">*</span></label>
+                                <input type="text" id="crm-new-name" placeholder="Алексей" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Дедлайн</label>
+                                <input type="date" id="crm-new-deadline" max="2100-12-31" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Название проекта <span class="text-rose-400">*</span></label>
+                                <input type="text" id="crm-new-project" placeholder="Продуктовый ролик 60 сек." class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Стоимость (₽)</label>
+                                <input type="number" id="crm-new-price" placeholder="3000" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 font-mono transition">
+                            </div>
                         </div>
                     </div>
-                    <div class="space-y-3">
+
+                    <!-- Доп. услуги клиента -->
+                    <div class="rounded-3xl border border-pink-500/15 p-5 space-y-3" style="background: linear-gradient(135deg, rgba(236,72,153,0.05) 0%, rgba(99,102,241,0.02) 100%);">
+                        <div class="flex items-center gap-3 border-b border-white/[0.05] pb-3">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-pink-500/15 border border-pink-500/25 shrink-0">
+                                <i class="fas fa-layer-group text-pink-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-white font-space">Доп. услуги клиента</p>
+                                <p class="text-[10px] text-slate-500">Из каталога или вручную</p>
+                            </div>
+                        </div>
                         <div class="flex gap-2">
                             <select id="crm-catalog-client-select" class="flex-1 bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-pink-500/30">
-                                <option value="">— выбрать из каталога —</option>
+                                <option value="">— из каталога —</option>
                             </select>
-                            <button type="button" onclick="addCrmClientServiceFromCatalog()" class="pressable px-3 py-2 bg-pink-500/15 text-pink-400 hover:bg-pink-500/25 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 flex-shrink-0">
-                                <i class="fas fa-plus text-[9px]"></i> Добавить
-                            </button>
+                            <button type="button" onclick="addCrmClientServiceFromCatalog()" class="pressable px-3 py-2 bg-pink-500/15 text-pink-400 hover:bg-pink-500/25 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 shrink-0"><i class="fas fa-plus text-[9px]"></i></button>
                         </div>
-                        <div id="crm-extra-services-container" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
-                        <button type="button" onclick="addCrmExtraServiceRow()" class="text-[9px] text-slate-600 hover:text-slate-400 transition-all flex items-center gap-1">
-                            <i class="fas fa-plus text-[9px]"></i> Добавить вручную
-                        </button>
+                        <div id="crm-extra-services-container" class="space-y-2 max-h-36 overflow-y-auto pr-1"></div>
+                        <button type="button" onclick="addCrmExtraServiceRow()" class="text-[9px] text-slate-600 hover:text-slate-400 transition-all flex items-center gap-1"><i class="fas fa-plus text-[9px]"></i> Добавить вручную</button>
                     </div>
+
+                    <!-- Характеристики ролика (stats) — отображаются в ЛК клиента -->
+                    <div class="rounded-3xl border border-cyan-500/15 p-5 space-y-3" style="background: linear-gradient(135deg, rgba(0,198,251,0.04) 0%, rgba(0,82,212,0.02) 100%);">
+                        <div class="flex items-center gap-3 border-b border-white/[0.05] pb-3">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-cyan-500/15 border border-cyan-500/25 shrink-0">
+                                <i class="fas fa-sliders text-cyan-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-white font-space">Характеристики ролика</p>
+                                <p class="text-[10px] text-slate-500">Отображаются в ЛК клиента как радар-бары</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="flex justify-between text-[10px] text-slate-500 uppercase tracking-widests font-space mb-1.5">
+                                    <span><i class="fas fa-bolt text-cyan-400 mr-1"></i> Динамика монтажа</span>
+                                    <span id="crm-stat-dynamics-val" class="text-cyan-400 font-mono font-bold">50%</span>
+                                </label>
+                                <input type="range" id="crm-stat-dynamics" min="0" max="100" value="50" class="w-full accent-cyan-500" oninput="document.getElementById('crm-stat-dynamics-val').textContent=this.value+'%'">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[10px] text-slate-500 uppercase tracking-widests font-space mb-1.5">
+                                    <span><i class="fas fa-music text-blue-400 mr-1"></i> Саунд-дизайн</span>
+                                    <span id="crm-stat-sound-val" class="text-blue-400 font-mono font-bold">50%</span>
+                                </label>
+                                <input type="range" id="crm-stat-sound" min="0" max="100" value="50" class="w-full accent-blue-500" oninput="document.getElementById('crm-stat-sound-val').textContent=this.value+'%'">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[10px] text-slate-500 uppercase tracking-widests font-space mb-1.5">
+                                    <span><i class="fas fa-palette text-purple-400 mr-1"></i> Цветокоррекция</span>
+                                    <span id="crm-stat-color-val" class="text-purple-400 font-mono font-bold">50%</span>
+                                </label>
+                                <input type="range" id="crm-stat-color" min="0" max="100" value="50" class="w-full accent-purple-500" oninput="document.getElementById('crm-stat-color-val').textContent=this.value+'%'">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[10px] text-slate-500 uppercase tracking-widests font-space mb-1.5">
+                                    <span><i class="fas fa-wand-magic-sparkles text-pink-400 mr-1"></i> VFX / Графика</span>
+                                    <span id="crm-stat-vfx-val" class="text-pink-400 font-mono font-bold">50%</span>
+                                </label>
+                                <input type="range" id="crm-stat-vfx" min="0" max="100" value="50" class="w-full accent-pink-500" oninput="document.getElementById('crm-stat-vfx-val').textContent=this.value+'%'">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Промокод -->
+                    <div class="rounded-3xl border border-violet-500/15 p-5 space-y-3" style="background: linear-gradient(135deg, rgba(139,92,246,0.04) 0%, rgba(99,102,241,0.02) 100%);">
+                        <div class="flex items-center gap-3 border-b border-white/[0.05] pb-3">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-500/15 border border-violet-500/25 shrink-0">
+                                <i class="fas fa-tag text-violet-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-white font-space">Промокод</p>
+                                <p class="text-[10px] text-slate-500">Необязательно — применит скидку к итоговой цене</p>
+                            </div>
+                        </div>
+                        <select id="crm-promo-select" class="w-full bg-white/[0.02] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-violet-500/40 transition" onchange="updateCrmPromoPreview()">
+                            <option value="">— без промокода —</option>
+                        </select>
+                        <div id="crm-promo-preview" class="hidden px-3 py-2 rounded-xl bg-violet-500/10 border border-violet-500/20 text-xs text-violet-300 font-mono"></div>
+                    </div>
+
+                    <!-- Назначить монтажёра (нужен для связи кабинетов) -->
+                    <div class="rounded-3xl border border-purple-500/15 p-5 space-y-3" style="background: linear-gradient(135deg, rgba(139,92,246,0.05) 0%, rgba(99,102,241,0.02) 100%);">
+                        <label class="block text-[10px] text-slate-500 uppercase tracking-widests font-space flex items-center gap-1.5"><i class="fas fa-cut text-violet-400"></i> Привязать к монтажёру</label>
+                        <select id="crm-new-editor" class="w-full bg-white/[0.02] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500/50 transition cursor-pointer">
+                            <option value="" class="bg-slate-900 text-slate-400">— не назначен —</option>
+                            ${editorsOptions}
+                        </select>
+                    </div>
+
+                    <button onclick="crmCreateClientProject()" class="pressable w-full py-4 font-bold rounded-2xl text-xs font-space uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600/30 to-pink-600/30 hover:from-indigo-600/45 hover:to-pink-600/45 text-white border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+                        <i class="fas fa-satellite-dish"></i> Создать кабинет клиента
+                    </button>
                 </div>
 
-                <!-- Блок 3: Проект для Монтажёра -->
-                <div class="rounded-3xl border border-purple-500/15 p-6 space-y-4" style="background: linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(99,102,241,0.03) 100%);">
-                    <div class="flex items-center gap-3 border-b border-white/[0.05] pb-4">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-purple-500/15 border border-purple-500/25">
-                            <i class="fas fa-cut text-purple-400 text-xs"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-white font-space">3. Проект Монтажёра</p>
-                            <p class="text-[10px] text-slate-500">Назначение штата и расчеты</p>
+                <!-- ══ ПАНЕЛЬ: ДЛЯ МОНТАЖЁРА ══ -->
+                <div id="crm-panel-editor" class="hidden space-y-4">
+
+                    <!-- Кнопка копирования -->
+                    <button onclick="copyClientDataToEditor()" class="w-full py-3 rounded-2xl border border-dashed border-indigo-500/40 bg-indigo-500/5 hover:bg-indigo-500/10 text-xs font-bold text-indigo-400 font-space transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-clone text-[10px]"></i> Заполнить как у клиента (без стоимости)
+                    </button>
+
+                    <!-- Предпросмотр данных клиента -->
+                    <div class="px-4 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.04] text-xs space-y-1">
+                        <p class="text-[9px] uppercase tracking-widests text-slate-600 font-space mb-2">Из вкладки «Для клиента»</p>
+                        <div class="flex gap-x-3 gap-y-1 flex-wrap text-xs">
+                            <span class="text-slate-400">Проект:</span><span id="crm-editor-copy-project" class="text-white font-medium">—</span>
+                            <span class="text-slate-600">·</span>
+                            <span class="text-slate-400">Клиент:</span><span id="crm-editor-copy-client" class="text-white font-medium">—</span>
+                            <span class="text-slate-600">·</span>
+                            <span class="text-slate-400">Дедлайн:</span><span id="crm-editor-copy-deadline" class="text-white font-medium">—</span>
                         </div>
                     </div>
 
-                    <div class="space-y-3.5">
+                    <!-- Назначение и задание -->
+                    <div class="rounded-3xl border border-purple-500/15 p-5 space-y-3" style="background: linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(99,102,241,0.03) 100%);">
+                        <div class="flex items-center gap-3 border-b border-white/[0.05] pb-3">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-purple-500/15 border border-purple-500/25 shrink-0">
+                                <i class="fas fa-cut text-purple-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-white font-space">Кабинет монтажёра</p>
+                                <p class="text-[10px] text-slate-500">Данные отображаются у монтажёра сразу</p>
+                            </div>
+                        </div>
                         <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Назначить монтажёра</label>
-                            <select id="crm-new-editor" class="w-full text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/50 transition cursor-pointer bg-white/[0.02] border border-white/[0.06]">
+                            <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Назначить монтажёра</label>
+                            <select id="crm-editor-assign" class="w-full bg-white/[0.02] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500/50 transition cursor-pointer">
                                 <option value="" class="bg-slate-900 text-slate-400">— не назначен —</option>
                                 ${editorsOptions}
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Базовая ставка монтажёра (₽)</label>
-                            <input type="number" id="crm-new-editor-salary" placeholder="2000" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 font-mono transition">
+                            <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space"><i class="fas fa-file-lines text-indigo-400 mr-1"></i> ТЗ для монтажёра</label>
+                            <textarea id="crm-new-tz" placeholder="Техническое задание..." class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl p-3 resize-none h-20 focus:outline-none focus:border-purple-500/40 transition"></textarea>
                         </div>
                         <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space flex items-center justify-between">
-                                Прогресс монтажа (%)
-                                <span id="crm-new-progress-display" class="text-xs font-bold text-indigo-400">10%</span>
-                            </label>
-                            <input type="range" id="crm-new-progress" min="0" max="100" value="10" class="w-full accent-indigo-600 my-2" oninput="document.getElementById('crm-new-progress-display').textContent=this.value+'%'">
+                            <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space"><i class="fas fa-image text-pink-400 mr-1"></i> Референс</label>
+                            <textarea id="crm-new-reference" placeholder="Ссылки или описание референсов..." class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl p-3 resize-none h-14 focus:outline-none focus:border-purple-500/40 transition"></textarea>
                         </div>
                         <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Начальная стадия готовности</label>
-                            <select id="crm-new-stage" class="w-full bg-white/[0.02] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
-                                <option value="brief" selected>ТЗ & Бриф</option>
-                                <option value="edit">Черновик</option>
-                                <option value="effects">Звук & FX</option>
-                                <option value="color">Цвет</option>
-                                <option value="done">Сдача</option>
-                            </select>
+                            <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space"><i class="fas fa-link text-indigo-400 mr-1"></i> Ссылка на ТЗ</label>
+                            <input type="url" id="crm-new-tk-link" placeholder="https://docs.google.com/..." class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500/40 transition">
                         </div>
                         <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space"><i class="fas fa-link text-indigo-400 mr-1"></i> Ссылка на ТЗ</label>
-                            <input type="url" id="crm-new-tk-link" placeholder="https://docs.google.com/..." class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
+                            <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Заметки для монтажёра</label>
+                            <textarea id="crm-new-editor-notes" maxlength="800" placeholder="Дополнительные инструкции..." class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl p-3 resize-none h-16 focus:outline-none focus:border-purple-500/40 transition"></textarea>
                         </div>
-                        <div>
-                            <label class="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Бриф / Комментарий к проекту</label>
-                            <textarea id="crm-new-notes" maxlength="800" placeholder="Кабинет клиента настроен. Ожидаем материалы." class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl p-3 resize-none h-20 focus:outline-none focus:border-indigo-500/40 transition"></textarea>
-                            <div class="text-right text-[9px] text-slate-500 mt-1" id="crm-new-notes-counter">0 / 800</div>
-                        </div>
-                        <div class="bg-black/20 p-4 rounded-xl border border-white/[0.04] space-y-3">
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="block text-[10px] text-slate-500 uppercase tracking-widest font-space">Доп. услуги монтажёра</label>
+                    </div>
+
+                    <!-- Финансы монтажёра -->
+                    <div class="rounded-3xl border border-emerald-500/15 p-5 space-y-3" style="background: linear-gradient(135deg, rgba(16,185,129,0.05) 0%, rgba(99,102,241,0.02) 100%);">
+                        <div class="flex items-center gap-3 border-b border-white/[0.05] pb-3">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-500/15 border border-emerald-500/25 shrink-0">
+                                <i class="fas fa-wallet text-emerald-400 text-xs"></i>
                             </div>
-                            <div class="flex gap-2 mb-2">
+                            <div>
+                                <p class="text-sm font-bold text-white font-space">Финансы монтажёра</p>
+                                <p class="text-[10px] text-slate-500">Зарплата, доп. услуги, бонусы и штрафы</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Базовая ставка (₽)</label>
+                            <input type="number" id="crm-new-editor-salary" placeholder="2000" class="w-full bg-white/[0.04] border border-white/[0.06] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500/40 font-mono transition">
+                        </div>
+                        <!-- Доп. услуги -->
+                        <div class="bg-black/20 p-4 rounded-xl border border-white/[0.04] space-y-2">
+                            <div class="flex gap-2">
                                 <select id="crm-catalog-editor-select" class="flex-1 bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500/30">
                                     <option value="">— из каталога —</option>
                                 </select>
-                                <button type="button" onclick="addCrmEditorServiceFromCatalog()" class="pressable px-3 py-2 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 flex-shrink-0">
-                                    <i class="fas fa-plus text-[9px]"></i>
-                                </button>
+                                <button type="button" onclick="addCrmEditorServiceFromCatalog()" class="pressable px-3 py-2 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 shrink-0"><i class="fas fa-plus text-[9px]"></i></button>
                             </div>
                             <div id="crm-editor-extra-services-container" class="space-y-2"></div>
-                            <button type="button" onclick="addCrmEditorExtraServiceRow()" class="text-[9px] text-slate-600 hover:text-slate-400 transition-all flex items-center gap-1">
-                                <i class="fas fa-plus text-[9px]"></i> Добавить вручную
-                            </button>
+                            <button type="button" onclick="addCrmEditorExtraServiceRow()" class="text-[9px] text-slate-600 hover:text-slate-400 transition-all flex items-center gap-1"><i class="fas fa-plus text-[9px]"></i> Добавить вручную</button>
+                        </div>
+                        <!-- Бонусы -->
+                        <div class="bg-black/20 p-4 rounded-xl border border-emerald-500/10 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[10px] text-emerald-400 uppercase tracking-widests font-space flex items-center gap-1.5"><i class="fas fa-gift"></i> Бонусы</label>
+                                <button type="button" onclick="addCrmEditorBonusRow()" class="text-[9px] text-emerald-400 hover:text-emerald-300 font-bold px-2 py-1 bg-emerald-500/10 rounded-lg flex items-center gap-1"><i class="fas fa-plus text-[9px]"></i> Добавить</button>
+                            </div>
+                            <div id="crm-editor-bonuses-container" class="space-y-2"></div>
+                            <label class="flex items-center gap-2 cursor-pointer mt-1">
+                                <input type="checkbox" id="crm-editor-no-bonus" class="accent-emerald-500 w-3.5 h-3.5" onchange="toggleCrmEditorNoBonusRow()">
+                                <span class="text-[10px] text-slate-500">Нет бонуса</span>
+                            </label>
+                        </div>
+                        <!-- Штрафы -->
+                        <div class="bg-black/20 p-4 rounded-xl border border-rose-500/10 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[10px] text-rose-400 uppercase tracking-widests font-space flex items-center gap-1.5"><i class="fas fa-triangle-exclamation"></i> Штрафы</label>
+                                <button type="button" onclick="addCrmEditorPenaltyRow()" class="text-[9px] text-rose-400 hover:text-rose-300 font-bold px-2 py-1 bg-rose-500/10 rounded-lg flex items-center gap-1"><i class="fas fa-plus text-[9px]"></i> Добавить</button>
+                            </div>
+                            <div id="crm-editor-penalties-container" class="space-y-2"></div>
+                            <label class="flex items-center gap-2 cursor-pointer mt-1">
+                                <input type="checkbox" id="crm-editor-no-penalty" class="accent-rose-500 w-3.5 h-3.5" onchange="toggleCrmEditorNoPenaltyRow()">
+                                <span class="text-[10px] text-slate-500">Нет штрафа</span>
+                            </label>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="pt-4">
-                <button onclick="crmCreateClientProject()" class="pressable w-full py-4 font-bold rounded-2xl text-xs font-space uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600/30 to-purple-600/30 hover:from-indigo-600/40 hover:to-purple-600/40 text-white border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-                    <i class="fas fa-satellite-dish"></i> Собрать проект и инициализировать кабинет
-                </button>
+                    <button onclick="crmCreateEditorProject()" class="pressable w-full py-4 font-bold rounded-2xl text-xs font-space uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600/30 to-emerald-600/30 hover:from-purple-600/45 hover:to-emerald-600/45 text-white border border-purple-500/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]">
+                        <i class="fas fa-scissors"></i> Создать кабинет монтажёра
+                    </button>
+                </div>
             </div>
         </div>
     `;
+
+    // Стили подвкладок
+    if (!document.getElementById('crm-subtab-style')) {
+        const s = document.createElement('style');
+        s.id = 'crm-subtab-style';
+        s.textContent = `.crm-sub-tab{color:#64748b}.crm-sub-tab:hover{color:#fff;background:rgba(255,255,255,0.04)}.crm-sub-tab.active-crm-sub{color:#fff;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25)}`;
+        document.head.appendChild(s);
+    }
+    refreshServiceCatalogDropdowns();
+    loadPromoCodes();
+    const promoSel = document.getElementById('crm-promo-select');
+    if (promoSel) refreshPromoDropdown(promoSel);
 }
 
 function renderCrmClientsList(projects) {
@@ -2543,69 +2665,172 @@ function renderCrmClientsList(projects) {
     }).join('');
 }
 
+// ── Промокоды ────────────────────────────────────────────────────────────────
+let _promoCodes = [];
+let _promoCodesUnsub = null;
+function loadPromoCodes() {
+    if (_promoCodesUnsub) return;
+    const ref = collection(db, ...BASE('promo_codes'));
+    _promoCodesUnsub = onSnapshot(ref, snap => {
+        _promoCodes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const sel = document.getElementById('crm-promo-select');
+        if (sel) refreshPromoDropdown(sel);
+    });
+}
+function refreshPromoDropdown(sel) {
+    sel.innerHTML = `<option value="">— без промокода —</option>` +
+        _promoCodes.map(p => {
+            const lbl = p.discountType === 'percent' ? `−${p.discountValue}%` : `−${(p.discountValue||0).toLocaleString('ru')} ₽`;
+            return `<option value="${p.id}" data-type="${p.discountType}" data-value="${p.discountValue}">${escapeHtml(p.code)} (${lbl})</option>`;
+        }).join('');
+}
+window.updateCrmPromoPreview = function() {
+    const sel = document.getElementById('crm-promo-select');
+    const preview = document.getElementById('crm-promo-preview');
+    const basePrice = parseFloat(document.getElementById('crm-new-price')?.value) || 0;
+    if (!sel || !preview) return;
+    if (!sel.value) { preview.classList.add('hidden'); return; }
+    const opt = sel.selectedOptions[0];
+    const dtype = opt.dataset.type; const dval = parseFloat(opt.dataset.value) || 0;
+    const disc = dtype === 'percent' ? Math.round(basePrice * dval / 100) : Math.min(dval, basePrice);
+    preview.classList.remove('hidden');
+    preview.textContent = `Скидка: −${disc.toLocaleString('ru')} ₽ → Итого: ${(basePrice - disc).toLocaleString('ru')} ₽`;
+};
+
+// ── Переключение мини-вкладок ─────────────────────────────────────────────────
+let _crmActiveSubTab = 'client';
+window.switchCrmSubTab = function(tab) {
+    _crmActiveSubTab = tab;
+    document.getElementById('crm-subtab-client')?.classList.toggle('active-crm-sub', tab === 'client');
+    document.getElementById('crm-subtab-editor')?.classList.toggle('active-crm-sub', tab === 'editor');
+    document.getElementById('crm-panel-client')?.classList.toggle('hidden', tab !== 'client');
+    document.getElementById('crm-panel-editor')?.classList.toggle('hidden', tab !== 'editor');
+};
+
+// ── Строки бонусов / штрафов монтажёра ───────────────────────────────────────
+window.addCrmEditorBonusRow = function(name='', type='rub', value='') {
+    const cont = document.getElementById('crm-editor-bonuses-container'); if (!cont) return;
+    const id = 'ceb-' + Date.now();
+    const row = document.createElement('div'); row.className = 'flex flex-wrap gap-2 items-center'; row.id = id;
+    row.innerHTML = `<input type="text" class="ceb-name flex-1 min-w-[100px] bg-white/[0.04] border border-white/[0.06] rounded-xl p-2.5 text-xs text-white focus:outline-none" placeholder="Название" value="${escapeHtml(name)}">
+        <select class="ceb-type bg-white/[0.04] border border-white/[0.06] rounded-xl p-2.5 text-xs text-white focus:outline-none"><option value="rub" ${type==='rub'?'selected':''}>₽</option><option value="percent" ${type==='percent'?'selected':''}>%</option></select>
+        <input type="number" class="ceb-value w-20 bg-white/[0.04] border border-white/[0.06] rounded-xl p-2.5 font-mono text-xs text-white focus:outline-none" placeholder="0" value="${value}">
+        <button type="button" onclick="document.getElementById('${id}').remove()" class="pressable w-8 h-8 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center shrink-0"><i class="fas fa-trash text-[10px]"></i></button>`;
+    cont.appendChild(row);
+};
+window.addCrmEditorPenaltyRow = function(name='', type='rub', value='') {
+    const cont = document.getElementById('crm-editor-penalties-container'); if (!cont) return;
+    const id = 'cep-' + Date.now();
+    const row = document.createElement('div'); row.className = 'flex flex-wrap gap-2 items-center'; row.id = id;
+    row.innerHTML = `<input type="text" class="cep-name flex-1 min-w-[100px] bg-white/[0.04] border border-white/[0.06] rounded-xl p-2.5 text-xs text-white focus:outline-none" placeholder="Название" value="${escapeHtml(name)}">
+        <select class="cep-type bg-white/[0.04] border border-white/[0.06] rounded-xl p-2.5 text-xs text-white focus:outline-none"><option value="rub" ${type==='rub'?'selected':''}>₽</option><option value="percent" ${type==='percent'?'selected':''}>%</option></select>
+        <input type="number" class="cep-value w-20 bg-white/[0.04] border border-white/[0.06] rounded-xl p-2.5 font-mono text-xs text-white focus:outline-none" placeholder="0" value="${value}">
+        <button type="button" onclick="document.getElementById('${id}').remove()" class="pressable w-8 h-8 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center shrink-0"><i class="fas fa-trash text-[10px]"></i></button>`;
+    cont.appendChild(row);
+};
+window.toggleCrmEditorNoBonusRow = function() {
+    const cb = document.getElementById('crm-editor-no-bonus');
+    const cont = document.getElementById('crm-editor-bonuses-container');
+    if (cb?.checked && cont) cont.innerHTML = '';
+};
+window.toggleCrmEditorNoPenaltyRow = function() {
+    const cb = document.getElementById('crm-editor-no-penalty');
+    const cont = document.getElementById('crm-editor-penalties-container');
+    if (cb?.checked && cont) cont.innerHTML = '';
+};
+
+// ── Кнопка "Заполнить как у клиента" ─────────────────────────────────────────
+window.copyClientDataToEditor = function() {
+    const proj    = document.getElementById('crm-new-project')?.value.trim() || '';
+    const name    = document.getElementById('crm-new-name')?.value.trim() || '';
+    const deadline= document.getElementById('crm-new-deadline')?.value || '';
+    const el = (id) => document.getElementById(id);
+    if (el('crm-editor-copy-project')) el('crm-editor-copy-project').textContent = proj || '—';
+    if (el('crm-editor-copy-client'))  el('crm-editor-copy-client').textContent  = name || '—';
+    if (el('crm-editor-copy-deadline'))el('crm-editor-copy-deadline').textContent= deadline || '—';
+    // Копируем доп. услуги клиента → монтажёру (без цены)
+    const editCont = el('crm-editor-extra-services-container');
+    if (editCont) {
+        editCont.innerHTML = '';
+        document.querySelectorAll('#crm-extra-services-container > div').forEach(row => {
+            const n = row.querySelector('.crm-es-name')?.value.trim() || '';
+            if (n) addCrmEditorExtraServiceRow(n, '');
+        });
+    }
+    showToast('Данные клиента скопированы — заполните ставку монтажёра', 'info');
+};
+
+// ── Собрать массив бонусов/штрафов из DOM ─────────────────────────────────────
+function collectCrmBonusRows(containerId, nameClass, typeClass, valueClass) {
+    const rows = [];
+    document.querySelectorAll(`#${containerId} > div`).forEach(row => {
+        const n = row.querySelector(`.${nameClass}`)?.value.trim() || '';
+        const t = row.querySelector(`.${typeClass}`)?.value || 'rub';
+        const v = parseFloat(row.querySelector(`.${valueClass}`)?.value) || 0;
+        if (n) rows.push({ name: n, type: t, value: v });
+    });
+    return rows;
+}
+
+// ── Создать кабинет клиента ───────────────────────────────────────────────────
 window.crmCreateClientProject = async function() {
-    const rawCode   = (document.getElementById('crm-new-code')?.value || '').trim();
-    const name      = (document.getElementById('crm-new-name')?.value || '').trim();
-    const project   = (document.getElementById('crm-new-project')?.value || '').trim();
-    const category  = (document.getElementById('crm-new-category')?.value || '').trim();
-    const deadline  = document.getElementById('crm-new-deadline')?.value || '';
-    const basePrice = parseFloat(document.getElementById('crm-new-base-price')?.value) || 0;
-    
-    // Монтажёр
-    const editorId  = document.getElementById('crm-new-editor')?.value || '';
+    const rawCode  = (document.getElementById('crm-new-code')?.value || '').trim();
+    const name     = (document.getElementById('crm-new-name')?.value || '').trim();
+    const project  = (document.getElementById('crm-new-project')?.value || '').trim();
+    const deadline = document.getElementById('crm-new-deadline')?.value || '';
+    const basePrice= parseFloat(document.getElementById('crm-new-price')?.value) || 0;
+    const editorId = document.getElementById('crm-new-editor')?.value || '';
     const editorName = editorId ? (_editors.find(e => e.id === editorId)?.name || '') : '';
-    const editorSalary = parseFloat(document.getElementById('crm-new-editor-salary')?.value) || 0;
-    const notes = document.getElementById('crm-new-notes')?.value.trim() || 'Кабинет клиента настроен. Ожидаем материалы.';
-    const progress = parseInt(document.getElementById('crm-new-progress')?.value) || 10;
-    const stage = document.getElementById('crm-new-stage')?.value || 'brief';
-    const tkLink = document.getElementById('crm-new-tk-link')?.value.trim() || '';
-
-    // Сбор доп. услуг клиента
-    const clientExtraServices = [];
-    document.querySelectorAll('#crm-extra-services-container > div').forEach(row => {
-        const n = row.querySelector('.crm-es-name').value.trim();
-        const p = parseFloat(row.querySelector('.crm-es-price').value) || 0;
-        if (n) clientExtraServices.push({ name: n, price: p });
-    });
-
-    // Сбор доп. услуг монтажёра
-    const editorExtraServices = [];
-    document.querySelectorAll('#crm-editor-extra-services-container > div').forEach(row => {
-        const n = row.querySelector('.crm-ees-name').value.trim();
-        const p = parseFloat(row.querySelector('.crm-ees-price').value) || 0;
-        if (n) editorExtraServices.push({ name: n, price: p });
-    });
 
     if (!rawCode || !name || !project) {
         showToast('Заполните обязательные поля (Код, Имя, Проект)', 'error');
         return;
     }
 
-    const editorExtraSalary = editorExtraServices.reduce((sum, item) => sum + item.price, 0);
+    // Доп. услуги клиента
+    const clientExtraServices = [];
+    document.querySelectorAll('#crm-extra-services-container > div').forEach(row => {
+        const n = row.querySelector('.crm-es-name')?.value.trim();
+        const p = parseFloat(row.querySelector('.crm-es-price')?.value) || 0;
+        if (n) clientExtraServices.push({ name: n, price: p });
+    });
+
+    // Характеристики ролика
+    const stats = {
+        dynamics: parseInt(document.getElementById('crm-stat-dynamics')?.value) || 50,
+        sound:    parseInt(document.getElementById('crm-stat-sound')?.value)    || 50,
+        color:    parseInt(document.getElementById('crm-stat-color')?.value)    || 50,
+        vfx:      parseInt(document.getElementById('crm-stat-vfx')?.value)      || 50,
+    };
+
+    // Промокод
+    const promoSel = document.getElementById('crm-promo-select');
+    let promoCode = null; let discountAmount = 0;
+    if (promoSel?.value) {
+        const opt = promoSel.selectedOptions[0];
+        const dtype = opt.dataset.type; const dval = parseFloat(opt.dataset.value)||0;
+        discountAmount = dtype==='percent' ? Math.round(basePrice*dval/100) : Math.min(dval,basePrice);
+        promoCode = { code: opt.text.split(' (')[0], type: dtype, value: dval, discountAmount };
+    }
 
     const data = {
         clientName: name,
         projectName: project,
-        clientCategory: category,
         deadline: deadline,
-        baseSalary: basePrice,
         basePrice: basePrice,
+        baseSalary: basePrice,
+        finalPrice: basePrice - discountAmount,
+        promoCode: promoCode,
         clientExtraServices: clientExtraServices,
-
-        // Монтажер
+        stats: stats,
         editorId: editorId,
         editorName: editorName,
-        editorSalary: editorSalary,
-        editorExtraServices: editorExtraServices,
-        editorExtraSalary: editorExtraSalary,
-        editorBonusName: '',
-        editorBonusType: 'rub',
-        editorBonusValue: 0,
-        
-        stage: stage,
-        progress: progress,
-        tkLink: tkLink,
-        notes: notes,
+        editorSalary: 0,
+        editorExtraServices: [],
+        editorExtraSalary: 0,
+        editorBonusName: '', editorBonusType: 'rub', editorBonusValue: 0,
+        stage: 'brief', progress: 10,
+        notes: 'Кабинет клиента настроен. Ожидаем материалы.',
         addons: [],
         accessCode: rawCode.toLowerCase(),
         createdAt: new Date().toISOString()
@@ -2613,19 +2838,120 @@ window.crmCreateClientProject = async function() {
 
     try {
         await addDoc(collection(db, ...BASE('projects')), data);
-        showToast('Проект и личный кабинет успешно созданы!', 'success');
-        
-        // Сброс полей
-        ['crm-new-code','crm-new-name','crm-new-project','crm-new-category','crm-new-base-price','crm-new-deadline', 'crm-new-editor-salary', 'crm-new-notes', 'crm-new-tk-link'].forEach(id => {
+        showToast('Кабинет клиента успешно создан!', 'success');
+        ['crm-new-code','crm-new-name','crm-new-project','crm-new-price','crm-new-deadline'].forEach(id => {
             const el = document.getElementById(id); if (el) el.value = '';
         });
-        const containerClient = document.getElementById('crm-extra-services-container');
-        if (containerClient) containerClient.innerHTML = '';
-        const containerEditor = document.getElementById('crm-editor-extra-services-container');
-        if (containerEditor) containerEditor.innerHTML = '';
-        
-        const sel = document.getElementById('crm-new-editor');
-        if (sel) sel.value = '';
+        const c1 = document.getElementById('crm-extra-services-container'); if(c1) c1.innerHTML='';
+        const ps = document.getElementById('crm-promo-select'); if(ps) ps.value='';
+        const pp = document.getElementById('crm-promo-preview'); if(pp) pp.classList.add('hidden');
+        ['crm-stat-dynamics','crm-stat-sound','crm-stat-color','crm-stat-vfx'].forEach(id => {
+            const el = document.getElementById(id); if(el) { el.value='50'; el.dispatchEvent(new Event('input')); }
+        });
+        const se = document.getElementById('crm-new-editor'); if(se) se.value='';
+    } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
+};
+
+// ── Создать кабинет монтажёра ─────────────────────────────────────────────────
+window.crmCreateEditorProject = async function() {
+    const rawCode  = (document.getElementById('crm-new-code')?.value || '').trim();
+    const name     = (document.getElementById('crm-new-name')?.value || '').trim();
+    const project  = (document.getElementById('crm-new-project')?.value || '').trim();
+    const deadline = document.getElementById('crm-new-deadline')?.value || '';
+    const basePrice= parseFloat(document.getElementById('crm-new-price')?.value) || 0;
+
+    if (!rawCode || !name || !project) {
+        showToast('Сначала заполните вкладку «Для клиента» (Код, Имя, Проект)', 'error');
+        switchCrmSubTab('client'); return;
+    }
+
+    const editorId   = document.getElementById('crm-editor-assign')?.value || '';
+    const editorName = editorId ? (_editors.find(e => e.id === editorId)?.name || '') : '';
+    const editorSalary= parseFloat(document.getElementById('crm-new-editor-salary')?.value) || 0;
+    const tzText     = document.getElementById('crm-new-tz')?.value.trim() || '';
+    const reference  = document.getElementById('crm-new-reference')?.value.trim() || '';
+    const tkLink     = document.getElementById('crm-new-tk-link')?.value.trim() || '';
+    const editorNotes= document.getElementById('crm-new-editor-notes')?.value.trim() || '';
+
+    // Доп. услуги клиента
+    const clientExtraServices = [];
+    document.querySelectorAll('#crm-extra-services-container > div').forEach(row => {
+        const n = row.querySelector('.crm-es-name')?.value.trim();
+        const p = parseFloat(row.querySelector('.crm-es-price')?.value)||0;
+        if(n) clientExtraServices.push({name:n,price:p});
+    });
+
+    // Доп. услуги монтажёра
+    const editorExtraServices = [];
+    document.querySelectorAll('#crm-editor-extra-services-container > div').forEach(row => {
+        const n = row.querySelector('.crm-ees-name')?.value.trim();
+        const p = parseFloat(row.querySelector('.crm-ees-price')?.value)||0;
+        if(n) editorExtraServices.push({name:n,price:p});
+    });
+
+    // Бонусы/штрафы монтажёра
+    const editorBonuses   = collectCrmBonusRows('crm-editor-bonuses-container',   'ceb-name','ceb-type','ceb-value');
+    const editorPenalties = collectCrmBonusRows('crm-editor-penalties-container',  'cep-name','cep-type','cep-value');
+    const editorNoBonus   = document.getElementById('crm-editor-no-bonus')?.checked  || false;
+    const editorNoPenalty = document.getElementById('crm-editor-no-penalty')?.checked|| false;
+
+    // Характеристики ролика
+    const stats = {
+        dynamics: parseInt(document.getElementById('crm-stat-dynamics')?.value) || 50,
+        sound:    parseInt(document.getElementById('crm-stat-sound')?.value)    || 50,
+        color:    parseInt(document.getElementById('crm-stat-color')?.value)    || 50,
+        vfx:      parseInt(document.getElementById('crm-stat-vfx')?.value)      || 50,
+    };
+
+    // Промокод
+    const promoSel = document.getElementById('crm-promo-select');
+    let promoCode = null; let discountAmount = 0;
+    if (promoSel?.value) {
+        const opt = promoSel.selectedOptions[0];
+        const dtype = opt.dataset.type; const dval = parseFloat(opt.dataset.value)||0;
+        discountAmount = dtype==='percent' ? Math.round(basePrice*dval/100) : Math.min(dval,basePrice);
+        promoCode = { code: opt.text.split(' (')[0], type: dtype, value: dval, discountAmount };
+    }
+
+    const editorExtraSalary = editorExtraServices.reduce((s,i)=>s+i.price,0);
+
+    const data = {
+        clientName: name, projectName: project, deadline: deadline,
+        basePrice: basePrice, baseSalary: basePrice,
+        finalPrice: basePrice - discountAmount, promoCode,
+        clientExtraServices, stats,
+        editorId, editorName, editorSalary,
+        editorExtraServices, editorExtraSalary,
+        editorBonuses: editorNoBonus ? [] : editorBonuses,
+        editorPenalties: editorNoPenalty ? [] : editorPenalties,
+        editorNoBonus, editorNoPenalty,
+        tzText, reference, tkLink,
+        notes: editorNotes || 'Кабинет клиента настроен. Ожидаем материалы.',
+        editorBonusName: '', editorBonusType: 'rub', editorBonusValue: 0,
+        stage: 'brief', progress: 10, addons: [],
+        accessCode: rawCode.toLowerCase(),
+        createdAt: new Date().toISOString()
+    };
+
+    try {
+        await addDoc(collection(db, ...BASE('projects')), data);
+        showToast('Кабинеты клиента и монтажёра успешно созданы!', 'success');
+        ['crm-new-code','crm-new-name','crm-new-project','crm-new-price','crm-new-deadline',
+         'crm-new-editor-salary','crm-new-tk-link','crm-new-tz','crm-new-reference','crm-new-editor-notes'
+        ].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+        ['crm-extra-services-container','crm-editor-extra-services-container',
+         'crm-editor-bonuses-container','crm-editor-penalties-container'
+        ].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=''; });
+        const ps=document.getElementById('crm-promo-select'); if(ps) ps.value='';
+        const pp=document.getElementById('crm-promo-preview'); if(pp) pp.classList.add('hidden');
+        const ea=document.getElementById('crm-editor-assign'); if(ea) ea.value='';
+        const se=document.getElementById('crm-new-editor'); if(se) se.value='';
+        ['crm-stat-dynamics','crm-stat-sound','crm-stat-color','crm-stat-vfx'].forEach(id => {
+            const el=document.getElementById(id); if(el){el.value='50';el.dispatchEvent(new Event('input'));}
+        });
+        ['crm-editor-copy-project','crm-editor-copy-client','crm-editor-copy-deadline'].forEach(id=>{
+            const el=document.getElementById(id); if(el) el.textContent='—';
+        });
     } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
 };
 
