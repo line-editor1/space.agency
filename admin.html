@@ -2,8 +2,24 @@
 <html lang="ru" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>SPACE Admin Panel</title>
+    <link rel="icon" id="dynamic-favicon" type="image/png" href="1000002719.png">
+    <script>
+      (function(){
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function(){
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          ctx.beginPath(); ctx.arc(32,32,32,0,Math.PI*2); ctx.closePath(); ctx.clip();
+          ctx.drawImage(img,0,0,64,64);
+          var el = document.getElementById('dynamic-favicon');
+          if(el) el.href = c.toDataURL('image/png');
+        };
+        img.src = '1000002719.png';
+      })();
+    </script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1011,6 +1027,47 @@
                         <p class="text-[10px] text-slate-700 mt-2">Если пусто — используется основная ссылка Telegram из настроек</p>
                     </div>
 
+                    <!-- Базовые ставки характеристик ролика -->
+                    <div class="rounded-3xl border border-cyan-500/20 p-6 space-y-5" style="background: linear-gradient(135deg, rgba(0,198,251,0.04) 0%, rgba(0,82,212,0.02) 100%);">
+                        <div>
+                            <p class="text-[10px] text-cyan-400 uppercase tracking-[0.2em] font-space font-bold flex items-center gap-2 mb-1"><i class="fas fa-sliders text-cyan-400"></i> Базовые ставки характеристик ролика</p>
+                            <p class="text-[10px] text-slate-600">Значения по умолчанию для новых проектов в ЛК клиента</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="flex justify-between text-[10px] text-slate-400 font-space mb-1.5">
+                                    <span><i class="fas fa-bolt text-cyan-400 mr-1"></i> Динамика монтажа</span>
+                                    <span id="cat-rate-dynamics-val" class="text-cyan-400 font-mono font-bold">50%</span>
+                                </label>
+                                <input type="range" id="cat-rate-dynamics" min="0" max="100" value="50" class="w-full accent-cyan-500" oninput="document.getElementById('cat-rate-dynamics-val').textContent=this.value+'%'">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[10px] text-slate-400 font-space mb-1.5">
+                                    <span><i class="fas fa-music text-blue-400 mr-1"></i> Саунд-дизайн</span>
+                                    <span id="cat-rate-sound-val" class="text-blue-400 font-mono font-bold">50%</span>
+                                </label>
+                                <input type="range" id="cat-rate-sound" min="0" max="100" value="50" class="w-full accent-blue-500" oninput="document.getElementById('cat-rate-sound-val').textContent=this.value+'%'">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[10px] text-slate-400 font-space mb-1.5">
+                                    <span><i class="fas fa-palette text-purple-400 mr-1"></i> Цветокоррекция</span>
+                                    <span id="cat-rate-color-val" class="text-purple-400 font-mono font-bold">50%</span>
+                                </label>
+                                <input type="range" id="cat-rate-color" min="0" max="100" value="50" class="w-full accent-purple-500" oninput="document.getElementById('cat-rate-color-val').textContent=this.value+'%'">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-[10px] text-slate-400 font-space mb-1.5">
+                                    <span><i class="fas fa-wand-magic-sparkles text-pink-400 mr-1"></i> VFX / Графика</span>
+                                    <span id="cat-rate-vfx-val" class="text-pink-400 font-mono font-bold">50%</span>
+                                </label>
+                                <input type="range" id="cat-rate-vfx" min="0" max="100" value="50" class="w-full accent-pink-500" oninput="document.getElementById('cat-rate-vfx-val').textContent=this.value+'%'">
+                            </div>
+                        </div>
+                        <button onclick="saveCategoryRates()" class="w-full py-3 rounded-2xl border border-cyan-500/25 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-bold text-xs font-space transition flex items-center justify-center gap-2">
+                            <i class="fas fa-save text-xs"></i> Сохранить базовые ставки
+                        </button>
+                    </div>
+
                     <!-- Сохранить — всегда внизу -->
                     <button onclick="saveCalcAdminSettings()" class="w-full py-4 rounded-2xl font-black font-space text-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(168,85,247,0.25)] flex items-center justify-center gap-2.5" style="background: linear-gradient(135deg, rgba(168,85,247,0.45) 0%, rgba(79,172,254,0.2) 100%); border-top: 1px solid rgba(255,255,255,0.2); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(168,85,247,0.2); color: white;">
                         <i class="fas fa-save"></i> Сохранить настройки калькулятора
@@ -1219,6 +1276,7 @@
             if (tabName === 'calculator') {
                 setTimeout(() => {
                     if (typeof window.renderCalcAdminTab === 'function') window.renderCalcAdminTab();
+                    if (typeof window.loadCategoryRates === 'function') window.loadCategoryRates();
                 }, 50);
             }
             // При открытии промокодов
@@ -2282,6 +2340,66 @@
                 }
             });
             if (ok) showToast('Настройки калькулятора сохранены!', 'success');
+        };
+
+        // ── БАЗОВЫЕ СТАВКИ ХАРАКТЕРИСТИК ─────────────────────────────────
+        const CAT_RATES_KEY = 'space_cat_rates';
+        const CAT_RATES_FIRESTORE = 'category_rates';
+
+        window.saveCategoryRates = async function() {
+            const g = id => parseInt(document.getElementById(id)?.value) || 50;
+            const rates = {
+                dynamics: g('cat-rate-dynamics'),
+                sound:    g('cat-rate-sound'),
+                color:    g('cat-rate-color'),
+                vfx:      g('cat-rate-vfx')
+            };
+            try { localStorage.setItem(CAT_RATES_KEY, JSON.stringify(rates)); } catch(e) {}
+            try {
+                if (typeof window._firebaseSaveCalcConfig === 'function') {
+                    // Сохраняем в отдельный документ
+                    const { doc, setDoc, collection } = await import('https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js');
+                    await setDoc(doc(window._db, 'artifacts', window._APP_ID, 'public', 'data', CAT_RATES_FIRESTORE, 'main'), rates, { merge: true });
+                }
+            } catch(e) {
+                console.warn('Cat rates Firebase save failed:', e);
+            }
+            showToast('Базовые ставки сохранены!', 'success');
+        };
+
+        window.loadCategoryRates = async function() {
+            // Сначала localStorage
+            let rates = { dynamics: 50, sound: 50, color: 50, vfx: 50 };
+            try {
+                const saved = localStorage.getItem(CAT_RATES_KEY);
+                if (saved) rates = { ...rates, ...JSON.parse(saved) };
+            } catch(e) {}
+            // Затем Firebase
+            try {
+                if (window._db && window._APP_ID) {
+                    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js');
+                    const snap = await getDoc(doc(window._db, 'artifacts', window._APP_ID, 'public', 'data', CAT_RATES_FIRESTORE, 'main'));
+                    if (snap.exists()) rates = { ...rates, ...snap.data() };
+                }
+            } catch(e) {}
+            // Применяем к слайдерам
+            ['dynamics','sound','color','vfx'].forEach(k => {
+                const el = document.getElementById('cat-rate-' + k);
+                const vl = document.getElementById('cat-rate-' + k + '-val');
+                if (el) el.value = rates[k] || 50;
+                if (vl) vl.textContent = (rates[k] || 50) + '%';
+            });
+            return rates;
+        };
+
+        // Экспортируем ставки для использования при создании проекта
+        window.getDefaultCategoryRates = async function() {
+            let rates = { dynamics: 50, sound: 50, color: 50, vfx: 50 };
+            try {
+                const saved = localStorage.getItem(CAT_RATES_KEY);
+                if (saved) return { ...rates, ...JSON.parse(saved) };
+            } catch(e) {}
+            return rates;
         };
 
         // calc render: встроен в switchAdminTab
@@ -4688,7 +4806,7 @@
                                         <!-- Названия этапов -->
                                         <div>
                                             <label class="block text-[9px] text-slate-600 uppercase tracking-wider mb-2 font-space font-bold">Названия этапов</label>
-                                            <div class="grid grid-cols-5 gap-1.5">
+                                            <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                                                 <div class="text-center">
                                                     <span class="text-[8px] text-slate-700 block mb-1">①</span>
                                                     <input type="text" id="s1-${p.id}" class="crm-s1 w-full bg-black/60 border border-white/8 text-[9px] rounded-lg py-1.5 text-center text-white outline-none focus:border-cyan-500/60" value="${s1}">
@@ -4714,7 +4832,7 @@
                                         <!-- Выбор активного этапа -->
                                         <div>
                                             <label class="block text-[9px] text-slate-600 uppercase tracking-wider mb-2 font-space font-bold">Текущий этап</label>
-                                            <div class="grid grid-cols-5 gap-1.5 bg-black/50 p-1.5 rounded-xl border border-white/5">
+                                            <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 bg-black/50 p-1.5 rounded-xl border border-white/5">
                                                 ${stagesHtml}
                                             </div>
                                             <p class="text-[10px] text-cyan-500 font-bold font-space text-center mt-2" id="lbl-stage-${p.id}">${stageMap[currentStage] || s1}</p>
@@ -4770,7 +4888,7 @@
                                     </div>
                                     <div class="p-4 space-y-3">
                                         <div class="space-y-2">${addonsHtml}</div>
-                                        <div class="grid grid-cols-3 gap-2 pt-1">
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
                                             <input type="text" id="addon-label-${p.id}" placeholder="Название услуги" class="col-span-2 bg-black/60 border border-white/8 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-cyan-500/60 transition-all duration-200 placeholder:text-slate-700">
                                             <input type="number" id="addon-price-${p.id}" placeholder="₽" class="bg-black/60 border border-white/8 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-cyan-500/60 font-mono transition-all duration-200 placeholder:text-slate-700">
                                         </div>
@@ -4810,7 +4928,7 @@
                                             </div>`).join('')
                                         }</div>
                                         <!-- Добавить доп. услугу монтажёру -->
-                                        <div class="grid grid-cols-3 gap-2 pt-1">
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
                                             <input type="text" id="ep-addon-label-${p.id}" placeholder="Название (напр. Срочность)"
                                                 class="col-span-2 bg-black/60 border border-violet-500/15 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-violet-500/40 transition-all duration-200 placeholder:text-slate-700">
                                             <input type="number" id="ep-addon-price-${p.id}" placeholder="₽"

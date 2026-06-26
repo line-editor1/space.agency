@@ -14,8 +14,23 @@
     <meta name="theme-color" content="#030208">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" type="image/png" href="1000002719.png">
+    <link rel="icon" id="dynamic-favicon" type="image/png" href="1000002719.png">
     <link rel="apple-touch-icon" href="1000002719.png">
+    <script>
+      (function(){
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function(){
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          ctx.beginPath(); ctx.arc(32,32,32,0,Math.PI*2); ctx.closePath(); ctx.clip();
+          ctx.drawImage(img,0,0,64,64);
+          var el = document.getElementById('dynamic-favicon');
+          if(el) el.href = c.toDataURL('image/png');
+        };
+        img.src = '1000002719.png';
+      })();
+    </script>
 
     <style>
         * { caret-color: transparent; }
@@ -191,6 +206,34 @@
                 max-height: 94vh;
                 border-radius: 1.5rem;
             }
+        }
+        /* Тёмный фон для всех выпадающих списков select */
+        select {
+            background-color: #0d0d1a !important;
+            color: #f8fafc !important;
+        }
+        select option {
+            background-color: #0d0d1a !important;
+            color: #f8fafc !important;
+        }
+        select option:hover, select option:checked {
+            background-color: #1e1e3a !important;
+        }
+
+        /* iOS Safe Area */
+        body { padding-bottom: env(safe-area-inset-bottom); }
+        nav { padding-top: env(safe-area-inset-top); }
+
+        /* Унифицированный трек для всех range-ползунков */
+        input[type='range']::-webkit-slider-runnable-track {
+            background: rgba(255, 255, 255, 0.15);
+            height: 4px;
+            border-radius: 2px;
+        }
+        input[type='range']::-moz-range-track {
+            background: rgba(255, 255, 255, 0.15);
+            height: 4px;
+            border-radius: 2px;
         }
     </style>
 </head>
@@ -563,7 +606,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Стадия готовности</label>
                 <select id="p-stage" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
@@ -582,10 +625,23 @@
                 <input type="range" id="p-progress" min="0" max="100" class="w-full accent-indigo-600 my-2" oninput="document.getElementById('p-progress-display').textContent=this.value+'%'">
             </div>
         </div>
-        <div>
-            <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Бриф / Заметки к проекту</label>
-            <textarea id="p-notes" maxlength="800" class="w-full bg-black/40 border border-white/5 rounded-xl p-3.5 text-xs text-white resize-none h-20 focus:outline-none focus:border-indigo-500/30"></textarea>
-            <div class="text-right text-[9px] text-slate-500 mt-1" id="p-notes-counter">0 / 800</div>
+        <!-- Два типа комментариев -->
+        <div class="space-y-3">
+            <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-3.5">
+                <label class="block text-[10px] text-indigo-400 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <i class="fas fa-pen-to-square text-[9px]"></i> Заметка к проекту
+                    <span class="text-slate-600 normal-case tracking-normal font-normal">(для монтажёра, от администратора)</span>
+                </label>
+                <textarea id="p-editor-note" maxlength="800" class="w-full bg-black/40 border border-indigo-500/20 rounded-xl p-3 text-xs text-white resize-none h-16 focus:outline-none focus:border-indigo-500/40" placeholder="Инструкции, замечания, пожелания для монтажёра..."></textarea>
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <i class="fas fa-comment text-[9px] text-cyan-400"></i> Комментарий для клиента
+                    <span class="text-slate-600 normal-case tracking-normal font-normal">(виден клиенту)</span>
+                </label>
+                <textarea id="p-notes" maxlength="800" class="w-full bg-black/40 border border-white/5 rounded-xl p-3.5 text-xs text-white resize-none h-16 focus:outline-none focus:border-indigo-500/30" placeholder="Сообщение клиенту..."></textarea>
+                <div class="text-right text-[9px] text-slate-500 mt-1" id="p-notes-counter">0 / 800</div>
+            </div>
         </div>
 
         <div class="flex gap-3 pt-2">
@@ -980,11 +1036,11 @@ window.addExtraServiceRow = function(name = '', price = '') {
     if (!container) return;
     const rowId = 'es-row-' + Date.now() + Math.random().toString(36).substr(2, 5);
     const row = document.createElement('div');
-    row.className = "flex gap-2 items-center";
+    row.className = "flex flex-wrap gap-2 items-center";
     row.id = rowId;
 
     row.innerHTML = `
-        <input type="text" class="es-service-name flex-1 bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Название услуги" value="${escapeHtml(name)}">
+        <input type="text" class="es-service-name flex-1 min-w-0 bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Название услуги" value="${escapeHtml(name)}">
         <input type="number" class="es-price-input w-24 bg-black/40 border border-white/5 rounded-xl p-2.5 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Цена ₽" value="${price || ''}" oninput="recalculateExtraSalaryTotal()">
         <button type="button" onclick="document.getElementById('${rowId}').remove(); recalculateExtraSalaryTotal();" class="pressable w-8 h-8 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center flex-shrink-0 transition-all"><i class="fas fa-trash text-[10px]"></i></button>
     `;
@@ -1004,11 +1060,11 @@ window.addClientExtraServiceRow = function(name = '', price = '') {
     if (!container) return;
     const rowId = 'ces-row-' + Date.now() + Math.random().toString(36).substr(2, 5);
     const row = document.createElement('div');
-    row.className = "flex gap-2 items-center";
+    row.className = "flex flex-wrap gap-2 items-center";
     row.id = rowId;
 
     row.innerHTML = `
-        <input type="text" class="ces-service-name flex-1 bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Название услуги" value="${escapeHtml(name)}">
+        <input type="text" class="ces-service-name flex-1 min-w-0 bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Название услуги" value="${escapeHtml(name)}">
         <input type="number" class="ces-price-input w-24 bg-black/40 border border-white/5 rounded-xl p-2.5 font-mono text-xs text-white focus:outline-none focus:border-indigo-500/30" placeholder="Цена ₽" value="${price || ''}" oninput="recalculateClientExtraSalaryTotal()">
         <button type="button" onclick="document.getElementById('${rowId}').remove(); recalculateClientExtraSalaryTotal();" class="pressable w-8 h-8 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center flex-shrink-0 transition-all"><i class="fas fa-trash text-[10px]"></i></button>
     `;
@@ -1074,14 +1130,22 @@ function setupPWA() {
         return;
     }
 
+    // Регистрация Service Worker (обязательно для PWA install prompt)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW reg error:', err));
+    }
+
     const manifestObj = {
         "name": "SPACE CONTROL",
         "short_name": "SPACE",
-        "start_url": ".",
+        "start_url": "./space_control.html",
         "display": "standalone",
         "background_color": "#030208",
         "theme_color": "#030208",
-        "icons": [{ "src": "1000002719.png", "sizes": "512x512", "type": "image/png" }]
+        "icons": [
+            { "src": "1000002719.png", "sizes": "192x192", "type": "image/png" },
+            { "src": "1000002719.png", "sizes": "512x512", "type": "image/png" }
+        ]
     };
     const blob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
     const manifestLink = document.createElement('link');
@@ -1092,8 +1156,26 @@ function setupPWA() {
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
+        // Показать кнопку в шапке
+        const headerBtn = document.getElementById('header-pwa-install-btn');
+        if (headerBtn) headerBtn.classList.remove('hidden');
+        // Показать баннер внизу
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) {
+            banner.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                banner.classList.remove('translate-y-10', 'opacity-0');
+            });
+        }
+        // Показать секцию в профиле
         const installSection = document.getElementById('profile-pwa-install-section');
         if (installSection) installSection.classList.remove('hidden');
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.classList.add('hidden');
     });
 }
 
@@ -1322,6 +1404,27 @@ window.switchTab = function(tabName) {
 
     updateActiveTabHeader(tabName);
     renderActiveTabContent();
+    // Запускаем автосохранение черновика при переходе на вкладку клиентов
+    if (tabName === 'clients') {
+        setTimeout(crmSetupDraftAutosave, 150);
+        // Применяем базовые ставки из admin.html если доступны
+        setTimeout(async () => {
+            try {
+                const saved = localStorage.getItem('space_cat_rates');
+                if (saved) {
+                    const rates = JSON.parse(saved);
+                    ['dynamics','sound','color','vfx'].forEach(k => {
+                        const el = document.getElementById('crm-stat-' + k);
+                        const vl = document.getElementById('crm-stat-' + k + '-val');
+                        if (el && !el._userModified) {
+                            el.value = rates[k] || 50;
+                            if (vl) vl.textContent = (rates[k] || 50) + '%';
+                        }
+                    });
+                }
+            } catch(e) {}
+        }, 200);
+    }
 };
 
 window.toggleMobileMenu = function(open) {
@@ -1438,7 +1541,18 @@ function renderSegmentTabs() {
 function renderActiveTabContent() {
     if (activeTab === 'dashboard') renderAdminDashboard();
     else if (activeTab === 'projects') renderAdminProjects();
-    else if (activeTab === 'clients') renderAdminClients();
+    else if (activeTab === 'clients') {
+        // Если форма CRM уже отрисована — обновляем только список клиентов,
+        // не трогая форму (иначе введённые данные и добавленные услуги сбросятся)
+        const existingList = document.getElementById('crm-clients-list');
+        if (existingList) {
+            existingList.innerHTML = renderCrmClientsList(_projects);
+        } else {
+            renderAdminClients();
+            // Запускаем автосохранение черновика после рендера
+            setTimeout(crmSetupDraftAutosave, 100);
+        }
+    }
     else if (activeTab === 'editors') renderAdminEditors();
     else if (activeTab === 'services') renderServiceCatalogTab();
     else if (activeTab === 'submissions') renderAdminSubmissions();
@@ -1811,6 +1925,21 @@ function renderAdminEditors() {
                                 <div class="bg-black/30 border border-white/5 rounded-xl p-2.5"><span class="block text-slate-500 mb-1 uppercase">Рейтинг</span><span class="text-amber-400 font-bold text-xs"><i class="fas fa-star text-[10px] mr-0.5"></i> ${getEditorRating(e.id)}</span></div>
                                 <div class="bg-black/30 border border-white/5 rounded-xl p-2.5"><span class="block text-slate-500 mb-1 uppercase">Сдано</span><span class="text-emerald-400 font-bold text-xs font-mono">${_projects.filter(p=>p.editorId===e.id && p.stage==='done').length}</span></div>
                             </div>
+                            <!-- Плашка статуса монтажёра -->
+                            ${(() => {
+                                const st = e.statusText || '';
+                                const isBusy = st.includes('Занят');
+                                const isFree = st.includes('Свободен') || !st;
+                                const dotColor = isBusy ? 'bg-rose-500' : isFree ? 'bg-emerald-500' : 'bg-amber-500';
+                                const textColor = isBusy ? 'text-rose-400' : isFree ? 'text-emerald-400' : 'text-amber-400';
+                                const borderColor = isBusy ? 'border-rose-500/20' : isFree ? 'border-emerald-500/20' : 'border-amber-500/20';
+                                const bgColor = isBusy ? 'bg-rose-500/5' : isFree ? 'bg-emerald-500/5' : 'bg-amber-500/5';
+                                const label = st || 'Свободен — жду проекты';
+                                return `<div class="flex items-center gap-2 px-3 py-2 rounded-xl ${bgColor} border ${borderColor}">
+                                    <div class="w-2 h-2 rounded-full ${dotColor} status-led shrink-0"></div>
+                                    <span class="text-[10px] ${textColor} font-bold font-space truncate">${escapeHtml(label)}</span>
+                                </div>`;
+                            })()}
                             <div class="flex flex-col gap-2 mt-2 pt-2 border-t border-white/[0.04]">
                                 <button onclick="loginAsEditor('${e.id}')" class="pressable w-full py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-[10px] font-bold uppercase tracking-wider transition-all"><i class="fas fa-sign-in-alt mr-1.5"></i> Войти в кабинет</button>
                                 <div class="flex gap-2">
@@ -2345,6 +2474,21 @@ function renderAdminClients() {
                 </div>
             </div>
 
+            <!-- Баннер черновика -->
+            <div id="crm-draft-banner" class="hidden rounded-2xl border border-amber-500/30 bg-amber-500/8 p-4 flex items-center justify-between gap-3" style="background:rgba(245,158,11,0.07)">
+                <div class="flex items-center gap-3 min-w-0">
+                    <i class="fas fa-file-pen text-amber-400 text-sm shrink-0"></i>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-amber-300 font-space">Есть несохранённый черновик</p>
+                        <p class="text-[10px] text-amber-400/70">Сохранён в <span id="crm-draft-time"></span></p>
+                    </div>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                    <button onclick="crmRestoreDraft()" class="pressable px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 text-[10px] font-bold hover:bg-amber-500/30 transition-all">Восстановить</button>
+                    <button onclick="crmClearDraft()" class="pressable px-3 py-1.5 rounded-xl bg-white/5 text-slate-400 text-[10px] font-bold hover:bg-white/10 transition-all">Удалить</button>
+                </div>
+            </div>
+
             <!-- Мини-вкладки -->
             <div>
                 <div class="flex gap-2 mb-4 p-1 bg-white/[0.03] border border-white/[0.05] rounded-2xl">
@@ -2488,6 +2632,7 @@ function renderAdminClients() {
                         </select>
                     </div>
 
+                    <p id="crm-draft-indicator" class="hidden text-[10px] text-slate-500 text-center font-space"></p>
                     <button onclick="crmCreateClientProject()" class="pressable w-full py-4 font-bold rounded-2xl text-xs font-space uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600/30 to-pink-600/30 hover:from-indigo-600/45 hover:to-pink-600/45 text-white border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
                         <i class="fas fa-satellite-dish"></i> Создать кабинет клиента
                     </button>
@@ -2501,15 +2646,22 @@ function renderAdminClients() {
                         <i class="fas fa-clone text-[10px]"></i> Заполнить как у клиента (без стоимости)
                     </button>
 
-                    <!-- Предпросмотр данных клиента -->
-                    <div class="px-4 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.04] text-xs space-y-1">
-                        <p class="text-[9px] uppercase tracking-widests text-slate-600 font-space mb-2">Из вкладки «Для клиента»</p>
-                        <div class="flex gap-x-3 gap-y-1 flex-wrap text-xs">
-                            <span class="text-slate-400">Проект:</span><span id="crm-editor-copy-project" class="text-white font-medium">—</span>
-                            <span class="text-slate-600">·</span>
-                            <span class="text-slate-400">Клиент:</span><span id="crm-editor-copy-client" class="text-white font-medium">—</span>
-                            <span class="text-slate-600">·</span>
-                            <span class="text-slate-400">Дедлайн:</span><span id="crm-editor-copy-deadline" class="text-white font-medium">—</span>
+                    <!-- Поля из вкладки клиента (заполняются вручную или через кнопку) -->
+                    <div class="rounded-3xl border border-indigo-500/15 p-5 space-y-3" style="background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, rgba(139,92,246,0.02) 100%);">
+                        <p class="text-[9px] uppercase tracking-widests text-indigo-400 font-space font-bold">Из вкладки «Для клиента»</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Проект</label>
+                                <input type="text" id="crm-editor-copy-project" placeholder="Название проекта" class="w-full bg-white/[0.04] border border-indigo-500/20 text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Клиент</label>
+                                <input type="text" id="crm-editor-copy-client" placeholder="Имя клиента" class="w-full bg-white/[0.04] border border-indigo-500/20 text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Дедлайн</label>
+                                <input type="date" id="crm-editor-copy-deadline" class="w-full bg-white/[0.04] border border-indigo-500/20 text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/40 transition">
+                            </div>
                         </div>
                     </div>
 
@@ -2656,7 +2808,7 @@ function renderCrmClientsList(projects) {
                     </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                    <button onclick="crmDeleteClientProject('${p.id}')" class="pressable opacity-0 md:group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-all duration-200">
+                    <button onclick="crmDeleteClientProject('${p.id}')" class="pressable w-7 h-7 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-500/10 opacity-40 hover:opacity-100 transition-all duration-200">
                         <i class="fas fa-trash text-[10px]"></i>
                     </button>
                 </div>
@@ -2699,6 +2851,182 @@ window.updateCrmPromoPreview = function() {
 
 // ── Переключение мини-вкладок ─────────────────────────────────────────────────
 let _crmActiveSubTab = 'client';
+
+// ══ ЧЕРНОВИК CRM-ФОРМЫ ══════════════════════════════════════════════════════
+const CRM_DRAFT_KEY = 'space_crm_draft';
+let _crmDraftTimer = null;
+
+function crmSaveDraft() {
+    const g = id => document.getElementById(id);
+    const clientServices = [];
+    document.querySelectorAll('#crm-extra-services-container > div').forEach(row => {
+        const n = row.querySelector('.crm-es-name')?.value.trim() || '';
+        const p = row.querySelector('.crm-es-price')?.value || '';
+        if (n) clientServices.push({name: n, price: p});
+    });
+    const editorServices = [];
+    document.querySelectorAll('#crm-editor-extra-services-container > div').forEach(row => {
+        const n = row.querySelector('.crm-ees-name')?.value.trim() || '';
+        const p = row.querySelector('.crm-ees-price')?.value || '';
+        if (n) editorServices.push({name: n, price: p});
+    });
+    const bonuses = [];
+    document.querySelectorAll('#crm-editor-bonuses-container > div').forEach(row => {
+        const n = row.querySelector('.ceb-name')?.value.trim() || '';
+        const t = row.querySelector('.ceb-type')?.value || 'rub';
+        const v = row.querySelector('.ceb-value')?.value || '';
+        if (n) bonuses.push({name: n, type: t, value: v});
+    });
+    const penalties = [];
+    document.querySelectorAll('#crm-editor-penalties-container > div').forEach(row => {
+        const n = row.querySelector('.cep-name')?.value.trim() || '';
+        const t = row.querySelector('.cep-type')?.value || 'rub';
+        const v = row.querySelector('.cep-value')?.value || '';
+        if (n) penalties.push({name: n, type: t, value: v});
+    });
+
+    const draft = {
+        code: g('crm-new-code')?.value || '',
+        name: g('crm-new-name')?.value || '',
+        project: g('crm-new-project')?.value || '',
+        price: g('crm-new-price')?.value || '',
+        deadline: g('crm-new-deadline')?.value || '',
+        dynamics: g('crm-stat-dynamics')?.value || '50',
+        sound: g('crm-stat-sound')?.value || '50',
+        color: g('crm-stat-color')?.value || '50',
+        vfx: g('crm-stat-vfx')?.value || '50',
+        editorId: g('crm-new-editor')?.value || '',
+        editorAssign: g('crm-editor-assign')?.value || '',
+        editorSalary: g('crm-new-editor-salary')?.value || '',
+        tz: g('crm-new-tz')?.value || '',
+        reference: g('crm-new-reference')?.value || '',
+        tkLink: g('crm-new-tk-link')?.value || '',
+        editorNotes: g('crm-new-editor-notes')?.value || '',
+        editorCopyProject: g('crm-editor-copy-project')?.value || '',
+        editorCopyClient: g('crm-editor-copy-client')?.value || '',
+        editorCopyDeadline: g('crm-editor-copy-deadline')?.value || '',
+        clientServices, editorServices, bonuses, penalties,
+        savedAt: new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'})
+    };
+
+    // Сохраняем только если есть хоть что-то заполненное
+    const hasData = draft.code || draft.name || draft.project || draft.price;
+    if (!hasData) return;
+
+    try {
+        localStorage.setItem(CRM_DRAFT_KEY, JSON.stringify(draft));
+        // Показываем индикатор
+        const ind = document.getElementById('crm-draft-indicator');
+        if (ind) { ind.textContent = '💾 Черновик сохранён в ' + draft.savedAt; ind.classList.remove('hidden'); }
+    } catch(e) {}
+}
+
+function crmScheduleDraftSave() {
+    clearTimeout(_crmDraftTimer);
+    _crmDraftTimer = setTimeout(crmSaveDraft, 2000);
+}
+
+window.crmRestoreDraft = function() {
+    try {
+        const raw = localStorage.getItem(CRM_DRAFT_KEY);
+        if (!raw) return;
+        const d = JSON.parse(raw);
+        const g = id => document.getElementById(id);
+        const set = (id, val) => { const el = g(id); if (el) el.value = val || ''; };
+
+        set('crm-new-code', d.code);
+        set('crm-new-name', d.name);
+        set('crm-new-project', d.project);
+        set('crm-new-price', d.price);
+        set('crm-new-deadline', d.deadline);
+        set('crm-new-editor', d.editorId);
+        set('crm-editor-assign', d.editorAssign);
+        set('crm-new-editor-salary', d.editorSalary);
+        set('crm-new-tz', d.tz);
+        set('crm-new-reference', d.reference);
+        set('crm-new-tk-link', d.tkLink);
+        set('crm-new-editor-notes', d.editorNotes);
+        set('crm-editor-copy-project', d.editorCopyProject);
+        set('crm-editor-copy-client', d.editorCopyClient);
+        set('crm-editor-copy-deadline', d.editorCopyDeadline);
+
+        // Слайдеры
+        ['dynamics','sound','color','vfx'].forEach(k => {
+            const el = g('crm-stat-' + k);
+            if (el) { el.value = d[k] || '50'; el.dispatchEvent(new Event('input')); }
+        });
+
+        // Доп. услуги клиента
+        const c1 = g('crm-extra-services-container');
+        if (c1 && d.clientServices?.length) {
+            c1.innerHTML = '';
+            d.clientServices.forEach(s => addCrmExtraServiceRow(s.name, s.price));
+        }
+        // Доп. услуги монтажёра
+        const c2 = g('crm-editor-extra-services-container');
+        if (c2 && d.editorServices?.length) {
+            c2.innerHTML = '';
+            d.editorServices.forEach(s => addCrmEditorExtraServiceRow(s.name, s.price));
+        }
+        // Бонусы
+        const c3 = g('crm-editor-bonuses-container');
+        if (c3 && d.bonuses?.length) {
+            c3.innerHTML = '';
+            d.bonuses.forEach(b => addCrmEditorBonusRow(b.name, b.type, b.value));
+        }
+        // Штрафы
+        const c4 = g('crm-editor-penalties-container');
+        if (c4 && d.penalties?.length) {
+            c4.innerHTML = '';
+            d.penalties.forEach(b => addCrmEditorPenaltyRow(b.name, b.type, b.value));
+        }
+
+        document.getElementById('crm-draft-banner')?.classList.add('hidden');
+        showToast('Черновик восстановлен (' + (d.savedAt || '') + ')', 'success');
+    } catch(e) { showToast('Не удалось восстановить черновик', 'error'); }
+};
+
+window.crmClearDraft = function() {
+    try { localStorage.removeItem(CRM_DRAFT_KEY); } catch(e) {}
+    document.getElementById('crm-draft-banner')?.classList.add('hidden');
+    showToast('Черновик удалён', 'info');
+};
+
+function crmSetupDraftAutosave() {
+    // Вешаем autosave на все поля формы
+    const watchIds = ['crm-new-code','crm-new-name','crm-new-project','crm-new-price',
+        'crm-new-deadline','crm-new-editor','crm-editor-assign','crm-new-editor-salary',
+        'crm-new-tz','crm-new-reference','crm-new-tk-link','crm-new-editor-notes',
+        'crm-stat-dynamics','crm-stat-sound','crm-stat-color','crm-stat-vfx'];
+    watchIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', crmScheduleDraftSave);
+        if (el) el.addEventListener('change', crmScheduleDraftSave);
+    });
+    // Наблюдаем за контейнерами услуг через MutationObserver
+    ['crm-extra-services-container','crm-editor-extra-services-container',
+     'crm-editor-bonuses-container','crm-editor-penalties-container'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) new MutationObserver(crmScheduleDraftSave).observe(el, {childList: true, subtree: true, characterData: true});
+    });
+
+    // Проверяем есть ли черновик
+    try {
+        const raw = localStorage.getItem(CRM_DRAFT_KEY);
+        if (raw) {
+            const d = JSON.parse(raw);
+            if (d.code || d.name || d.project) {
+                const banner = document.getElementById('crm-draft-banner');
+                if (banner) {
+                    banner.classList.remove('hidden');
+                    const ts = banner.querySelector('#crm-draft-time');
+                    if (ts) ts.textContent = d.savedAt || '';
+                }
+            }
+        }
+    } catch(e) {}
+}
+
 window.switchCrmSubTab = function(tab) {
     _crmActiveSubTab = tab;
     document.getElementById('crm-subtab-client')?.classList.toggle('active-crm-sub', tab === 'client');
@@ -2745,9 +3073,9 @@ window.copyClientDataToEditor = function() {
     const name    = document.getElementById('crm-new-name')?.value.trim() || '';
     const deadline= document.getElementById('crm-new-deadline')?.value || '';
     const el = (id) => document.getElementById(id);
-    if (el('crm-editor-copy-project')) el('crm-editor-copy-project').textContent = proj || '—';
-    if (el('crm-editor-copy-client'))  el('crm-editor-copy-client').textContent  = name || '—';
-    if (el('crm-editor-copy-deadline'))el('crm-editor-copy-deadline').textContent= deadline || '—';
+    if (el('crm-editor-copy-project')) el('crm-editor-copy-project').value = proj || '';
+    if (el('crm-editor-copy-client'))  el('crm-editor-copy-client').value  = name || '';
+    if (el('crm-editor-copy-deadline'))el('crm-editor-copy-deadline').value = deadline || '';
     // Копируем доп. услуги клиента → монтажёру (без цены)
     const editCont = el('crm-editor-extra-services-container');
     if (editCont) {
@@ -2839,6 +3167,8 @@ window.crmCreateClientProject = async function() {
     try {
         await addDoc(collection(db, ...BASE('projects')), data);
         showToast('Кабинет клиента успешно создан!', 'success');
+        try { localStorage.removeItem(CRM_DRAFT_KEY); } catch(e) {}
+        const _di = document.getElementById('crm-draft-indicator'); if(_di) _di.classList.add('hidden');
         ['crm-new-code','crm-new-name','crm-new-project','crm-new-price','crm-new-deadline'].forEach(id => {
             const el = document.getElementById(id); if (el) el.value = '';
         });
@@ -2936,6 +3266,8 @@ window.crmCreateEditorProject = async function() {
     try {
         await addDoc(collection(db, ...BASE('projects')), data);
         showToast('Кабинеты клиента и монтажёра успешно созданы!', 'success');
+        try { localStorage.removeItem(CRM_DRAFT_KEY); } catch(e) {}
+        const _di2 = document.getElementById('crm-draft-indicator'); if(_di2) _di2.classList.add('hidden');
         ['crm-new-code','crm-new-name','crm-new-project','crm-new-price','crm-new-deadline',
          'crm-new-editor-salary','crm-new-tk-link','crm-new-tz','crm-new-reference','crm-new-editor-notes'
         ].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
@@ -2950,7 +3282,7 @@ window.crmCreateEditorProject = async function() {
             const el=document.getElementById(id); if(el){el.value='50';el.dispatchEvent(new Event('input'));}
         });
         ['crm-editor-copy-project','crm-editor-copy-client','crm-editor-copy-deadline'].forEach(id=>{
-            const el=document.getElementById(id); if(el) el.textContent='—';
+            const el=document.getElementById(id); if(el) el.value='';
         });
     } catch(e) { showToast('Ошибка: ' + e.message, 'error'); }
 };
@@ -3240,6 +3572,7 @@ window.openEditProjectModal = function(id) {
     document.getElementById('p-editor-bonus-value').value = p.editorBonusValue || '';
 
     document.getElementById('p-notes').value = p.notes || '';
+    document.getElementById('p-editor-note').value = p.editorNote || '';
     document.getElementById('p-progress').value = p.progress || 0;
     document.getElementById('p-stage').value = p.stage || 'brief';
     document.getElementById('p-progress-display').textContent = `${p.progress}%`;
@@ -3316,6 +3649,7 @@ window.saveProject = async function() {
         editorBonusValue: parseInt(document.getElementById('p-editor-bonus-value').value) || 0,
 
         notes: document.getElementById('p-notes').value.trim(),
+        editorNote: document.getElementById('p-editor-note').value.trim(),
         progress: parseInt(document.getElementById('p-progress').value) || 0,
         stage: document.getElementById('p-stage').value,
         updatedAt: new Date().toISOString()

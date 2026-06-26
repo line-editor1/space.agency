@@ -14,8 +14,23 @@
     <meta name="theme-color" content="#030208">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" type="image/png" href="1000002719.png">
+    <link rel="icon" id="dynamic-favicon" type="image/png" href="1000002719.png">
     <link rel="apple-touch-icon" href="1000002719.png">
+    <script>
+      (function(){
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function(){
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          ctx.beginPath(); ctx.arc(32,32,32,0,Math.PI*2); ctx.closePath(); ctx.clip();
+          ctx.drawImage(img,0,0,64,64);
+          var el = document.getElementById('dynamic-favicon');
+          if(el) el.href = c.toDataURL('image/png');
+        };
+        img.src = '1000002719.png';
+      })();
+    </script>
 
     <style>
         * { caret-color: transparent; }
@@ -201,6 +216,7 @@
                 border-radius: 1.5rem;
             }
         }
+        body { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
 <body class="relative min-h-screen bg-space-aurora selection:bg-indigo-500/30 selection:text-white">
@@ -611,7 +627,7 @@
 
         <!-- Раздел Стадия готовности/Прогресс/Заметки -->
         <div id="ed-p-status-block" class="hidden space-y-4 pt-2 border-t border-white/[0.05]">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Стадия готовности</label>
                     <select id="ed-p-stage" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500/30">
@@ -630,15 +646,32 @@
                     <input type="range" id="ed-p-progress" min="0" max="100" class="w-full accent-indigo-600 my-2" oninput="document.getElementById('ed-p-progress-display').textContent=this.value+'%'">
                 </div>
             </div>
-            <div>
-                <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Комментарии / Заметки к проекту</label>
-                <textarea id="ed-p-notes" class="w-full bg-black/40 border border-white/5 rounded-xl p-3.5 text-xs text-white resize-none h-20 focus:outline-none focus:border-indigo-500/30" placeholder="Опишите текущий статус, правки или особенности сборки..."></textarea>
+            <!-- Два типа комментариев -->
+            <div class="space-y-3">
+                <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-3.5">
+                    <label class="block text-[10px] text-indigo-400 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-lock text-[9px]"></i> Заметка к проекту
+                        <span class="text-slate-600 normal-case tracking-normal font-normal">(видит только монтажёр и администратор)</span>
+                    </label>
+                    <textarea id="ed-p-editor-note" class="w-full bg-black/40 border border-indigo-500/20 rounded-xl p-3 text-xs text-white resize-none h-16 focus:outline-none focus:border-indigo-500/40" placeholder="Статус работы, технические заметки, вопросы к администратору..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-comment text-[9px] text-cyan-400"></i> Комментарий для клиента
+                        <span class="text-slate-600 normal-case tracking-normal font-normal">(виден клиенту)</span>
+                    </label>
+                    <textarea id="ed-p-notes" class="w-full bg-black/40 border border-white/5 rounded-xl p-3.5 text-xs text-white resize-none h-16 focus:outline-none focus:border-indigo-500/30" placeholder="Сообщение клиенту о ходе работ..."></textarea>
+                </div>
             </div>
         </div>
 
-        <div class="flex gap-3 pt-2">
-            <button onclick="closeModal('modal-editor-project')" class="pressable w-full py-3 rounded-xl border border-white/[0.04] text-xs font-bold text-white bg-white/[0.05] hover:bg-white/[0.1] transition-all">Закрыть окно</button>
-            <button id="btn-submit-project-edits" onclick="submitProjectEditsRequest()" class="hidden pressable flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]">Отправить на проверку</button>
+        <div class="flex gap-3 pt-2 items-center">
+            <button onclick="closeModal('modal-editor-project')" class="pressable px-4 py-2.5 rounded-xl border border-white/[0.04] text-xs font-bold text-slate-400 bg-white/[0.03] hover:bg-white/[0.08] transition-all flex items-center gap-1.5 shrink-0">
+                <i class="fas fa-times text-[10px]"></i> Закрыть
+            </button>
+            <button id="btn-submit-project-edits" onclick="submitProjectEditsRequest()" class="hidden pressable flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-[0_0_15px_rgba(79,70,229,0.3)] flex items-center justify-center gap-1.5">
+                <i class="fas fa-paper-plane text-[10px]"></i> Отправить на проверку
+            </button>
         </div>
     </div>
 </div>
@@ -892,13 +925,22 @@ function setupPWA() {
         return;
     }
 
+    // Регистрация Service Worker (обязательно для PWA install prompt)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW reg error:', err));
+    }
+
     const manifestObj = {
         "name": "SPACE — Личный Кабинет",
         "short_name": "SPACE",
+        "start_url": "./space_team.html",
         "display": "standalone",
         "background_color": "#030208",
         "theme_color": "#030208",
-        "icons": [{ "src": "1000002719.png", "sizes": "512x512", "type": "image/png" }]
+        "icons": [
+            { "src": "1000002719.png", "sizes": "192x192", "type": "image/png" },
+            { "src": "1000002719.png", "sizes": "512x512", "type": "image/png" }
+        ]
     };
     const blob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
     const manifestLink = document.createElement('link');
@@ -912,6 +954,8 @@ function setupPWA() {
         const installSection = document.getElementById('profile-pwa-install-section');
         if (installSection) installSection.classList.remove('hidden');
     });
+
+    window.addEventListener('appinstalled', () => { deferredPrompt = null; });
 }
 
 window.triggerPwaInstall = async function() {
@@ -1248,7 +1292,7 @@ function renderEditorDashboard() {
                 <span class="text-[10px] text-slate-500 font-mono">Обновлено: только что</span>
             </div>
             
-            <div class="grid grid-cols-3 gap-4 font-space">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-space">
                 <div class="glass-card premium-border p-4 sm:p-5 rounded-3xl text-center">
                     <span class="block text-[8px] sm:text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-2">В работе</span>
                     <span class="text-2xl sm:text-3xl font-black text-white">${activeP.length}</span>
@@ -1455,24 +1499,29 @@ function generateProjectCardHTML(p) {
         ? `<div class="mt-1 space-y-0.5">${p.editorExtraServices.map(s=>`<div class="flex justify-between text-[9px]"><span class="text-slate-500 truncate pr-2">${escapeHtml(s.name)}</span><span class="text-white font-mono shrink-0">+${formatMoney(parseFloat(s.price)||0)}</span></div>`).join('')}</div>`
         : '';
 
-    // Бонусы монтажёра
+    // Бонусы монтажёра (поддержка нового массива editorBonuses и старого editorBonusName)
     let bonusesHtml = '';
     if (p.editorNoBonus) {
         bonusesHtml = `<span class="text-[9px] text-slate-600 italic">Нет бонуса</span>`;
     } else if (p.editorBonuses && p.editorBonuses.length) {
         bonusesHtml = p.editorBonuses.map(b => {
-            const val = b.type === 'percent' ? `+${b.value}%` : `+${formatMoney(b.value)}`;
+            const val = b.type === 'percent' ? `+${b.value}%` : `+${formatMoney(parseFloat(b.value)||0)}`;
             return `<div class="flex justify-between text-[9px]"><span class="text-emerald-400 truncate pr-2"><i class="fas fa-gift mr-1 text-[8px]"></i>${escapeHtml(b.name)}</span><span class="text-emerald-300 font-mono font-bold shrink-0">${val}</span></div>`;
         }).join('');
+    } else if (p.editorBonusName) {
+        // Старый формат (одиночный бонус)
+        const bVal = parseFloat(p.editorBonusValue) || 0;
+        const bDisplay = p.editorBonusType === 'percent' ? `+${bVal}%` : `+${formatMoney(bVal)}`;
+        bonusesHtml = `<div class="flex justify-between text-[9px]"><span class="text-emerald-400 truncate pr-2"><i class="fas fa-gift mr-1 text-[8px]"></i>${escapeHtml(p.editorBonusName)}</span><span class="text-emerald-300 font-mono font-bold shrink-0">${bDisplay}</span></div>`;
     }
 
-    // Штрафы монтажёра
+    // Штрафы монтажёра (поддержка массива editorPenalties)
     let penaltiesHtml = '';
     if (p.editorNoPenalty) {
         penaltiesHtml = `<span class="text-[9px] text-slate-600 italic">Нет штрафа</span>`;
     } else if (p.editorPenalties && p.editorPenalties.length) {
         penaltiesHtml = p.editorPenalties.map(pen => {
-            const val = pen.type === 'percent' ? `−${pen.value}%` : `−${formatMoney(pen.value)}`;
+            const val = pen.type === 'percent' ? `−${pen.value}%` : `−${formatMoney(parseFloat(pen.value)||0)}`;
             return `<div class="flex justify-between text-[9px]"><span class="text-rose-400 truncate pr-2"><i class="fas fa-triangle-exclamation mr-1 text-[8px]"></i>${escapeHtml(pen.name)}</span><span class="text-rose-300 font-mono font-bold shrink-0">${val}</span></div>`;
         }).join('');
     }
@@ -1678,6 +1727,7 @@ window.openEditorProjectEditModal = function(id, source = 'tasks') {
 
     // Progress and notes
     document.getElementById('ed-p-notes').value = p.notes || '';
+    document.getElementById('ed-p-editor-note').value = p.editorNote || '';
     document.getElementById('ed-p-progress').value = p.progress || 0;
     document.getElementById('ed-p-stage').value = p.stage || 'brief';
     document.getElementById('ed-p-progress-display').textContent = `${p.progress}%`;
@@ -1698,6 +1748,7 @@ window.openEditorProjectEditModal = function(id, source = 'tasks') {
         if (statusBlock) statusBlock.classList.remove('hidden');
 
         document.getElementById('ed-p-notes').disabled = true;
+        document.getElementById('ed-p-editor-note').disabled = false; // заметка всегда редактируема
         document.getElementById('ed-p-progress').disabled = true;
         document.getElementById('ed-p-stage').disabled = true;
 
@@ -1726,6 +1777,7 @@ window.openEditorProjectEditModal = function(id, source = 'tasks') {
         if (statusBlock) statusBlock.classList.remove('hidden');
 
         document.getElementById('ed-p-notes').disabled = false;
+        document.getElementById('ed-p-editor-note').disabled = false;
         document.getElementById('ed-p-progress').disabled = false;
         document.getElementById('ed-p-stage').disabled = false;
 
@@ -1762,6 +1814,7 @@ window.submitProjectEditsRequest = async function() {
         editorBonusType: p.editorBonusType || 'rub',
         editorBonusValue: parseInt(p.editorBonusValue) || 0,
         notes: document.getElementById('ed-p-notes').value.trim(),
+        editorNote: document.getElementById('ed-p-editor-note').value.trim(),
         progress: parseInt(document.getElementById('ed-p-progress').value) || 0,
         stage: document.getElementById('ed-p-stage').value,
         createdAt: new Date().toISOString(),
@@ -1957,6 +2010,8 @@ function updateStatusButtonsUI(status) {
 window.setUserWorkStatus = async function(statusText) {
     try {
         await setDoc(doc(db, ...BASE('profiles'), currentUserId), { statusText }, { merge: true });
+        // Дублируем статус в editors чтобы администратор видел его в реальном времени
+        try { await setDoc(doc(db, ...BASE('editors'), currentUserId), { statusText }, { merge: true }); } catch(e2) {}
         
         const labels = ['my-status-label', 'mobile-my-status-label'];
         labels.forEach(id => {
