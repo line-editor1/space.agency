@@ -610,17 +610,19 @@
                     <label class="block text-[9px] text-slate-500 font-bold uppercase">Доп. услуги монтажёра</label>
                     <div id="ed-p-extra-services-display" class="space-y-1.5"></div>
                 </div>
-                <div>
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Наименование бонуса</label>
-                    <input type="text" id="ed-p-editor-bonus-name" class="w-full bg-black/50 border border-white/5 opacity-60 rounded-xl p-3 text-xs text-slate-400 cursor-not-allowed" disabled readonly>
-                </div>
-                <div>
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Тип бонуса</label>
-                    <input type="text" id="ed-p-editor-bonus-type" class="w-full bg-black/50 border border-white/5 opacity-60 rounded-xl p-3 text-xs text-slate-400 cursor-not-allowed" disabled readonly>
-                </div>
+                <!-- Бонусы (только отображение) -->
                 <div class="col-span-1 md:col-span-2">
-                    <label class="block text-[9px] text-slate-500 font-bold uppercase mb-1.5">Размер бонуса</label>
-                    <input type="text" id="ed-p-editor-bonus-value" class="w-full bg-black/50 border border-white/5 opacity-60 rounded-xl p-3 font-mono text-xs text-slate-400 cursor-not-allowed" disabled readonly>
+                    <label class="block text-[9px] text-emerald-500 font-bold uppercase mb-1.5"><i class="fas fa-gift mr-1"></i> Бонусы</label>
+                    <div id="ed-p-bonuses-display" class="space-y-1.5 bg-black/30 rounded-xl p-2.5 border border-emerald-500/10 min-h-[36px]">
+                        <div class="text-[10px] text-slate-600 italic">Нет бонусов</div>
+                    </div>
+                </div>
+                <!-- Штрафы (только отображение) -->
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-[9px] text-rose-500 font-bold uppercase mb-1.5"><i class="fas fa-triangle-exclamation mr-1"></i> Штрафы</label>
+                    <div id="ed-p-penalties-display" class="space-y-1.5 bg-black/30 rounded-xl p-2.5 border border-rose-500/10 min-h-[36px]">
+                        <div class="text-[10px] text-slate-600 italic">Нет штрафов</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1435,8 +1437,7 @@ function renderEditorProjects() {
 
 function generateProjectCardHTML(p) {
     const isChecking = p.progress === 99;
-    let dlHtml = renderDeadlineCountdown(p.createdAt, p.deadline);
-
+    const dlHtml = renderDeadlineCountdown(p.createdAt, p.deadline);
     const timeSpent = p.timeSpent || 0;
     const isRunning = p.timerStatus === 'running';
     let currentSessionSec = 0;
@@ -1444,157 +1445,140 @@ function generateProjectCardHTML(p) {
         currentSessionSec = Math.floor((new Date() - new Date(p.timerStartTime)) / 1000);
     }
     const totalSec = timeSpent + currentSessionSec;
-
-    // Check for active timer stop request
     const hasPendingStop = _editRequests.some(r => r.projectId === p.id && r.type === 'stop_timer' && r.status === 'pending');
     const isStopRequested = hasPendingStop && isRunning;
 
+    // Кнопки действий
     let actionUI = '';
     if (isChecking) {
-        actionUI = `<span class="mt-4 text-[11px] text-amber-400 font-bold font-space bg-amber-500/10 px-4 py-3 rounded-xl border border-amber-500/20 w-full text-center block"><i class="fas fa-hourglass-half mr-2 animate-spin pointer-events-none"></i> Сдан на проверку</span>`;
+        actionUI = `<div class="flex items-center justify-center gap-2 py-3 rounded-2xl border border-amber-500/20 text-[11px] text-amber-400 font-bold font-space" style="background:rgba(245,158,11,0.07)">
+            <i class="fas fa-hourglass-half animate-spin pointer-events-none text-[10px]"></i> Сдан на проверку
+        </div>`;
+    } else if (isStopRequested) {
+        actionUI = `<div class="flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] text-[11px] text-amber-400 font-bold font-space">
+            <i class="fas fa-hourglass-half animate-spin pointer-events-none"></i> Ожидает остановки...
+        </div>`;
     } else {
-        if (isStopRequested) {
-            actionUI = `
-                <div class="space-y-2.5 mt-4 pt-4 border-t border-white/[0.04]">
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                        <button class="pressable w-full py-2.5 sm:py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-[10px] sm:text-[11px] font-bold text-amber-400 cursor-not-allowed flex justify-center items-center gap-1.5" disabled>
-                            <i class="fas fa-hourglass-half animate-spin pointer-events-none"></i> Ожидает остановки...
-                        </button>
-                    </div>
-                </div>
-            `;
-        } else {
-            const btnColor = isRunning ? 'bg-white/[0.03] text-amber-400 border-white/[0.08] hover:bg-white/[0.06]' : 'bg-white/[0.03] text-emerald-400 border-white/[0.08] hover:bg-white/[0.06]';
-            const icon = isRunning ? 'fa-pause' : 'fa-play';
-            const btnText = isRunning ? 'Запросить паузу' : 'Начать сборку';
+        const timerStyle = isRunning ? 'border-amber-500/30;background:rgba(245,158,11,0.07)' : 'border-emerald-500/30;background:rgba(16,185,129,0.07)';
+        const timerColor = isRunning ? 'text-amber-400' : 'text-emerald-400';
+        const icon = isRunning ? 'fa-pause' : 'fa-play';
+        const btnText = isRunning ? 'Пауза' : 'Начать';
+        const [borderStyle, bgStyle] = timerStyle.split(';');
+        actionUI = `
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <button onclick="toggleTimer('${p.id}')" class="pressable py-2.5 rounded-2xl border ${timerColor} text-[10px] font-bold font-space transition-all flex justify-center items-center gap-1.5" style="border-color:${isRunning?'rgba(245,158,11,0.3)':'rgba(16,185,129,0.3)'};${bgStyle}">
+                    <i class="fas ${icon} text-[9px]"></i> ${btnText}
+                </button>
+                <button onclick="openSubmitProjectModal('${p.id}')" class="pressable py-2.5 rounded-2xl bg-indigo-600/80 hover:bg-indigo-500 text-[10px] font-bold font-space text-white transition-all flex justify-center items-center gap-1.5">
+                    <i class="fas fa-paper-plane text-[9px]"></i> Сдать
+                </button>
+            </div>
+            <button onclick="openEditorProjectEditModal('${p.id}', 'tasks')" class="pressable w-full py-2 rounded-2xl bg-white/[0.02] border border-indigo-500/15 hover:bg-indigo-500/8 text-[10px] font-bold font-space text-indigo-400 flex justify-center items-center gap-1.5 transition-all">
+                <i class="fas fa-pen-to-square text-[9px]"></i> Редактировать прогресс
+            </button>`;
+    }
 
-            actionUI = `
-                <div class="space-y-2.5 mt-4 pt-4 border-t border-white/[0.04] font-space">
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                        <button onclick="toggleTimer('${p.id}')" class="pressable flex-1 py-2.5 sm:py-3 rounded-xl border ${btnColor} text-[10px] sm:text-[11px] font-bold transition-all flex justify-center items-center gap-1.5 uppercase tracking-wider">
-                            <i class="fas ${icon}"></i> ${btnText}
-                        </button>
-                        <button onclick="openSubmitProjectModal('${p.id}')" class="pressable flex-1 py-2.5 sm:py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-[10px] sm:text-[11px] font-bold text-white transition-all flex justify-center items-center uppercase tracking-wider">
-                            Сдать проект
-                        </button>
-                    </div>
-                    <button onclick="openEditorProjectEditModal('${p.id}', 'tasks')" class="pressable w-full py-2 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.05] text-[10px] font-bold text-indigo-400 flex justify-center items-center gap-1.5 uppercase tracking-wider">
-                        <i class="fas fa-edit"></i> Редактировать прогресс
-                    </button>
-                </div>
-            `;
+    // Доп услуги монтажёра
+    const hasEditorServices = p.editorExtraServices && Array.isArray(p.editorExtraServices) && p.editorExtraServices.length;
+    const baseSal = parseFloat(p.editorSalary) || 0;
+    const extraServicesHtml = hasEditorServices
+        ? p.editorExtraServices.map(s => `<div class="flex justify-between items-center text-[10px] py-1 border-b border-white/[0.03] last:border-0"><span class="text-slate-400 truncate pr-2">${escapeHtml(s.name)}</span><span class="text-slate-300 font-mono shrink-0">+${formatMoney(parseFloat(s.price)||0)}</span></div>`).join('') : '';
+
+    // Бонусы
+    let bonusRows = '';
+    if (!p.editorNoBonus) {
+        if (p.editorBonuses && p.editorBonuses.length) {
+            bonusRows = p.editorBonuses.map(b => {
+                const v = b.type==='percent'?`+${b.value}%`:`+${formatMoney(parseFloat(b.value)||0)}`;
+                return `<div class="flex justify-between items-center text-[10px] py-1 border-b border-white/[0.03] last:border-0"><span class="text-emerald-400 truncate pr-2"><i class="fas fa-gift text-[9px] mr-1"></i>${escapeHtml(b.name)}</span><span class="text-emerald-300 font-mono font-bold shrink-0">${v}</span></div>`;
+            }).join('');
+        } else if (p.editorBonusName) {
+            const bv=parseFloat(p.editorBonusValue)||0;
+            const bd=p.editorBonusType==='percent'?`+${bv}%`:`+${formatMoney(bv)}`;
+            bonusRows=`<div class="flex justify-between items-center text-[10px] py-1"><span class="text-emerald-400"><i class="fas fa-gift text-[9px] mr-1"></i>${escapeHtml(p.editorBonusName)}</span><span class="text-emerald-300 font-mono font-bold">${bd}</span></div>`;
         }
     }
 
-    const baseSal = p.editorSalary || 0;
-    let extraSal = 0;
-    if (p.editorExtraServices && Array.isArray(p.editorExtraServices)) {
-        extraSal = p.editorExtraServices.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
-    } else {
-        extraSal = p.editorExtraSalary || 0;
-    }
-
-    // Доп. услуги монтажёра
-    const editorServicesHtml = (p.editorExtraServices && p.editorExtraServices.length)
-        ? `<div class="mt-1 space-y-0.5">${p.editorExtraServices.map(s=>`<div class="flex justify-between text-[9px]"><span class="text-slate-500 truncate pr-2">${escapeHtml(s.name)}</span><span class="text-white font-mono shrink-0">+${formatMoney(parseFloat(s.price)||0)}</span></div>`).join('')}</div>`
-        : '';
-
-    // Бонусы монтажёра (поддержка нового массива editorBonuses и старого editorBonusName)
-    let bonusesHtml = '';
-    if (p.editorNoBonus) {
-        bonusesHtml = `<span class="text-[9px] text-slate-600 italic">Нет бонуса</span>`;
-    } else if (p.editorBonuses && p.editorBonuses.length) {
-        bonusesHtml = p.editorBonuses.map(b => {
-            const val = b.type === 'percent' ? `+${b.value}%` : `+${formatMoney(parseFloat(b.value)||0)}`;
-            return `<div class="flex justify-between text-[9px]"><span class="text-emerald-400 truncate pr-2"><i class="fas fa-gift mr-1 text-[8px]"></i>${escapeHtml(b.name)}</span><span class="text-emerald-300 font-mono font-bold shrink-0">${val}</span></div>`;
-        }).join('');
-    } else if (p.editorBonusName) {
-        // Старый формат (одиночный бонус)
-        const bVal = parseFloat(p.editorBonusValue) || 0;
-        const bDisplay = p.editorBonusType === 'percent' ? `+${bVal}%` : `+${formatMoney(bVal)}`;
-        bonusesHtml = `<div class="flex justify-between text-[9px]"><span class="text-emerald-400 truncate pr-2"><i class="fas fa-gift mr-1 text-[8px]"></i>${escapeHtml(p.editorBonusName)}</span><span class="text-emerald-300 font-mono font-bold shrink-0">${bDisplay}</span></div>`;
-    }
-
-    // Штрафы монтажёра (поддержка массива editorPenalties)
-    let penaltiesHtml = '';
-    if (p.editorNoPenalty) {
-        penaltiesHtml = `<span class="text-[9px] text-slate-600 italic">Нет штрафа</span>`;
-    } else if (p.editorPenalties && p.editorPenalties.length) {
-        penaltiesHtml = p.editorPenalties.map(pen => {
-            const val = pen.type === 'percent' ? `−${pen.value}%` : `−${formatMoney(parseFloat(pen.value)||0)}`;
-            return `<div class="flex justify-between text-[9px]"><span class="text-rose-400 truncate pr-2"><i class="fas fa-triangle-exclamation mr-1 text-[8px]"></i>${escapeHtml(pen.name)}</span><span class="text-rose-300 font-mono font-bold shrink-0">${val}</span></div>`;
+    // Штрафы
+    let penaltyRows = '';
+    if (!p.editorNoPenalty && p.editorPenalties && p.editorPenalties.length) {
+        penaltyRows = p.editorPenalties.map(pen => {
+            const v = pen.type==='percent'?`−${pen.value}%`:`−${formatMoney(parseFloat(pen.value)||0)}`;
+            return `<div class="flex justify-between items-center text-[10px] py-1 border-b border-white/[0.03] last:border-0"><span class="text-rose-400 truncate pr-2"><i class="fas fa-triangle-exclamation text-[9px] mr-1"></i>${escapeHtml(pen.name)}</span><span class="text-rose-300 font-mono font-bold shrink-0">${v}</span></div>`;
         }).join('');
     }
 
-    // ТЗ и референс
-    const tzHtml = p.tzText ? `
-        <div class="mt-3 pt-3 border-t border-white/[0.04]">
-            <p class="text-[9px] uppercase tracking-widest text-indigo-400 font-space font-bold mb-1.5 flex items-center gap-1"><i class="fas fa-file-lines"></i> ТЗ</p>
-            <p class="text-[10px] text-slate-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(p.tzText)}</p>
-        </div>` : '';
+    // Заметка администратора
+    const editorNoteHtml = p.editorNote ? `<div class="rounded-2xl border border-indigo-500/15 p-3" style="background:rgba(99,102,241,0.05)"><p class="text-[9px] text-indigo-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1"><i class="fas fa-lock text-[8px]"></i> Заметка к проекту</p><p class="text-[10px] text-slate-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(p.editorNote)}</p></div>` : '';
 
-    const refHtml = p.reference ? `
-        <div class="mt-2">
-            <p class="text-[9px] uppercase tracking-widests text-pink-400 font-space font-bold mb-1.5 flex items-center gap-1"><i class="fas fa-image"></i> Референс</p>
-            <p class="text-[10px] text-slate-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(p.reference)}</p>
-        </div>` : '';
+    // Комментарий для клиента (видит монтажёр)
+    const noteHtml = p.notes ? `<div class="rounded-2xl border border-cyan-500/15 p-3" style="background:rgba(6,182,212,0.04)"><p class="text-[9px] text-cyan-500 font-bold uppercase tracking-wider mb-1 flex items-center gap-1"><i class="fas fa-comment text-[8px]"></i> Комментарий</p><p class="text-[10px] text-slate-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(p.notes)}</p></div>` : '';
 
-    const budgetDisplayHtml = `
-        <div class="col-span-2 space-y-1.5">
-            <div class="flex justify-between items-center">
-                <span class="text-slate-500">Оклад за проект:</span>
-                <span class="text-emerald-400 font-bold font-mono text-[11px]">${formatMoney(baseSal)}</span>
-            </div>
-            ${editorServicesHtml}
-            ${bonusesHtml ? `<div class="pt-1 border-t border-emerald-500/10 space-y-0.5">${bonusesHtml}</div>` : ''}
-            ${penaltiesHtml ? `<div class="pt-1 border-t border-rose-500/10 space-y-0.5">${penaltiesHtml}</div>` : ''}
-        </div>
-    `;
+    // ТЗ
+    const tzHtml = p.tzText ? `<div class="rounded-2xl border border-purple-500/15 p-3" style="background:rgba(139,92,246,0.04)"><p class="text-[9px] text-purple-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1"><i class="fas fa-file-lines text-[8px]"></i> Техническое задание</p><p class="text-[10px] text-slate-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(p.tzText)}</p></div>` : '';
+
+    // Референс
+    const refHtml = p.reference ? `<div class="rounded-2xl border border-pink-500/15 p-3" style="background:rgba(236,72,153,0.04)"><p class="text-[9px] text-pink-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1"><i class="fas fa-image text-[8px]"></i> Референс</p><p class="text-[10px] text-slate-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(p.reference)}</p></div>` : '';
+
+    // Ссылки
+    const linksHtml = p.tkLink ? `<a href="${escapeHtml(p.tkLink)}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] text-indigo-400 hover:bg-indigo-500/20 transition font-bold"><i class="fas fa-external-link-alt text-[9px]"></i> Открыть ТЗ</a>` : '';
+
+    const progressColor = p.progress === 99 ? 'bg-amber-500 animate-pulse' : 'bg-gradient-to-r from-indigo-500 to-purple-500';
 
     return `
-        <div class="glass-card premium-border p-5 rounded-3xl flex flex-col justify-between relative overflow-hidden group transition-all duration-300 hover:translate-y-[-2px] ${isRunning ? 'timer-glow' : ''}">
-            <div class="flex justify-between items-start mb-4">
-                <div class="min-w-0 pr-3">
-                    <h4 class="text-sm font-bold font-space text-white truncate group-hover:text-indigo-400 transition-colors duration-300">${escapeHtml(p.projectName)}</h4>
-                    <p class="text-[10px] text-slate-500 mt-1 truncate font-space">${escapeHtml(p.clientName)}</p>
+        <div class="glass-card premium-border rounded-3xl overflow-hidden flex flex-col ${isRunning ? 'timer-glow' : ''} transition-all duration-300">
+
+            <!-- Шапка -->
+            <div class="p-4 sm:p-5 flex justify-between items-start gap-3 border-b border-white/[0.04]">
+                <div class="min-w-0 flex-1">
+                    <h4 class="font-bold font-space text-white text-sm leading-tight">${escapeHtml(p.projectName)}</h4>
+                    <p class="text-[10px] text-slate-500 mt-0.5 font-space">${escapeHtml(p.clientName)}</p>
                 </div>
-                <div class="text-right flex-shrink-0">
-                    ${dlHtml}
-                </div>
+                <div class="shrink-0">${dlHtml}</div>
             </div>
 
-            <!-- Финансы -->
-            <div class="grid grid-cols-1 gap-1 text-[10px] bg-black/30 p-3.5 rounded-2xl border border-white/[0.02] mb-3 font-space">
-                ${budgetDisplayHtml}
-                <div class="flex justify-between items-center pt-1.5 border-t border-white/[0.03] mt-0.5">
-                    <span class="text-slate-500">Затрачено времени:</span>
-                    <span class="text-white font-bold font-mono text-xs" id="timer-display-${p.id}">${formatSeconds(totalSec)}</span>
+            <div class="p-4 sm:p-5 space-y-3">
+
+                <!-- Прогресс -->
+                <div>
+                    <div class="flex justify-between text-[9px] text-slate-500 font-space font-bold uppercase tracking-wider mb-1.5">
+                        <span>Готовность</span>
+                        <span class="font-mono text-slate-300">${p.progress}%</span>
+                    </div>
+                    <div class="w-full bg-white/[0.04] h-1 rounded-full overflow-hidden">
+                        <div class="${progressColor} h-full rounded-full transition-all duration-500" style="width:${p.progress}%"></div>
+                    </div>
                 </div>
+
+                <!-- Финансовый блок -->
+                <div class="rounded-2xl border border-white/[0.05] overflow-hidden" style="background:rgba(0,0,0,0.2)">
+                    <div class="flex items-center justify-between px-3 py-2 border-b border-white/[0.05]">
+                        <span class="text-[9px] text-slate-500 font-space font-bold uppercase tracking-wider flex items-center gap-1"><i class="fas fa-wallet text-[9px]"></i> Финансы</span>
+                        <span class="text-[10px] font-mono text-slate-400 font-bold" id="timer-display-${p.id}">${formatSeconds(totalSec)}</span>
+                    </div>
+                    <div class="px-3 py-2 space-y-0.5">
+                        <div class="flex justify-between items-center text-[10px] py-1 border-b border-white/[0.03]">
+                            <span class="text-slate-500">Оклад</span>
+                            <span class="text-emerald-400 font-mono font-bold">${formatMoney(baseSal)}</span>
+                        </div>
+                        ${extraServicesHtml}
+                        ${bonusRows ? `<div class="pt-1 border-t border-emerald-500/10">${bonusRows}</div>` : ''}
+                        ${penaltyRows ? `<div class="pt-1 border-t border-rose-500/10">${penaltyRows}</div>` : ''}
+                    </div>
+                </div>
+
+                <!-- ТЗ, Референс, Ссылки -->
+                ${tzHtml || refHtml || linksHtml ? `<div class="space-y-2">${tzHtml}${refHtml}${linksHtml ? `<div class="flex flex-wrap gap-2">${linksHtml}</div>` : ''}</div>` : ''}
+
+                <!-- Заметки и комментарии -->
+                ${editorNoteHtml || noteHtml ? `<div class="space-y-2">${editorNoteHtml}${noteHtml}</div>` : ''}
+
+                <!-- Кнопки -->
+                <div class="space-y-2 pt-1">${actionUI}</div>
             </div>
-
-            <!-- ТЗ и Референс -->
-            ${tzHtml || refHtml ? `
-            <div class="bg-black/20 rounded-2xl border border-indigo-500/10 p-3.5 mb-3 space-y-1">
-                ${tzHtml}${refHtml}
-                ${p.tkLink ? `<div class="mt-2"><a href="${escapeHtml(p.tkLink)}" target="_blank" class="text-[9px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"><i class="fas fa-external-link-alt text-[8px]"></i> Открыть ТЗ</a></div>` : ''}
-            </div>` : ''}
-
-            <div class="font-space mb-3">
-                <div class="flex justify-between items-center mb-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                    <span>Степень готовности</span>
-                    <span class="font-mono text-slate-300">${p.progress}%</span>
-                </div>
-                <div class="w-full bg-white/[0.03] h-[3px] rounded-full overflow-hidden">
-                    <div class="${p.progress === 99 ? 'bg-amber-500 animate-pulse' : 'bg-gradient-to-r from-indigo-500 to-purple-500'} h-full rounded-full transition-all duration-500" style="width: ${p.progress}%"></div>
-                </div>
-            </div>
-
-            <div>${actionUI}</div>
         </div>
     `;
-}
-
-function renderDeadlineCountdown(createdAt, deadline) {
+}function renderDeadlineCountdown(createdAt, deadline) {
     if (!deadline) return `<span class="text-[9px] text-slate-500 border border-slate-800 rounded-xl px-2 py-0.5 font-bold uppercase font-space">Без дедлайна</span>`;
     
     const dl = new Date(deadline);
@@ -1720,10 +1704,34 @@ window.openEditorProjectEditModal = function(id, source = 'tasks') {
         }
     }
     
-    document.getElementById('ed-p-editor-bonus-name').value = p.editorBonusName || 'Нет бонуса';
-    document.getElementById('ed-p-editor-bonus-type').value = p.editorBonusType === 'percent' ? 'Процент (%)' : 'Фиксированный (₽)';
-    const bonusVal = p.editorBonusValue || 0;
-    document.getElementById('ed-p-editor-bonus-value').value = bonusVal ? `${bonusVal} ₽` : '0 ₽';
+    // Бонусы
+    const bonusesDisplay = document.getElementById('ed-p-bonuses-display');
+    if (bonusesDisplay) {
+        let bHtml = '';
+        if (p.editorBonuses && p.editorBonuses.length) {
+            bHtml = p.editorBonuses.map(b => {
+                const val = b.type === 'percent' ? `+${b.value}%` : `+${formatMoney(parseFloat(b.value)||0)}`;
+                return `<div class="flex justify-between text-[10px]"><span class="text-emerald-400 truncate pr-2"><i class="fas fa-gift mr-1 text-[9px]"></i>${escapeHtml(b.name)}</span><span class="text-emerald-300 font-mono font-bold">${val}</span></div>`;
+            }).join('');
+        } else if (p.editorBonusName) {
+            const bv = parseFloat(p.editorBonusValue)||0;
+            const bd = p.editorBonusType==='percent' ? `+${bv}%` : `+${formatMoney(bv)}`;
+            bHtml = `<div class="flex justify-between text-[10px]"><span class="text-emerald-400"><i class="fas fa-gift mr-1 text-[9px]"></i>${escapeHtml(p.editorBonusName)}</span><span class="text-emerald-300 font-mono font-bold">${bd}</span></div>`;
+        }
+        bonusesDisplay.innerHTML = bHtml || '<div class="text-[10px] text-slate-600 italic">Нет бонусов</div>';
+    }
+    // Штрафы
+    const penaltiesDisplay = document.getElementById('ed-p-penalties-display');
+    if (penaltiesDisplay) {
+        let pHtml = '';
+        if (p.editorPenalties && p.editorPenalties.length) {
+            pHtml = p.editorPenalties.map(pen => {
+                const val = pen.type === 'percent' ? `−${pen.value}%` : `−${formatMoney(parseFloat(pen.value)||0)}`;
+                return `<div class="flex justify-between text-[10px]"><span class="text-rose-400 truncate pr-2"><i class="fas fa-triangle-exclamation mr-1 text-[9px]"></i>${escapeHtml(pen.name)}</span><span class="text-rose-300 font-mono font-bold">${val}</span></div>`;
+            }).join('');
+        }
+        penaltiesDisplay.innerHTML = pHtml || '<div class="text-[10px] text-slate-600 italic">Нет штрафов</div>';
+    }
 
     // Progress and notes
     document.getElementById('ed-p-notes').value = p.notes || '';
@@ -1754,10 +1762,10 @@ window.openEditorProjectEditModal = function(id, source = 'tasks') {
 
         if (modalTitle) modalTitle.textContent = 'Детали завершенного проекта';
         if (submitBtn) submitBtn.style.display = 'none';
-        if (closeXBtn) closeXBtn.classList.add('hidden'); // Скрываем [x]
+        if (closeXBtn) closeXBtn.classList.remove('hidden'); // Оставляем [x] видимым
         if (closeBtn) {
-            closeBtn.classList.remove('flex-1');
-            closeBtn.classList.add('w-full');
+            // В режиме истории кнопка "Закрыть" остаётся компактной
+            closeBtn.classList.remove('w-full', 'flex-1');
         }
     } else if (source === 'finance') {
         if (paramBlock) paramBlock.classList.add('hidden');
@@ -1766,10 +1774,9 @@ window.openEditorProjectEditModal = function(id, source = 'tasks') {
 
         if (modalTitle) modalTitle.textContent = 'Детали начислений';
         if (submitBtn) submitBtn.style.display = 'none';
-        if (closeXBtn) closeXBtn.classList.add('hidden'); // Скрываем [x]
+        if (closeXBtn) closeXBtn.classList.remove('hidden');
         if (closeBtn) {
-            closeBtn.classList.remove('flex-1');
-            closeBtn.classList.add('w-full');
+            closeBtn.classList.remove('w-full', 'flex-1');
         }
     } else {
         if (paramBlock) paramBlock.classList.remove('hidden');

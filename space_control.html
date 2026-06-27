@@ -1102,17 +1102,63 @@ window.getEditorPayout = function(p) {
     if (p.editorExtraServices && Array.isArray(p.editorExtraServices)) {
         extra = p.editorExtraServices.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
     }
-    const bVal = parseFloat(p.editorBonusValue) || 0;
+    // Бонусы (новый формат массива + старый одиночный)
     let bonus = 0;
-    if (p.editorBonusType === 'percent') {
-        bonus = base * (bVal / 100);
+    if (p.editorBonuses && Array.isArray(p.editorBonuses)) {
+        p.editorBonuses.forEach(b => {
+            const v = parseFloat(b.value) || 0;
+            bonus += b.type === 'percent' ? base * (v/100) : v;
+        });
     } else {
-        bonus = bVal;
+        const bVal = parseFloat(p.editorBonusValue) || 0;
+        bonus = p.editorBonusType === 'percent' ? base * (bVal/100) : bVal;
     }
-    return base + extra + bonus;
+    // Штрафы (вычитаем из выплаты монтажёру)
+    let penalty = 0;
+    if (p.editorPenalties && Array.isArray(p.editorPenalties)) {
+        p.editorPenalties.forEach(pen => {
+            const v = parseFloat(pen.value) || 0;
+            penalty += pen.type === 'percent' ? base * (v/100) : v;
+        });
+    }
+    return base + extra + bonus - penalty;
+};
+
+// Сумма только бонусов монтажёра
+window.getEditorBonusTotal = function(p) {
+    const base = parseFloat(p.editorSalary) || 0;
+    let bonus = 0;
+    if (p.editorBonuses && Array.isArray(p.editorBonuses)) {
+        p.editorBonuses.forEach(b => {
+            const v = parseFloat(b.value) || 0;
+            bonus += b.type === 'percent' ? base * (v/100) : v;
+        });
+    } else {
+        const bVal = parseFloat(p.editorBonusValue) || 0;
+        bonus = p.editorBonusType === 'percent' ? base * (bVal/100) : bVal;
+    }
+    return bonus;
+};
+
+// Сумма только штрафов монтажёра
+window.getEditorPenaltyTotal = function(p) {
+    const base = parseFloat(p.editorSalary) || 0;
+    let penalty = 0;
+    if (p.editorPenalties && Array.isArray(p.editorPenalties)) {
+        p.editorPenalties.forEach(pen => {
+            const v = parseFloat(pen.value) || 0;
+            penalty += pen.type === 'percent' ? base * (v/100) : v;
+        });
+    }
+    return penalty;
 };
 
 window.getProjectIncome = function(p) {
+    // finalPrice — цена для клиента уже с учётом скидки промокода (базовая + доп. услуги − скидка)
+    if (p.finalPrice !== undefined && p.finalPrice !== null) {
+        return parseFloat(p.finalPrice) || 0;
+    }
+    // Fallback для старых проектов без finalPrice
     let base = parseFloat(p.baseSalary) || parseFloat(p.basePrice) || 0;
     let extra = 0;
     if (p.clientExtraServices && Array.isArray(p.clientExtraServices)) {
@@ -1120,7 +1166,13 @@ window.getProjectIncome = function(p) {
     } else {
         extra = parseFloat(p.extraSalary) || 0;
     }
-    return base + extra;
+    const discount = p.promoCode ? (parseFloat(p.promoCode.discountAmount) || 0) : 0;
+    return base + extra - discount;
+};
+
+// Чистая прибыль по проекту = общая прибыль − (оклад + доп. услуги − штрафы + бонусы)
+window.getProjectProfit = function(p) {
+    return getProjectIncome(p) - getEditorPayout(p);
 };
 
 let deferredPrompt;
@@ -1835,60 +1887,280 @@ window.openFinanceDetails = function(id) {
     openModal('modal-finance-details');
 };
 
+// ── Текущий период фильтра финансов ──────────────────────────────
+let _finPeriod = 'month'; // day | week | month | year
+let _finTab = 'overview'; // overview | editors
+
+function getFinancePeriodProjects() {
+    const now = new Date();
+    const done = _projects.filter(p => p.stage === 'done');
+    return done.filter(p => {
+        const d = new Date(p.updatedAt || p.createdAt);
+        if (_finPeriod === 'day') {
+            return d.toDateString() === now.toDateString();
+        } else if (_finPeriod === 'week') {
+            const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+            return d >= weekAgo;
+        } else if (_finPeriod === 'month') {
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        } else if (_finPeriod === 'year') {
+            return d.getFullYear() === now.getFullYear();
+        }
+        return true;
+    });
+}
+
+window.setFinPeriod = function(p) { _finPeriod = p; renderAdminFinances(); };
+window.setFinTab = function(t) { _finTab = t; renderAdminFinances(); };
+
+window.toggleEditorFinDetails = function(editorId) {
+    const el = document.getElementById('fin-editor-detail-' + editorId);
+    if (el) el.classList.toggle('hidden');
+};
+
 function renderAdminFinances() {
     const list = document.getElementById('dashboard-viewport');
-    const doneProjects = _projects.filter(p => p.stage === 'done');
+    const projects = getFinancePeriodProjects();
 
-    let totalIncome = 0;
-    let totalPayout = 0;
-    doneProjects.forEach(p => {
-        totalIncome += getProjectIncome(p);
-        totalPayout += getEditorPayout(p);
+    // Считаем итоги
+    let totalIncome = 0, totalPayout = 0, totalBonus = 0, totalPenalty = 0;
+    projects.forEach(p => {
+        totalIncome  += getProjectIncome(p);
+        totalPayout  += getEditorPayout(p);
+        totalBonus   += getEditorBonusTotal(p);
+        totalPenalty += getEditorPenaltyTotal(p);
     });
-    let totalProfit = totalIncome - totalPayout;
+    // Чистая прибыль = общая прибыль − выплата монтажёрам
+    // getEditorPayout уже учитывает: оклад + доп.услуги + бонусы − штрафы
+    const totalProfit = totalIncome - totalPayout;
+    const avgCheck = projects.length ? Math.round(totalIncome / projects.length) : 0;
 
-    list.innerHTML = `
-        <div class="fade-in-up space-y-6">
-            <h3 class="text-xs font-space font-bold text-slate-400 uppercase tracking-widest"><i class="fas fa-wallet text-indigo-400 mr-2"></i> Финансы</h3>
+    // Статистика по монтажёрам
+    const editorStats = {};
+    projects.forEach(p => {
+        if (!p.editorId) return;
+        if (!editorStats[p.editorId]) {
+            const ed = _editors.find(e => e.id === p.editorId);
+            editorStats[p.editorId] = { name: ed ? (ed.name || ed.login) : 'Неизвестно', salary: 0, bonus: 0, penalty: 0, extra: 0, projects: [] };
+        }
+        const base = parseFloat(p.editorSalary) || 0;
+        let extra = 0;
+        if (p.editorExtraServices && Array.isArray(p.editorExtraServices)) {
+            extra = p.editorExtraServices.reduce((s,i) => s+(parseFloat(i.price)||0), 0);
+        } else { extra = parseFloat(p.editorExtraSalary)||0; }
+        editorStats[p.editorId].salary  += base;
+        editorStats[p.editorId].extra   += extra;
+        editorStats[p.editorId].bonus   += getEditorBonusTotal(p);
+        editorStats[p.editorId].penalty += getEditorPenaltyTotal(p);
+        editorStats[p.editorId].projects.push(p);
+    });
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div class="glass-card premium-border p-6 rounded-3xl text-center shadow-lg">
-                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Общий Доход</span>
-                    <div class="text-2xl font-bold text-white mt-2 font-mono">${formatMoney(totalIncome)}</div>
+    const periodLabels = { day:'День', week:'Неделя', month:'Месяц', year:'Год' };
+    const periodBtns = ['day','week','month','year'].map(pk => `
+        <button onclick="setFinPeriod('${pk}')" class="pressable px-3 py-1.5 rounded-xl text-[10px] font-bold font-space transition-all ${_finPeriod===pk ? 'bg-indigo-600 text-white' : 'bg-white/[0.03] text-slate-400 hover:bg-white/[0.07]'}">
+            ${periodLabels[pk]}
+        </button>`).join('');
+
+    const tabBtns = `
+        <div class="flex gap-2 p-1 bg-white/[0.03] border border-white/[0.05] rounded-2xl">
+            <button onclick="setFinTab('overview')" class="pressable flex-1 py-2 rounded-xl text-[10px] font-bold font-space transition-all ${_finTab==='overview'?'bg-white/[0.08] text-white':'text-slate-400 hover:text-white'}">
+                <i class="fas fa-chart-pie mr-1.5"></i>Обзор
+            </button>
+            <button onclick="setFinTab('editors')" class="pressable flex-1 py-2 rounded-xl text-[10px] font-bold font-space transition-all ${_finTab==='editors'?'bg-white/[0.08] text-white':'text-slate-400 hover:text-white'}">
+                <i class="fas fa-scissors mr-1.5"></i>Монтажёры
+            </button>
+            <button onclick="setFinTab('projects')" class="pressable flex-1 py-2 rounded-xl text-[10px] font-bold font-space transition-all ${_finTab==='projects'?'bg-white/[0.08] text-white':'text-slate-400 hover:text-white'}">
+                <i class="fas fa-list mr-1.5"></i>Проекты
+            </button>
+        </div>`;
+
+    // ── ВКЛАДКА: ОБЗОР ────────────────────────────────────────────────
+    const overviewHtml = `
+        <div class="space-y-4">
+            <!-- Главные плашки -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="glass-card premium-border p-4 rounded-2xl">
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider font-space">Общая прибыль</p>
+                    <p class="text-xl font-black text-white font-mono mt-1">${formatMoney(totalIncome)}</p>
+                    <p class="text-[9px] text-slate-600 mt-1">${projects.length} проектов · с учётом скидок</p>
                 </div>
-                <div class="glass-card premium-border p-6 rounded-3xl text-center shadow-lg">
-                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Фонд Выплат</span>
-                    <div class="text-2xl font-bold text-rose-400 mt-2 font-mono">${formatMoney(totalPayout)}</div>
+                <div class="glass-card premium-border p-4 rounded-2xl">
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider font-space">Монтажёрам</p>
+                    <p class="text-xl font-black text-rose-400 font-mono mt-1">${formatMoney(totalPayout)}</p>
+                    <p class="text-[9px] text-slate-600 mt-1">оклад + бонусы − штрафы</p>
                 </div>
-                <div class="glass-card premium-border p-6 rounded-3xl text-center bg-indigo-500/10 shadow-lg">
-                    <span class="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">Чистая Прибыль</span>
-                    <div class="text-2xl font-bold text-emerald-400 mt-2 font-mono">${formatMoney(totalProfit)}</div>
+                <div class="glass-card premium-border p-4 rounded-2xl" style="background:rgba(99,102,241,0.06)">
+                    <p class="text-[9px] text-indigo-300 font-bold uppercase tracking-wider font-space">Чистая прибыль</p>
+                    <p class="text-xl font-black text-emerald-400 font-mono mt-1">${formatMoney(totalProfit)}</p>
+                    <p class="text-[9px] text-slate-600 mt-1">прибыль − выплаты монтажёрам</p>
+                </div>
+                <div class="glass-card premium-border p-4 rounded-2xl">
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider font-space">Средний чек</p>
+                    <p class="text-xl font-black text-amber-400 font-mono mt-1">${formatMoney(avgCheck)}</p>
+                    <p class="text-[9px] text-slate-600 mt-1">сумма прибыли ÷ кол-во заказов</p>
                 </div>
             </div>
 
-            <div class="space-y-3 mt-4">
-                ${doneProjects.map(p => {
-                    const inc = getProjectIncome(p);
-                    const pay = getEditorPayout(p);
-                    const prof = inc - pay;
-                    return `
-                        <div class="glass-card premium-border p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs gap-4">
-                            <div>
-                                <div class="font-bold text-white font-space text-sm">${escapeHtml(p.projectName)}</div>
-                                <div class="text-[9px] text-slate-500 mt-1 uppercase tracking-wide">Сдан: ${new Date(p.updatedAt || p.createdAt).toLocaleDateString('ru')}</div>
+            <!-- Дополнительные плашки -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-2xl border border-emerald-500/15 p-4" style="background:rgba(16,185,129,0.05)">
+                    <p class="text-[9px] text-emerald-500 font-bold uppercase tracking-wider font-space flex items-center gap-1.5"><i class="fas fa-gift text-[9px]"></i> Бонусы монтажёрам</p>
+                    <p class="text-lg font-black text-emerald-400 font-mono mt-1">${formatMoney(totalBonus)}</p>
+                    <p class="text-[9px] text-slate-600 mt-0.5">выплачено сверх оклада</p>
+                </div>
+                <div class="rounded-2xl border border-rose-500/15 p-4" style="background:rgba(239,68,68,0.05)">
+                    <p class="text-[9px] text-rose-400 font-bold uppercase tracking-wider font-space flex items-center gap-1.5"><i class="fas fa-triangle-exclamation text-[9px]"></i> Штрафы монтажёров</p>
+                    <p class="text-lg font-black text-rose-400 font-mono mt-1">${formatMoney(totalPenalty)}</p>
+                    <p class="text-[9px] text-slate-600 mt-0.5">удержано из выплат</p>
+                </div>
+            </div>
+        </div>`;
+
+    // ── ВКЛАДКА: МОНТАЖЁРЫ ────────────────────────────────────────────
+    const editorsHtml = Object.keys(editorStats).length ? `
+        <div class="space-y-3">
+            ${Object.entries(editorStats).map(([edId, st]) => {
+                const total = st.salary + st.extra + st.bonus - st.penalty;
+                return `
+                <div class="glass-card premium-border rounded-2xl overflow-hidden">
+                    <button onclick="toggleEditorFinDetails('${edId}')" class="w-full p-4 flex items-center justify-between gap-3 text-left hover:bg-white/[0.02] transition">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/5 flex items-center justify-center font-bold text-white text-sm shrink-0">
+                                ${(st.name||'?')[0].toUpperCase()}
                             </div>
-                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
-                                <button onclick="openFinanceDetails('${p.id}')" class="pressable px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 text-[10px] font-bold uppercase rounded-xl transition duration-200"><i class="fas fa-list-alt mr-1"></i> Детали</button>
-                                <div class="flex gap-4 sm:gap-6 w-full sm:w-auto text-right font-mono bg-black/20 p-3 sm:p-0 rounded-xl sm:bg-transparent">
-                                    <div class="flex-1 sm:flex-none"><span class="block text-[8px] text-slate-500 uppercase tracking-widest">Доход</span><span class="text-emerald-400">${formatMoney(inc)}</span></div>
-                                    <div class="flex-1 sm:flex-none"><span class="block text-[8px] text-slate-500 uppercase tracking-widest">Монтажёру</span><span class="text-rose-400">${formatMoney(pay)}</span></div>
-                                    <div class="flex-1 sm:flex-none"><span class="block text-[8px] text-slate-500 uppercase tracking-widest">Чистая Прибыль</span><span class="text-indigo-400 font-bold">${formatMoney(prof)}</span></div>
-                                </div>
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold text-white font-space">${escapeHtml(st.name)}</p>
+                                <p class="text-[9px] text-slate-500">${st.projects.length} проектов</p>
                             </div>
                         </div>
-                    `;
-                }).join('') || `<div class="text-center py-10 text-slate-500 text-xs">Нет данных для расчетов</div>`}
+                        <div class="flex items-center gap-4 shrink-0">
+                            <p class="text-sm font-black font-mono text-rose-400">${formatMoney(total)}</p>
+                            <i class="fas fa-chevron-down text-slate-600 text-[10px] transition-transform"></i>
+                        </div>
+                    </button>
+
+                    <!-- Детали монтажёра -->
+                    <div id="fin-editor-detail-${edId}" class="hidden border-t border-white/[0.05]">
+                        <!-- Сводка -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/[0.04]">
+                            <div class="bg-[#0d0d14] p-3 text-center">
+                                <p class="text-[9px] text-slate-500 uppercase font-space">Оклад</p>
+                                <p class="text-sm font-black font-mono text-white mt-0.5">${formatMoney(st.salary)}</p>
+                            </div>
+                            <div class="bg-[#0d0d14] p-3 text-center">
+                                <p class="text-[9px] text-slate-500 uppercase font-space">Доп. услуги</p>
+                                <p class="text-sm font-black font-mono text-white mt-0.5">${formatMoney(st.extra)}</p>
+                            </div>
+                            <div class="bg-[#0d0d14] p-3 text-center">
+                                <p class="text-[9px] text-emerald-500 uppercase font-space">Бонусы</p>
+                                <p class="text-sm font-black font-mono text-emerald-400 mt-0.5">+${formatMoney(st.bonus)}</p>
+                            </div>
+                            <div class="bg-[#0d0d14] p-3 text-center">
+                                <p class="text-[9px] text-rose-400 uppercase font-space">Штрафы</p>
+                                <p class="text-sm font-black font-mono text-rose-400 mt-0.5">−${formatMoney(st.penalty)}</p>
+                            </div>
+                        </div>
+
+                        <!-- Проекты монтажёра -->
+                        <div class="p-3 space-y-2">
+                            <p class="text-[9px] text-slate-600 uppercase tracking-wider font-space font-bold px-1">Детализация по проектам</p>
+                            ${st.projects.map(p => {
+                                const base = parseFloat(p.editorSalary)||0;
+                                const ex = (p.editorExtraServices||[]).reduce((s,i)=>s+(parseFloat(i.price)||0),0);
+                                const bon = getEditorBonusTotal(p);
+                                const pen = getEditorPenaltyTotal(p);
+                                const total = base + ex + bon - pen;
+                                return `
+                                <div class="rounded-xl border border-white/[0.04] p-3" style="background:rgba(0,0,0,0.2)">
+                                    <div class="flex justify-between items-start gap-2 mb-2">
+                                        <p class="text-[11px] font-bold text-white font-space leading-tight">${escapeHtml(p.projectName)}</p>
+                                        <p class="text-[11px] font-black font-mono text-rose-400 shrink-0">${formatMoney(total)}</p>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <div class="flex justify-between text-[9px]"><span class="text-slate-500">Оклад</span><span class="text-slate-300 font-mono">${formatMoney(base)}</span></div>
+                                        ${ex ? `<div class="flex justify-between text-[9px]"><span class="text-slate-500">Доп. услуги</span><span class="text-slate-300 font-mono">+${formatMoney(ex)}</span></div>` : ''}
+                                        ${bon ? `<div class="flex justify-between text-[9px]"><span class="text-emerald-500">Бонус</span><span class="text-emerald-400 font-mono">+${formatMoney(bon)}</span></div>` : ''}
+                                        ${pen ? `<div class="flex justify-between text-[9px]"><span class="text-rose-400">Штраф</span><span class="text-rose-400 font-mono">−${formatMoney(pen)}</span></div>` : ''}
+                                    </div>
+                                </div>`;
+                            }).join('')}
+                        </div>
+
+                        <!-- Итог -->
+                        <div class="p-3 pt-0">
+                            <div class="rounded-xl border border-white/[0.06] p-3 flex justify-between items-center" style="background:rgba(239,68,68,0.05)">
+                                <span class="text-[10px] font-bold text-slate-400 font-space uppercase">Итого к выплате</span>
+                                <span class="text-base font-black font-mono text-rose-400">${formatMoney(st.payout || total)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>` : `<div class="text-center py-10 text-slate-500 text-xs font-space">Нет данных за выбранный период</div>`;
+
+    // ── ВКЛАДКА: ПРОЕКТЫ ─────────────────────────────────────────────
+    const projectsHtml = projects.length ? `
+        <div class="space-y-2">
+            ${projects.map(p => {
+                const inc = getProjectIncome(p);
+                const pay = getEditorPayout(p);
+                const bon = getEditorBonusTotal(p);
+                const pen = getEditorPenaltyTotal(p);
+                const prof = inc - pay;
+                const editor = _editors.find(e => e.id === p.editorId);
+                const edName = editor ? (editor.name || editor.login) : '—';
+                const dateStr = new Date(p.updatedAt || p.createdAt).toLocaleDateString('ru-RU', {day:'numeric', month:'short'});
+                return `
+                <div class="glass-card premium-border rounded-2xl p-4">
+                    <div class="flex justify-between items-start gap-3 mb-3">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-white font-space leading-tight">${escapeHtml(p.projectName)}</p>
+                            <p class="text-[9px] text-slate-500 mt-0.5">${escapeHtml(edName)} · ${dateStr}</p>
+                        </div>
+                        <button onclick="openFinanceDetails('${p.id}')" class="pressable px-2.5 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[9px] font-bold shrink-0 hover:bg-indigo-500/20 transition">Детали</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="rounded-xl p-2 text-center" style="background:rgba(0,0,0,0.2)">
+                            <p class="text-[8px] text-slate-500 uppercase font-space">Прибыль</p>
+                            <p class="text-[11px] font-black font-mono text-white mt-0.5">${formatMoney(inc)}</p>
+                        </div>
+                        <div class="rounded-xl p-2 text-center" style="background:rgba(0,0,0,0.2)">
+                            <p class="text-[8px] text-slate-500 uppercase font-space">Монтажёру</p>
+                            <p class="text-[11px] font-black font-mono text-rose-400 mt-0.5">${formatMoney(pay)}</p>
+                        </div>
+                        <div class="rounded-xl p-2 text-center" style="background:rgba(99,102,241,0.08)">
+                            <p class="text-[8px] text-indigo-400 uppercase font-space">Чистая</p>
+                            <p class="text-[11px] font-black font-mono text-emerald-400 mt-0.5">${formatMoney(prof)}</p>
+                        </div>
+                    </div>
+                    ${bon || pen ? `
+                    <div class="flex gap-2 mt-2">
+                        ${bon ? `<span class="text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg"><i class="fas fa-gift mr-1 text-[8px]"></i>+${formatMoney(bon)}</span>` : ''}
+                        ${pen ? `<span class="text-[9px] text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-lg"><i class="fas fa-triangle-exclamation mr-1 text-[8px]"></i>−${formatMoney(pen)}</span>` : ''}
+                    </div>` : ''}
+                </div>`;
+            }).join('')}
+        </div>` : `<div class="text-center py-10 text-slate-500 text-xs font-space">Нет завершённых проектов за выбранный период</div>`;
+
+    const tabContent = _finTab === 'overview' ? overviewHtml : _finTab === 'editors' ? editorsHtml : projectsHtml;
+
+    list.innerHTML = `
+        <div class="fade-in-up space-y-4">
+            <!-- Заголовок и фильтр периода -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h3 class="text-xs font-space font-bold text-slate-400 uppercase tracking-widests flex items-center gap-2">
+                    <i class="fas fa-wallet text-indigo-400"></i> Финансы
+                </h3>
+                <div class="flex gap-1.5 p-1 bg-white/[0.03] border border-white/[0.05] rounded-2xl self-start sm:self-auto">
+                    ${periodBtns}
+                </div>
             </div>
+
+            <!-- Вкладки -->
+            ${tabBtns}
+
+            <!-- Контент вкладки -->
+            ${tabContent}
         </div>
     `;
 }
@@ -2069,13 +2341,13 @@ function renderServiceCatalogTab() {
                             <i class="fas fa-user text-pink-400 text-[10px]"></i>
                         </div>
                         <span class="text-xs font-bold font-space text-white">Для клиента</span>
-                        <span class="text-[9px] text-slate-600 font-space">${_serviceCatalogClient.length} позиций</span>
+                        <span id="svc-count-client" class="text-[9px] text-slate-600 font-space">${_serviceCatalogClient.length} позиций</span>
                     </div>
                     <button onclick="openAddServiceModal('client')" class="pressable px-3 py-1.5 rounded-xl bg-pink-500/15 text-pink-400 text-[10px] font-bold font-space hover:bg-pink-500/25 transition-all flex items-center gap-1.5">
                         <i class="fas fa-plus text-[9px]"></i> Добавить
                     </button>
                 </div>
-                <div class="px-4 py-1">
+                <div id="svc-list-client" class="px-4 py-1">
                     ${makeList(_serviceCatalogClient, 'client')}
                 </div>
             </div>
@@ -2088,49 +2360,53 @@ function renderServiceCatalogTab() {
                             <i class="fas fa-scissors text-amber-400 text-[10px]"></i>
                         </div>
                         <span class="text-xs font-bold font-space text-white">Для монтажёра</span>
-                        <span class="text-[9px] text-slate-600 font-space">${_serviceCatalogEditor.length} позиций</span>
+                        <span id="svc-count-editor" class="text-[9px] text-slate-600 font-space">${_serviceCatalogEditor.length} позиций</span>
                     </div>
                     <button onclick="openAddServiceModal('editor')" class="pressable px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-400 text-[10px] font-bold font-space hover:bg-amber-500/25 transition-all flex items-center gap-1.5">
                         <i class="fas fa-plus text-[9px]"></i> Добавить
                     </button>
                 </div>
-                <div class="px-4 py-1">
+                <div id="svc-list-editor" class="px-4 py-1">
                     ${makeList(_serviceCatalogEditor, 'editor')}
                 </div>
             </div>
         </div>
 
-        <!-- Модалка добавления/редактирования услуги в каталоге -->
-        <div id="modal-service-catalog" class="hidden fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div class="w-full max-w-sm bg-[#0d0d14] border border-white/[0.08] rounded-3xl p-6 shadow-2xl">
-                <div class="flex items-center justify-between mb-5">
-                    <h3 id="modal-service-title" class="text-sm font-bold font-space text-white">Услуга</h3>
-                    <button onclick="closeModal('modal-service-catalog')" class="w-8 h-8 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all"><i class="fas fa-times text-xs"></i></button>
-                </div>
-                <input type="hidden" id="service-modal-id">
-                <input type="hidden" id="service-modal-type">
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-[9px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Название услуги</label>
-                        <input id="service-modal-name" type="text" class="w-full bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-teal-500/40" placeholder="Например: Цветокоррекция">
-                    </div>
-                    <div>
-                        <label class="block text-[9px] text-slate-500 uppercase tracking-widest mb-1.5 font-space">Цена по умолчанию, ₽</label>
-                        <input id="service-modal-price" type="number" min="0" class="w-full bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-teal-500/40" placeholder="0">
-                    </div>
-                </div>
-                <div class="flex gap-2 mt-5">
-                    <button onclick="saveCatalogService()" class="flex-1 py-2.5 rounded-xl bg-teal-500/20 text-teal-400 text-xs font-bold font-space hover:bg-teal-500/30 transition-all">Сохранить</button>
-                    <button onclick="closeModal('modal-service-catalog')" class="px-4 py-2.5 rounded-xl bg-white/5 text-slate-400 text-xs font-bold font-space hover:bg-white/10 transition-all">Отмена</button>
-                </div>
-            </div>
-        </div>
+        
     `;
-}
+}}
 
 // Вызывается из onSnapshot — обновляет список если вкладка активна
 function renderServiceCatalogLists() {
-    if (activeTab === 'services') renderServiceCatalogTab();
+    if (activeTab !== 'services') return;
+    // Если вкладка уже отрисована — обновляем только списки, не трогая DOM целиком
+    const clientList = document.getElementById('svc-list-client');
+    const editorList = document.getElementById('svc-list-editor');
+    if (clientList && editorList) {
+        // Обновляем только содержимое списков
+        const makeList = (catalog, type) => {
+            if (!catalog.length) return `<p class="text-slate-600 text-xs text-center py-4">Каталог пуст — добавьте первую услугу</p>`;
+            return catalog.map(s => `
+                <div class="flex items-center gap-3 py-2.5 border-b border-white/[0.04] last:border-0">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs text-white font-medium truncate">${escapeHtml(s.name || '—')}</p>
+                    </div>
+                    <span class="text-xs font-mono text-emerald-400 font-bold shrink-0">${Number(s.price || 0).toLocaleString('ru')} ₽</span>
+                    <button onclick="openEditServiceModal('${s.id}','${type}')" class="pressable w-7 h-7 rounded-lg bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all flex-shrink-0"><i class="fas fa-pen text-[9px]"></i></button>
+                    <button onclick="deleteCatalogService('${s.id}','${type}')" class="pressable w-7 h-7 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center transition-all flex-shrink-0"><i class="fas fa-trash text-[9px]"></i></button>
+                </div>`).join('');
+        };
+        clientList.innerHTML = makeList(_serviceCatalogClient, 'client');
+        editorList.innerHTML = makeList(_serviceCatalogEditor, 'editor');
+        // Обновляем счётчики
+        const cc = document.getElementById('svc-count-client');
+        const ce = document.getElementById('svc-count-editor');
+        if (cc) cc.textContent = _serviceCatalogClient.length + ' позиций';
+        if (ce) ce.textContent = _serviceCatalogEditor.length + ' позиций';
+    } else {
+        // Первый рендер — рисуем всё
+        renderServiceCatalogTab();
+    }
 }
 
 // Открыть модалку добавления новой услуги в каталог
@@ -3898,5 +4174,31 @@ window.onload = function() {
     initAuthListener(); // Firebase Auth onAuthStateChanged — заменяет checkSession()
 };
 </script>
+
+<!-- Статичная модалка каталога услуг (вынесена из dynamic render) -->
+<div id="modal-service-catalog" class="hidden fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-[#0d0d14] border border-white/[0.08] rounded-3xl p-6 shadow-2xl">
+        <div class="flex items-center justify-between mb-5">
+            <h3 id="modal-service-title" class="text-sm font-bold font-space text-white">Услуга</h3>
+            <button onclick="closeModal('modal-service-catalog')" class="w-8 h-8 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all"><i class="fas fa-times text-xs"></i></button>
+        </div>
+        <input type="hidden" id="service-modal-id">
+        <input type="hidden" id="service-modal-type">
+        <div class="space-y-3">
+            <div>
+                <label class="block text-[9px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Название услуги</label>
+                <input id="service-modal-name" type="text" class="w-full bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-teal-500/40" placeholder="Например: Цветокоррекция">
+            </div>
+            <div>
+                <label class="block text-[9px] text-slate-500 uppercase tracking-widests mb-1.5 font-space">Цена по умолчанию, ₽</label>
+                <input id="service-modal-price" type="number" min="0" class="w-full bg-black/40 border border-white/5 rounded-xl px-3 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-teal-500/40" placeholder="0">
+            </div>
+        </div>
+        <div class="flex gap-2 mt-5">
+            <button onclick="saveCatalogService()" class="flex-1 py-2.5 rounded-xl bg-teal-500/20 text-teal-400 text-xs font-bold font-space hover:bg-teal-500/30 transition-all">Сохранить</button>
+            <button onclick="closeModal('modal-service-catalog')" class="px-4 py-2.5 rounded-xl bg-white/5 text-slate-400 text-xs font-bold font-space hover:bg-white/10 transition-all">Отмена</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
