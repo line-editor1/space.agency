@@ -814,15 +814,21 @@ window.closeModal = function(id) {
 window.showToast = function(msg, type='info') {
     const container = document.getElementById('toast-container');
     if (!container) return;
+    const colors = {
+        success: { border: 'border-emerald-500/30', text: 'text-emerald-400', icon: 'fa-check-circle' },
+        error:   { border: 'border-rose-500/30',    text: 'text-red-400',     icon: 'fa-triangle-exclamation' },
+        info:    { border: 'border-indigo-500/30',  text: 'text-indigo-400',  icon: 'fa-circle-info' },
+    };
+    const c = colors[type] || colors.info;
     const t = document.createElement('div');
-    t.className = `toast ${type === 'success' ? 'border-emerald-500/30 text-emerald-400' : type === 'error' ? 'border-rose-500/30 text-red-400' : 'border-indigo-500/30 text-indigo-400'}`;
-    t.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info'} mr-2.5"></i>${msg}`;
+    t.className = `toast ${c.border} ${c.text} toast-enter`;
+    t.style.pointerEvents = 'auto';
+    t.innerHTML = `<i class="fas ${c.icon} mr-2.5 shrink-0"></i><span>${msg}</span>`;
     container.appendChild(t);
-    setTimeout(() => { 
-        t.style.opacity = '0'; 
-        t.style.transform = 'translateY(-14px) scale(0.95)'; 
-        t.style.transition = 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'; 
-        setTimeout(() => t.remove(), 250); 
+    setTimeout(() => {
+        t.classList.remove('toast-enter');
+        t.classList.add('toast-leave');
+        t.addEventListener('animationend', () => t.remove(), { once: true });
     }, 3500);
 };
 const showToast = window.showToast;

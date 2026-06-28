@@ -447,6 +447,18 @@
             -webkit-user-select: text !important;
             user-select: text !important;
         }
+
+        /* Toast анимации */
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(16px) scale(0.92); }
+            to   { opacity: 1; transform: translateY(0)    scale(1); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0)     scale(1); }
+            to   { opacity: 0; transform: translateY(-12px) scale(0.93); }
+        }
+        .toast-enter { animation: toastIn  0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .toast-leave { animation: toastOut 0.25s cubic-bezier(0.4, 0, 1, 1)    forwards; }
     </style>
 </head>
 <body class="relative">
@@ -1338,955 +1350,25 @@
             if (deadlineInput) deadlineInput.setAttribute("min", today);
         });
 
-        window.showToast = function(message, type = "success") {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            const toast = document.createElement('div');
-            toast.className = `pointer-events-auto px-6 py-3 rounded-2xl border backdrop-blur-md shadow-lg flex items-center gap-3 transition-all duration-300 transform translate-y-2 opacity-0 z-[10000000]`;
-            
-            if (type === "success") {
-                toast.className += " bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)]";
-                toast.innerHTML = `<i class="fas fa-check-circle"></i> <span class="text-sm font-medium font-space">${message}</span>`;
-            } else if (type === "error") {
-                toast.className += " bg-rose-500/10 border-rose-500/30 text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.15)]";
-                toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span class="text-sm font-medium font-space">${message}</span>`;
-            } else {
-                toast.className += " bg-blue-500/10 border-blue-500/30 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.15)]";
-                toast.innerHTML = `<i class="fas fa-focus-circle"></i> <span class="text-sm font-medium font-space">${message}</span>`;
-            }
-            
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 50);
-            
-            setTimeout(() => {
-                toast.classList.add('translate-y-2', 'opacity-0');
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 4000);
-        };
-
-        window.formatDateRussian = function(dateStr) {
-            if (!dateStr) return "Не указан";
-            try {
-                const date = new Date(dateStr);
-                if (isNaN(date.getTime())) return dateStr;
-                const months = [
-                    "января", "февраля", "марта", "апреля", "мая", "июня",
-                    "июля", "августа", "сентября", "октября", "ноября", "декабря"
-                ];
-                return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} г.`;
-            } catch (e) {
-                return dateStr;
-            }
-        };
-
-        window.toggleMobileMenu = function() {
-            const menu = document.getElementById('mobile-menu');
-            if (menu) menu.classList.toggle('hidden');
-        };
-
-        // Мобильное портфолио: кнопка "Смотреть работы" — плавный раскрыв
-        let mobilePortfolioOpen = false;
-
-        function initMobilePortfolio() {
-            const container = document.getElementById('portfolio-mobile-container');
-            if (!container) return;
-            if (window.innerWidth < 768) {
-                // Стартовое состояние: свёрнуто
-                container.classList.add('mob-collapsed');
-                container.classList.remove('mob-expanded', 'hidden');
-            } else {
-                // Десктоп: всегда открыто
-                container.classList.remove('mob-collapsed', 'mob-expanded', 'hidden');
-                container.style.maxHeight = '';
-            }
-        }
-
-        window.toggleMobilePortfolio = function() {
-            const container = document.getElementById('portfolio-mobile-container');
-            const btnText  = document.getElementById('mobile-portfolio-btn-text');
-            const chevron  = document.getElementById('mobile-portfolio-chevron');
-            if (!container) return;
-
-            mobilePortfolioOpen = !mobilePortfolioOpen;
-
-            if (mobilePortfolioOpen) {
-                container.classList.remove('mob-collapsed');
-                container.classList.add('mob-expanded');
-                if (btnText) btnText.textContent = 'Скрыть работы';
-                if (chevron) chevron.style.transform = 'rotate(180deg)';
-            } else {
-                container.classList.remove('mob-expanded');
-                container.classList.add('mob-collapsed');
-                if (btnText) btnText.textContent = 'Смотреть работы';
-                if (chevron) chevron.style.transform = 'rotate(0deg)';
-            }
-        };
-
-        // На десктопе всегда показываем портфолио без классов-аккордеона
-        window.addEventListener('resize', () => {
-            const container = document.getElementById('portfolio-mobile-container');
-            if (!container) return;
-            if (window.innerWidth >= 768) {
-                container.classList.remove('mob-collapsed', 'mob-expanded', 'hidden');
-                container.style.maxHeight = '';
-                mobilePortfolioOpen = false;
-            } else if (!mobilePortfolioOpen) {
-                container.classList.add('mob-collapsed');
-                container.classList.remove('mob-expanded');
-            }
-            if (typeof applyDesktopPortfolioLimit === 'function') applyDesktopPortfolioLimit();
-        });
-
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', initMobilePortfolio);
-
-        document.getElementById('mobile-menu-btn')?.addEventListener('click', toggleMobileMenu);
-
-        window.triggerPortfolioEdit = async function(caseId, event) {
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            const currentVideo = window.portfolioLinks[`case${caseId}_video`] || "";
-
-            const newVideo = prompt("Вставьте ссылку на видео (Kinescope, YouTube)\nПример: https://kinescope.io/oGnVdw5GsAvDsEJFBH7dTn\n\nКейс " + caseId + ":", currentVideo);
-            if (newVideo === null) return;
-            if (!newVideo.trim()) return;
-
-            // Обложка подтягивается автоматически
-            const newImg = getAutoThumbnail(newVideo.trim());
-
-            if (typeof window.savePortfolioUpdate === 'function') {
-                await window.savePortfolioUpdate(caseId, newVideo.trim(), newImg);
-            }
-        };
-
-        window.openPortalModal = function() {
-            const modal = document.getElementById('portal-modal');
-            if (modal) modal.classList.remove('hidden');
-        };
-        window.closePortalModal = function() {
-            const modal = document.getElementById('portal-modal');
-            if (modal) modal.classList.add('hidden');
-        };
-        window.openAdminModal = function() {
-            const modal = document.getElementById('admin-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                if (window.currentAdminState) {
-                    if (typeof window.renderCrmProjects === 'function') {
-                        window.renderCrmProjects();
-                    }
-                    if (typeof window.populateAdminFields === 'function') {
-                        window.populateAdminFields();
-                    }
-                }
-            }
-        };
-        window.closeAdminModal = function() {
-            const modal = document.getElementById('admin-modal');
-            if (modal) modal.classList.add('hidden');
-        };
-
-        window.openScheduleEditModal = function() {
-            if (typeof window.renderScheduleInputs === 'function') {
-                window.renderScheduleInputs();
-            }
-            const modal = document.getElementById('schedule-edit-modal');
-            if (modal) modal.classList.remove('hidden');
-        };
-        window.closeScheduleEditModal = function() {
-            const modal = document.getElementById('schedule-edit-modal');
-            if (modal) modal.classList.add('hidden');
-        };
-
-        window.syncToggleHoliday = function(checked) {
-            const checkbox = document.getElementById('setting-holiday');
-            if (checkbox) checkbox.checked = checked;
-        };
-
-        window.openScheduleModal = function() {
-            const contentDiv = document.getElementById('schedule-content');
-            if (contentDiv && window.configData) {
-                const daysMap = [
-                    {id: 1, name: "Понедельник"}, {id: 2, name: "Вторник"}, {id: 3, name: "Среда"},
-                    {id: 4, name: "Четверг"}, {id: 5, name: "Пятница"}, {id: 6, name: "Суббота"}, {id: 0, name: "Воскресенье"}
-                ];
-                
-                const isHolidayOverall = window.configData.isHoliday || false;
-                const now = new Date();
-                const currentDay = now.getDay();
-                
-                let html = `<div class="space-y-3 text-left">`;
-                
-                daysMap.forEach(d => {
-                    const sch = (window.configData.schedule && window.configData.schedule[d.id]) 
-                        ? window.configData.schedule[d.id] 
-                        : {s: "09:00", e: "18:00", c: d.id === 0 || d.id === 6};
-                    
-                    const isToday = currentDay === d.id;
-                    const todayBadge = isToday ? `<span class="px-2 py-0.5 text-[9px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-full font-bold ml-2">Сегодня</span>` : '';
-                    
-                    let timeText = "";
-                    if (isHolidayOverall) {
-                        timeText = isToday 
-                            ? `<span class="text-rose-400 font-semibold uppercase tracking-wider">Закрыто</span>`
-                            : `<span class="text-rose-400 uppercase tracking-wider">Закрыто</span>`;
-                    } else if (sch.c) {
-                        timeText = `<span class="text-rose-400">Выходной</span>`;
-                    } else {
-                        timeText = `<span class="text-cyan-400">${sch.s} — ${sch.e}</span>`;
-                    }
-                    
-                    html += `
-                        <div class="flex justify-between items-center py-2.5 border-b border-white/5 last:border-0 ${isToday ? 'px-1 bg-cyan-500/5 rounded-xl ring-1 ring-cyan-500/20 shadow-[0_0_10px_rgba(0,198,251,0.05)]' : 'px-1'}">
-                            <span class="text-sm font-semibold text-slate-200 flex items-center">${d.name} ${todayBadge}</span>
-                            <span class="text-sm font-semibold">${timeText}</span>
-                        </div>
-                    `;
-                });
-                
-                html += `</div>`;
-                contentDiv.innerHTML = html;
-            } else if (contentDiv) {
-                contentDiv.innerHTML = `<span class="text-cyan-400 font-bold text-lg font-space">Сегодня работаем с 09:00 до 18:00</span>`;
-            }
-            const modal = document.getElementById('schedule-modal');
-            if (modal) modal.classList.remove('hidden');
-        };
-
-        window.closeScheduleModal = function() {
-            const modal = document.getElementById('schedule-modal');
-            if (modal) modal.classList.add('hidden');
-        };
-        window.openVideoModal = function(url, isHorizontal) {
-            const iframe = document.getElementById('modal-iframe');
-            if (iframe) iframe.src = getEmbedUrl(url, false);
-            // Адаптируем размер под формат видео
-            const player = document.getElementById('video-modal-player');
-            if (player) {
-                player.classList.remove('aspect-video', 'aspect-[9/16]', 'max-w-4xl', 'max-w-sm');
-                if (isHorizontal === false) {
-                    // Вертикальное видео — узкий высокий контейнер
-                    player.classList.add('aspect-[9/16]', 'max-w-sm');
-                } else {
-                    // Горизонтальное — стандартный широкий
-                    player.classList.add('aspect-video', 'max-w-4xl');
-                }
-            }
-            const modal = document.getElementById('video-modal');
-            if (modal) modal.classList.remove('hidden');
-        };
-        window.closeVideoModal = function() {
-            const iframe = document.getElementById('modal-iframe');
-            if (iframe) iframe.src = "";
-            const modal = document.getElementById('video-modal');
-            if (modal) modal.classList.add('hidden');
-        };
-        window.openVideoForCase = function(caseId) {
-            const videos = window.portfolioLinks && window.portfolioLinks.videos;
-            const videoObj = videos && videos[caseId - 1];
-            const videoUrl = videoObj && videoObj.video;
-            if (!videoUrl) return;
-            const isHorizontal = videoObj.isHorizontal !== undefined
-                ? (videoObj.isHorizontal === true || videoObj.isHorizontal === 'true')
-                : caseId > 6;
-            window.openVideoModal(videoUrl, isHorizontal);
-        };
-
-        const bgCanvas = document.getElementById('stars-canvas');
-        const bgCtx = bgCanvas ? bgCanvas.getContext('2d') : null;
-        let stars = [];
-        let mouse = { x: null, y: null };
-        let comet = null;
-        window.extraComets = [];
-
-        function resizeCanvas() {
-            if (!bgCanvas) return;
-            bgCanvas.width = window.innerWidth;
-            bgCanvas.height = window.innerHeight;
-            initStars();
-        }
-
-        class Star {
-            constructor() {
-                this.x = Math.random() * bgCanvas.width;
-                this.y = Math.random() * bgCanvas.height;
-                this.size = Math.random() * 1.5;
-                this.speedX = (Math.random() - 0.5) * 0.12;
-                this.speedY = (Math.random() - 0.5) * 0.12;
-                this.alpha = Math.random();
-                this.alphaSpeed = 0.005 + Math.random() * 0.01;
-            }
-            update() {
-                this.x += this.speedX; this.y += this.speedY;
-                if (this.x < 0 || this.x > bgCanvas.width) this.speedX *= -1;
-                if (this.y < 0 || this.y > bgCanvas.height) this.speedY *= -1;
-                this.alpha += this.alphaSpeed;
-                if (this.alpha > 1 || this.alpha < 0.1) this.alphaSpeed *= -1;
-
-                if (mouse.x && mouse.y) {
-                    let dx = mouse.x - this.x;
-                    let dy = mouse.y - this.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 120) {
-                        let force = (120 - dist) / 120;
-                        this.x -= (dx / dist) * force * 1.5;
-                        this.y -= (dy / dist) * force * 1.5;
-                    }
-                }
-            }
-            draw() {
-                bgCtx.save();
-                bgCtx.globalAlpha = this.alpha;
-                bgCtx.fillStyle = '#ffffff';
-                bgCtx.fillRect(this.x, this.y, this.size, this.size);
-                bgCtx.restore();
-            }
-        }
-
-        class Comet {
-            constructor() { this.reset(); }
-            reset() {
-                this.direction = Math.floor(Math.random() * 4); 
-                this.opacity = 0; 
-                this.maxOpacity = 0.7 + Math.random() * 0.3;
-                this.fadeDistance = 150; 
-                this.active = true;
-                if (this.direction === 0) { 
-                    this.x = -150; this.y = Math.random() * (bgCanvas.height * 0.4);
-                    this.speedX = 6 + Math.random() * 4; this.speedY = 2 + Math.random() * 2;
-                } else if (this.direction === 1) { 
-                    this.x = bgCanvas.width + 150; this.y = Math.random() * (bgCanvas.height * 0.4);
-                    this.speedX = -(6 + Math.random() * 4); this.speedY = 2 + Math.random() * 2;
-                } else if (this.direction === 2) { 
-                    this.x = Math.random() * bgCanvas.width; this.y = -150;
-                    this.speedX = (Math.random() - 0.5) * 3; this.speedY = 5 + Math.random() * 4;
-                } else { 
-                    this.x = Math.random() * bgCanvas.width; this.y = bgCanvas.height + 150;
-                    this.speedX = (Math.random() - 0.5) * 3; this.speedY = -(5 + Math.random() * 4);
-                }
-            }
-            update() {
-                this.x += this.speedX; this.y += this.speedY;
-                if (this.x < -200 || this.x > bgCanvas.width + 200 || this.y < -200 || this.y > bgCanvas.height + 200) {
-                    this.active = false;
-                }
-                let distToEdge = Math.min(this.x + 100, bgCanvas.width + 100 - this.x, this.y + 100, bgCanvas.height + 100 - this.y);
-                if (distToEdge < 0) {
-                    this.opacity = 0;
-                } else if (distToEdge < this.fadeDistance) {
-                    this.opacity = (distToEdge / this.fadeDistance) * this.maxOpacity;
-                } else {
-                    this.opacity = this.maxOpacity;
-                }
-            }
-            draw() {
-                if (!this.active) return;
-                bgCtx.save();
-                bgCtx.globalAlpha = this.opacity;
-                const tailX = this.x - (this.speedX * 8); const tailY = this.y - (this.speedY * 8);
-                const gradient = bgCtx.createLinearGradient(this.x, this.y, tailX, tailY);
-                gradient.addColorStop(0, '#00c6fb'); gradient.addColorStop(0.3, 'rgba(79, 172, 254, 0.4)'); gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                bgCtx.beginPath(); bgCtx.strokeStyle = gradient; bgCtx.lineWidth = 3;
-                bgCtx.moveTo(this.x, this.y); bgCtx.lineTo(tailX, tailY); bgCtx.stroke();
-                bgCtx.beginPath(); bgCtx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-                bgCtx.fillStyle = '#ffffff'; bgCtx.shadowBlur = 15; bgCtx.shadowColor = '#00c6fb'; bgCtx.fill();
-                bgCtx.restore();
-            }
-        }
-
-        window.playPreviewVideo = function(caseId) {
-            if (window.innerWidth < 768) return;
-            if (!window.portfolioLinks) return;
-            const baseVideoUrl = window.portfolioLinks[`case${caseId}_video`];
-            if (!baseVideoUrl) return;
-            const iframe = document.getElementById(`case-iframe-${caseId}`);
-            const thumb = document.getElementById(`case-thumb-${caseId}`);
-            const isKs = getKinescopeId(baseVideoUrl);
-            if (isKs) {
-                if (iframe) iframe.classList.remove('opacity-0');
-                if (thumb) thumb.classList.add('opacity-0');
-            } else {
-                stopAllPreviewVideos();
-                if (iframe) {
-                    iframe.src = getEmbedUrl(baseVideoUrl, true);
-                    iframe.classList.remove('opacity-0');
-                    if (thumb) thumb.classList.add('opacity-0');
-                }
-            }
-        };
-
-        window.stopPreviewVideo = function(caseId) {
-            if (window.innerWidth < 768) return;
-            const baseVideoUrl = window.portfolioLinks && window.portfolioLinks[`case${caseId}_video`];
-            const iframe = document.getElementById(`case-iframe-${caseId}`);
-            const thumb = document.getElementById(`case-thumb-${caseId}`);
-            const isKs = getKinescopeId(baseVideoUrl || "");
-            if (isKs) {
-                return;
-            }
-            if (iframe) { iframe.src = ""; iframe.classList.add('opacity-0'); }
-            if (thumb) thumb.classList.remove('opacity-0');
-        };
-
-        // Состояния мобильных карточек (первый тап — играть, второй — открыть модалку)
-        const mobileTapState = {};
-
-        window.handlePortfolioCardClick = function(caseId, event) {
-            if (window.innerWidth >= 768) {
-                // Десктоп: просто открываем модалку
-                openVideoForCase(caseId);
-                return;
-            }
-            // Мобиль: первый тап — показать видео, второй — открыть модалку
-            if (!mobileTapState[caseId]) {
-                // Первый тап: запустить видео в карточке
-                event.preventDefault();
-                const iframe = document.getElementById(`case-iframe-${caseId}`);
-                const thumb = document.getElementById(`case-thumb-${caseId}`);
-                const playBtn = document.getElementById(`case-play-btn-${caseId}`);
-                const baseVideoUrl = window.portfolioLinks && window.portfolioLinks[`case${caseId}_video`];
-                if (iframe && baseVideoUrl) {
-                    // Останавливаем все остальные мобильные превью
-                    Object.keys(mobileTapState).forEach(id => {
-                        if (parseInt(id) !== caseId && mobileTapState[id]) {
-                            mobileTapState[id] = false;
-                            const otherIframe = document.getElementById(`case-iframe-${id}`);
-                            const otherThumb = document.getElementById(`case-thumb-${id}`);
-                            const otherBtn = document.getElementById(`case-play-btn-${id}`);
-                            if (otherIframe) { otherIframe.src = ""; otherIframe.classList.add('opacity-0'); }
-                            if (otherThumb) otherThumb.classList.remove('opacity-0');
-                            if (otherBtn) otherBtn.style.display = '';
-                        }
-                    });
-                    iframe.src = getEmbedUrl(baseVideoUrl, true);
-                    iframe.classList.remove('opacity-0');
-                    if (thumb) thumb.classList.add('opacity-0');
-                    if (playBtn) playBtn.style.display = 'none';
-                    mobileTapState[caseId] = true;
-                } else {
-                    openVideoForCase(caseId);
-                }
-            } else {
-                // Второй тап: открыть модалку с полным видео
-                mobileTapState[caseId] = false;
-                openVideoForCase(caseId);
-            }
-        };
-
-        function stopAllPreviewVideos() {
-            document.querySelectorAll('.case-video-iframe').forEach(iframe => {
-                iframe.src = "";
-                iframe.classList.add('opacity-0');
-            });
-            document.querySelectorAll('[id^="case-thumb-"]').forEach(thumb => thumb.classList.remove('opacity-0'));
-        }
-
-        function initStars() {
-            stars = [];
-            const isMobile = window.innerWidth < 768;
-            // Мобильные: значительно меньше звёзд для CPU
-            let count = Math.floor((bgCanvas.width * bgCanvas.height) / (isMobile ? 18000 : 4500));
-            count = Math.min(count, isMobile ? 35 : 250);
-            for (let i = 0; i < count; i++) stars.push(new Star());
-        }
-
-        function planNextComet() {
-            if (!bgCanvas || window.innerWidth < 768) return; // кометы только на десктопе
-            const delay = 10000 + Math.random() * 10000;
-            setTimeout(() => { comet = new Comet(); planNextComet(); }, delay);
-        }
-
-        function animateBg() {
-            if (!bgCtx) return;
-            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-            stars.forEach(star => { star.update(); star.draw(); });
-            if (comet && comet.active) { comet.update(); comet.draw(); }
-            
-            window.extraComets.forEach((c, i) => {
-                if (c.active) { c.update(); c.draw(); } 
-                else window.extraComets.splice(i, 1);
-            });
-
-            requestAnimationFrame(animateBg);
-        }
-
-        let logoClicks = 0;
-        let hyperdriveTimeout = null;
-        window.triggerLogoEasterEgg = function() {
-            logoClicks++;
-            if(logoClicks === 5) {
-                const logo = document.querySelector('.logo-title-style');
-                logo.classList.add('hyperdrive-mode');
-                if(window.showToast) window.showToast("Активирован гипердвигатель!", "success");
-                for(let i=0; i<25; i++) {
-                    if (bgCanvas) setTimeout(() => { let c = new Comet(); window.extraComets.push(c); }, i*150);
-                }
-                
-                if(hyperdriveTimeout) clearTimeout(hyperdriveTimeout);
-                hyperdriveTimeout = setTimeout(() => {
-                    logo.classList.remove('hyperdrive-mode');
-                    logoClicks = 0;
-                    window.extraComets = [];
-                    if(window.showToast) window.showToast("Гипердвигатель отключен.", "success");
-                }, 6000);
-            }
-        };
-
-        window.filterPortfolio = function(category) {
-            window._lastPortfolioFilter = category;
-            const tabs = document.querySelectorAll('.portfolio-tab');
-            tabs.forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.getAttribute('onclick') && tab.getAttribute('onclick').includes(`'${category}'`)) {
-                    tab.classList.add('active');
-                }
-            });
-
-            const items = document.querySelectorAll('.portfolio-item');
-            items.forEach(item => {
-                if (category === 'all' || item.getAttribute('data-category') === category) {
-                    item.style.display = 'block';
-                    item.style.opacity = '0';
-                    setTimeout(() => {
-                        item.style.opacity = '1';
-                        item.style.transition = 'opacity 0.4s ease';
-                    }, 50);
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-            portfolioDesktopExpanded = false;
-            if (typeof applyDesktopPortfolioLimit === 'function') applyDesktopPortfolioLimit();
-        };
-
-        let isAboutOpen = false;
-        window.toggleAboutUs = function() {
-            const drawer = document.getElementById('about-drawer');
-            const btnText = document.getElementById('about-btn-text');
-            const btnIcon = document.getElementById('about-btn-icon');
-
-            if (!drawer) return;
-
-            if (isAboutOpen) {
-                drawer.style.maxHeight = "0px";
-                if (btnText) btnText.textContent = "УЗНАТЬ О НАШЕЙ ФИЛОСОФИИ";
-                if (btnIcon) btnIcon.style.transform = "rotate(0deg)";
-            } else {
-                drawer.style.maxHeight = drawer.scrollHeight + "px";
-                if (btnText) btnText.textContent = "СВЕРНУТЬ ИНФОРМАЦИЮ";
-                if (btnIcon) btnIcon.style.transform = "rotate(45deg)";
-                setTimeout(() => { drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 300);
-            }
-            isAboutOpen = !isAboutOpen;
-        };
-
-        // Оптимизация: throttle для scroll (не нагружаем CPU смартфона)
-        let scrollTicking = false;
-        window.addEventListener('scroll', () => {
-            if (!scrollTicking) {
-                requestAnimationFrame(() => {
-                    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-                    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-                    const scrolled = (winScroll / height) * 100;
-                    const prog = document.getElementById('scroll-progress');
-                    if (prog) prog.style.width = scrolled + '%';
-                    scrollTicking = false;
-                });
-                scrollTicking = true;
-            }
-        }, { passive: true });
-
-        window.addEventListener('resize', resizeCanvas);
-        
-        // Оптимизация: throttle для mousemove
-        let moveTicking = false;
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-            if (!moveTicking) {
-                requestAnimationFrame(() => {
-                    const customCursor = document.getElementById('custom-cursor');
-                    if (customCursor) {
-                        customCursor.style.left = mouse.x + 'px';
-                        customCursor.style.top = mouse.y + 'px';
-                        // Скрываем курсор над карточками портфолио (включая iframe)
-                        const portfolioItems = document.querySelectorAll('.portfolio-item');
-                        let overPortfolio = false;
-                        for (const item of portfolioItems) {
-                            const r = item.getBoundingClientRect();
-                            if (mouse.x >= r.left && mouse.x <= r.right && mouse.y >= r.top && mouse.y <= r.bottom) {
-                                overPortfolio = true;
-                                break;
-                            }
-                        }
-                        customCursor.style.opacity = overPortfolio ? '0' : '1';
-                    }
-                    moveTicking = false;
-                });
-                moveTicking = true;
-            }
-        }, { passive: true });
-
-        window.addEventListener('load', () => {
-            if (bgCanvas) { resizeCanvas(); animateBg(); planNextComet(); }
-            
-            setTimeout(() => {
-                const heroText = document.getElementById('hero-text');
-                if (heroText) {
-                    heroText.classList.remove('opacity-0', 'translate-y-8');
-                    heroText.classList.add('opacity-100', 'translate-y-0');
-                }
-            }, 300);
-
-
-        });
-
-        // === ДВОЙНОЙ ПАРОЛЬ ДЛЯ ЭКРАНА ТЕХРАБОТ ===
-        window.openAdminModalWith2FA = function() {
-            const p1 = document.getElementById("admin-2fa-pass1");
-            const p2 = document.getElementById("admin-2fa-pass2");
-            if (p1) p1.value = "";
-            if (p2) p2.value = "";
-            const modal = document.getElementById("admin-2fa-modal");
-            if (modal) modal.classList.remove('hidden');
-            // фокус на первое поле
-            setTimeout(() => { if(p1) p1.focus(); }, 100);
-        };
-
-        window.closeAdmin2FAModal = function() {
-            const modal = document.getElementById("admin-2fa-modal");
-            if (modal) modal.classList.add('hidden');
-        };
-
-        window.verifyAdmin2FACode = function() {
-            const pass1 = (document.getElementById("admin-2fa-pass1")?.value || "").trim();
-            const pass2 = (document.getElementById("admin-2fa-pass2")?.value || "").trim();
-            
-            // Загружаем сохранённые пароли (по умолчанию: spaceadmin / space1)
-            let savedCfg = {};
-            try { savedCfg = JSON.parse(localStorage.getItem('space_site_config')) || {}; } catch(e) {}
-            const expectedPass1 = savedCfg.maintenancePass1 || "spaceadmin";
-            const expectedPass2 = savedCfg.maintenancePass2 || "space1";
-
-            if (pass1 === expectedPass1 && pass2 === expectedPass2) {
-                window.closeAdmin2FAModal();
-                window.openAdminModal();
-                showToast("Двойная авторизация пройдена!", "success");
-            } else {
-                showToast("Один или оба ключа введены неверно!", "error");
-                // Подсветить ошибку
-                const p1el = document.getElementById("admin-2fa-pass1");
-                const p2el = document.getElementById("admin-2fa-pass2");
-                [p1el, p2el].forEach(el => {
-                    if (el) { el.classList.add('border-rose-500'); setTimeout(() => el.classList.remove('border-rose-500'), 1500); }
-                });
-            }
-        };
-        // Enter в полях 2FA
-        document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("admin-2fa-pass1")?.addEventListener("keydown", e => { if(e.key==="Enter") document.getElementById("admin-2fa-pass2")?.focus(); });
-            document.getElementById("admin-2fa-pass2")?.addEventListener("keydown", e => { if(e.key==="Enter") window.verifyAdmin2FACode(); });
-
-            // Показываем статус Firebase в UI
-            const hasFbConfig = !!localStorage.getItem('space_firebase_config');
-            const statusEl = document.getElementById('firebase-sync-status');
-            const notConfigured = document.getElementById('firebase-not-configured');
-            const configured = document.getElementById('firebase-configured');
-            if (statusEl) {
-                if (hasFbConfig) {
-                    statusEl.textContent = '● Синхронизация активна';
-                    statusEl.className = 'text-[10px] mt-0.5 font-bold text-emerald-400';
-                } else {
-                    statusEl.textContent = '● Только локальное хранение';
-                    statusEl.className = 'text-[10px] mt-0.5 font-bold text-red-400';
-                }
-            }
-            if (notConfigured && configured) {
-                if (hasFbConfig) {
-                    notConfigured.classList.add('hidden');
-                    configured.classList.remove('hidden');
-                } else {
-                    notConfigured.classList.remove('hidden');
-                    configured.classList.add('hidden');
-                }
-            }
-        });
-
-        // === ПАСХАЛКИ ===
-
-        // 1. "Космический прыжок": зажать 'S' на 2 секунды → zoom-in эффект
-        (function() {
-            let sHoldTimer = null;
-            let sActive = false;
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 's' || e.key === 'S') {
-                    if (!sHoldTimer && !sActive) {
-                        sHoldTimer = setTimeout(() => {
-                            sActive = true;
-                            document.body.style.transition = 'transform 1.5s cubic-bezier(0.16,1,0.3,1)';
-                            document.body.style.transform = 'scale(1.08)';
-                            showToast('🚀 Космический прыжок активирован!', 'info');
-                            setTimeout(() => {
-                                document.body.style.transform = 'scale(1)';
-                                setTimeout(() => { document.body.style.transition = ''; sActive = false; }, 1500);
-                            }, 2000);
-                        }, 2000);
-                    }
-                }
-            });
-            window.addEventListener('keyup', (e) => {
-                if (e.key === 's' || e.key === 'S') {
-                    if (sHoldTimer) { clearTimeout(sHoldTimer); sHoldTimer = null; }
-                }
-            });
-        })();
-
-        // 2. "Звездный дождь": клик на .bg-astronaut 3 раза → увеличить звёзды
-        (function() {
-            let astronautClicks = 0;
-            let astronautTimer = null;
-            let starRainActive = false;
-            
-            // Делаем астронавта кликабельным
-            document.addEventListener('DOMContentLoaded', () => {
-                const astro = document.querySelector('.bg-astronaut');
-                if (!astro) return;
-                astro.style.pointerEvents = 'auto';
-                astro.style.cursor = 'pointer';
-                astro.style.zIndex = '10';
-                
-                astro.addEventListener('click', () => {
-                    astronautClicks++;
-                    if (astronautTimer) clearTimeout(astronautTimer);
-                    astronautTimer = setTimeout(() => { astronautClicks = 0; }, 3000);
-                    
-                    if (astronautClicks >= 3 && !starRainActive) {
-                        astronautClicks = 0;
-                        starRainActive = true;
-                        showToast('⭐ Звёздный дождь начинается!', 'success');
-                        // Добавляем звёзды
-                        const extraCount = 300;
-                        const extraStars = [];
-                        for (let i = 0; i < extraCount; i++) extraStars.push(new Star());
-                        stars.push(...extraStars);
-                        setTimeout(() => {
-                            stars.splice(stars.length - extraCount, extraCount);
-                            starRainActive = false;
-                            showToast('Звёздный дождь завершён.', 'info');
-                        }, 8000);
-                    }
-                });
-            });
-        })();
-
-        // 3. "Гравитация": наведение на .logo-title-style с Alt → буквы разлетаются
-        (function() {
-            let gravityActive = false;
-            let originalHTML = null;
-            document.addEventListener('DOMContentLoaded', () => {
-                const logoEl = document.querySelector('.logo-title-style');
-                if (!logoEl) return;
-
-                logoEl.addEventListener('mouseover', (e) => {
-                    if (!e.altKey || gravityActive) return;
-                    gravityActive = true;
-                    originalHTML = logoEl.innerHTML;
-                    const text = logoEl.textContent.trim();
-                    const chars = text.split('').map(ch => {
-                        const span = document.createElement('span');
-                        span.textContent = ch;
-                        span.style.display = 'inline-block';
-                        span.style.transition = `transform ${1 + Math.random()}s ease, opacity 1s`;
-                        return span;
-                    });
-                    logoEl.innerHTML = '';
-                    chars.forEach(s => logoEl.appendChild(s));
-                    
-                    requestAnimationFrame(() => {
-                        chars.forEach(s => {
-                            const dx = (Math.random() - 0.5) * 300;
-                            const dy = (Math.random() - 0.5) * 200;
-                            s.style.transform = `translate(${dx}px, ${dy}px) rotate(${(Math.random()-0.5)*60}deg)`;
-                            s.style.opacity = '0';
-                        });
-                    });
-
-                    showToast('🌀 Гравитация нарушена!', 'info');
-                    setTimeout(() => {
-                        if (originalHTML !== null) logoEl.innerHTML = originalHTML;
-                        gravityActive = false;
-                    }, 2500);
-                });
-            });
-        })();
-
-        // 4. "Секретный чат": клик на копирайт в футере 5 раз → Toast
-        (function() {
-            let copyrightClicks = 0;
-            let copyrightTimer = null;
-            document.addEventListener('DOMContentLoaded', () => {
-                const copyrightEl = document.querySelector('[data-id="footer_copyright"]');
-                if (!copyrightEl) return;
-                copyrightEl.style.cursor = 'pointer';
-                copyrightEl.addEventListener('click', () => {
-                    copyrightClicks++;
-                    if (copyrightTimer) clearTimeout(copyrightTimer);
-                    copyrightTimer = setTimeout(() => { copyrightClicks = 0; }, 4000);
-                    if (copyrightClicks >= 5) {
-                        copyrightClicks = 0;
-                        showToast('📡 Сигнал получен. Мы не одни во Вселенной...', 'info');
-                    }
-                });
-            });
-        })();
-
-        // ── КАЛЬКУЛЯТОР ────────────────────────────────────
-        const _CP_DEFAULT = {
-            base:    { name:'BASE',    base:1000, per30:350,  urg:75,  opts:[
-                {id:'sub',  l:'Ключевые слова в субтитрах', p:300},
-                {id:'snd',  l:'Базовый Sound Design',       p:400},
-                {id:'src',  l:'Исходники более 15 минут',   p:500}]},
-            pro:     { name:'PRO',     base:2500, per30:500,  urg:70,  opts:[
-                {id:'snd2', l:'Глубокий Sound Design',      p:600},
-                {id:'ftg',  l:'Расширенные футажи',          p:800},
-                {id:'mc',   l:'Мультикамерный монтаж',       p:1000},
-                {id:'inf',  l:'Инфографика',                 p:700}]},
-            premium: { name:'PREMIUM', base:4000, per30:1200, urg:100, opts:[
-                {id:'mot',  l:'Motion Design',               p:2000},
-                {id:'trk',  l:'Tracking объектов',           p:1000},
-                {id:'scr',  l:'Написание сценария',          p:2000},
-                {id:'trd',  l:'3D-анимация',                 p:2500},
-                {id:'fmt',  l:'Адаптация форматов',          p:1500}]},
-            calcTgLink: ''
-        };
-
-        // Загрузка настроек калькулятора.
-        // localStorage используется только как временный кеш —
-        // реальный источник истины всегда Firebase (см. loadData и onSnapshot).
-        // Это гарантирует, что мобильные устройства и новые браузеры
-        // не получат устаревшие данные из чужого localStorage.
-        function _loadCalcConfig() {
-            try {
-                const saved = localStorage.getItem('space_calc_config');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    const result = JSON.parse(JSON.stringify(_CP_DEFAULT));
-                    ['base','pro','premium'].forEach(pk => {
-                        if (parsed[pk]) {
-                            if (parsed[pk].base)  result[pk].base  = parsed[pk].base;
-                            if (parsed[pk].per30) result[pk].per30 = parsed[pk].per30;
-                            if (parsed[pk].urg)   result[pk].urg   = parsed[pk].urg;
-                            if (Array.isArray(parsed[pk].opts) && parsed[pk].opts.length > 0) {
-                                result[pk].opts = parsed[pk].opts;
-                            }
-                        }
-                    });
-                    result.calcTgLink = parsed.calcTgLink || '';
-                    return result;
-                }
-            } catch(e) {}
-            return JSON.parse(JSON.stringify(_CP_DEFAULT));
-        }
-        let _CP = _loadCalcConfig();
-
-        let _cs = {pkg:'base', dur:60, opts:{}, urg:false};
-
-        // ── ФУНКЦИИ РЕДАКТОРА КАЛЬКУЛЯТОРА В АДМИНКЕ ──────
-        let _calcAdminCurrentPkg = 'base'; // активная вкладка в редакторе
-
-        // Сохранить текущий _CP (включая calcTgLink) в localStorage и Firebase.
-        // Возвращает true, если сохранение в Firebase прошло успешно (или Firebase не подключён).
-        async function _persistCalcConfig() {
-            try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
-            // Используем мост к Firebase из модульного скрипта
-            if (typeof window._firebaseSaveCalcConfig === 'function') {
-                return await window._firebaseSaveCalcConfig(_CP);
-            }
-            return true;
-        }
-
-        window.renderCalcAdminTab = async function() {
-            // Принудительно грузим актуальные данные из Firebase перед рендером
-            if (typeof window._firebaseLoadCalcConfig === 'function') {
-                try {
-                    const data = await window._firebaseLoadCalcConfig();
-                    if (data) {
-                        ['base','pro','premium'].forEach(pk => {
-                            if (data[pk]) {
-                                Object.assign(_CP[pk], data[pk]);
-                                if (Array.isArray(data[pk].opts)) _CP[pk].opts = data[pk].opts;
-                            }
-                        });
-                        _CP.calcTgLink = (data.calcTgLink !== undefined) ? (data.calcTgLink || '') : (_CP.calcTgLink || '');
-                        try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
-                    }
-                } catch(e) {
-                    console.warn('renderCalcAdminTab Firebase fetch:', e);
-                }
-            }
-            const cfg = _CP;
-            // Срочность
-            const urgEl = document.getElementById('calc-admin-urgent-pct');
-            if (urgEl) urgEl.value = cfg.base.urg;
-            // TG-ссылка
-            const tgEl = document.getElementById('calc-admin-tg-link');
-            if (tgEl) tgEl.value = _CP.calcTgLink || '';
-            // Цены пакетов
-            ['base','pro','premium'].forEach(pk => {
-                const baseEl = document.getElementById(`calc-admin-${pk}-base`);
-                const per30El = document.getElementById(`calc-admin-${pk}-per30`);
-                if (baseEl) baseEl.value = _CP[pk].base;
-                if (per30El) per30El.value = _CP[pk].per30;
-            });
-            // Активируем первую вкладку услуг
-            calcAdminSwitchOptPkg(_calcAdminCurrentPkg);
-        };
-
-        window.calcAdminSwitchOptPkg = function(pkg) {
-            _calcAdminCurrentPkg = pkg;
-            // Подсветка вкладок
-            document.querySelectorAll('.calc-opt-pkg-tab').forEach(btn => {
-                const isActive = btn.getAttribute('data-optpkg') === pkg;
-                const colors = {base:'text-cyan-400 bg-cyan-500/15 border border-cyan-500/30', pro:'text-blue-400 bg-blue-500/15 border border-blue-500/30', premium:'text-purple-400 bg-purple-500/15 border border-purple-500/30'};
-                btn.className = 'calc-opt-pkg-tab flex-1 py-2 rounded-xl text-xs font-black font-space transition-all duration-200 ' +
-                    (isActive ? (colors[pkg] || 'text-cyan-400 bg-cyan-500/15') : 'text-slate-500 hover:text-white');
-            });
-            _renderCalcAdminOptions();
-        };
-
-        function _renderCalcAdminOptions() {
-            const pkg = _calcAdminCurrentPkg;
-            const opts = (_CP[pkg] && _CP[pkg].opts) ? _CP[pkg].opts : [];
-            const el = document.getElementById('calc-admin-options-list');
-            if (!el) return;
-            if (!opts.length) {
-                el.innerHTML = '<p class="text-xs text-slate-600 italic py-2">Нет услуг для этого пакета</p>';
-                return;
-            }
-            el.innerHTML = opts.map((o) => `
-                <div class="flex items-center gap-2 bg-black/30 border border-white/5 rounded-xl px-4 py-2.5">
-                    <input type="text" value="${(o.l || '').replace(/"/g, '&quot;')}" onchange="calcAdminUpdateOptLabel('${o.id}', '${pkg}', this.value)"
-                        class="flex-1 min-w-0 bg-black/60 border border-white/8 rounded-xl px-3 py-1.5 text-white text-sm focus:outline-none focus:border-cyan-500/60 transition">
-                    <input type="number" value="${o.p}" onchange="calcAdminUpdateOptPrice('${o.id}', '${pkg}', this.value)"
-                        class="w-24 bg-black/60 border border-white/8 rounded-xl px-3 py-1.5 text-white font-mono text-sm focus:outline-none focus:border-cyan-500/60 transition text-right">
-                    <span class="text-slate-600 text-xs">₽</span>
-                    <button onclick="calcAdminDeleteOption('${o.id}', '${pkg}')" class="w-7 h-7 flex items-center justify-center rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-500 transition flex-shrink-0">
-                        <i class="fas fa-times text-[10px]"></i>
-                    </button>
-                </div>`).join('');
-        }
-
-        window.calcAdminUpdatePkgPrice = async function(pkg, field, val) {
-    if (!_CP[pkg]) return;
-    _CP[pkg][field] = parseInt(val) || 0;
-    const ok = await _persistCalcConfig();
-    if (ok) showToast(`${pkg.toUpperCase()} · ${field === 'base' ? 'Базовая цена' : 'Цена за 30 сек'} обновлена`, 'success');
+        window.showToast = function(msg, type='info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const colors = {
+        success: { border: 'border-emerald-500/30', text: 'text-emerald-400', icon: 'fa-check-circle' },
+        error:   { border: 'border-rose-500/30',    text: 'text-red-400',     icon: 'fa-triangle-exclamation' },
+        info:    { border: 'border-indigo-500/30',  text: 'text-indigo-400',  icon: 'fa-circle-info' },
+    };
+    const c = colors[type] || colors.info;
+    const t = document.createElement('div');
+    t.className = `toast ${c.border} ${c.text} toast-enter`;
+    t.style.pointerEvents = 'auto';
+    t.innerHTML = `<i class="fas ${c.icon} mr-2.5 shrink-0"></i><span>${msg}</span>`;
+    container.appendChild(t);
+    setTimeout(() => {
+        t.classList.remove('toast-enter');
+        t.classList.add('toast-leave');
+        t.addEventListener('animationend', () => t.remove(), { once: true });
+    }, 3500);
 };
 
 window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
@@ -4218,31 +3300,49 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             const code = document.getElementById('portal-access-code').value.trim().toLowerCase();
             if (!code) { showToast("Введите ваш уникальный код доступа!", "error"); return; }
 
+            const btn = document.querySelector('#portal-auth-sec button[onclick="loginPortalWithCode()"]');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Проверяем...'; }
+
             let foundProject = null;
 
-            if (firebaseInitialized) {
-                try {
-                    await ensureAuth();
-                    if (!auth.currentUser) return;
+            try {
+                if (firebaseInitialized) {
+                    // Даём время авторизации — retry если currentUser ещё не готов
+                    let retries = 3;
+                    while (retries-- > 0) {
+                        await ensureAuth();
+                        if (auth.currentUser) break;
+                        await new Promise(r => setTimeout(r, 800));
+                    }
+                    if (!auth.currentUser) {
+                        showToast("Ошибка авторизации. Попробуйте снова.", "error");
+                        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-unlock mr-2"></i>Войти в кабинет'; }
+                        return;
+                    }
                     const qSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'projects'));
-                    qSnap.forEach(doc => {
-                        const data = doc.data();
+                    qSnap.forEach(docItem => {
+                        const data = docItem.data();
                         try {
                             const decrypted = CryptoJS.AES.decrypt(data.code, cryptoSecret).toString(CryptoJS.enc.Utf8);
-                            if (decrypted && decrypted.trim().toLowerCase() === code) foundProject = { id: doc.id, ...data };
+                            if (decrypted && decrypted.trim().toLowerCase() === code) foundProject = { id: docItem.id, ...data };
                         } catch (e) {
-                            if (data.code && data.code.trim().toLowerCase() === code) foundProject = { id: doc.id, ...data };
+                            if (data.code && data.code.trim().toLowerCase() === code) foundProject = { id: docItem.id, ...data };
                         }
                     });
-                } catch (err) { console.error("Firebase load error:", err); }
-            } else {
-                foundProject = localDemoProjects.find(p => {
-                    try {
-                        const decrypted = CryptoJS.AES.decrypt(p.code, cryptoSecret).toString(CryptoJS.enc.Utf8);
-                        return decrypted && decrypted.trim().toLowerCase() === code;
-                    } catch (e) { return p.code.toLowerCase() === code; }
-                });
+                } else {
+                    foundProject = localDemoProjects.find(p => {
+                        try {
+                            const decrypted = CryptoJS.AES.decrypt(p.code, cryptoSecret).toString(CryptoJS.enc.Utf8);
+                            return decrypted && decrypted.trim().toLowerCase() === code;
+                        } catch (e) { return p.code.toLowerCase() === code; }
+                    });
+                }
+            } catch (err) {
+                console.error("Portal login error:", err);
+                showToast("Ошибка подключения. Проверьте интернет.", "error");
             }
+
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-unlock mr-2"></i>Войти в кабинет'; }
 
             if (foundProject) {
                 showToast("Успешный вход в Личный кабинет!", "success");
@@ -4291,30 +3391,85 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             document.getElementById('client-project-notes').textContent = project.notes || "Менеджер работает над проектом. Скоро здесь появится комментарий.";
             document.getElementById('client-project-deadline').textContent = formatDateRussian(project.deadline);
 
-            const basePrice = project.basePrice || 0;
+            const basePrice = parseFloat(project.basePrice) || 0;
             document.getElementById('client-base-price').textContent = `${basePrice.toLocaleString()} ₽`;
-            
+
             const addonsContainer = document.getElementById('client-addons-container');
             let totalAddonsPrice = 0;
-            
+
             if (addonsContainer) {
-                if (project.addons && project.addons.length > 0) {
-                    addonsContainer.innerHTML = project.addons.map(addon => {
-                        totalAddonsPrice += addon.price;
-                        return `
-                            <div class="flex justify-between text-slate-500 pl-2 border-l border-white/5">
-                                <span>+ ${addon.label}:</span>
-                                <span class="font-mono">${addon.price.toLocaleString()} ₽</span>
-                            </div>
-                        `;
+                // Поддержка нового формата clientExtraServices и старого addons
+                const services = project.clientExtraServices || project.addons || [];
+                if (services.length > 0) {
+                    addonsContainer.innerHTML = services.map(s => {
+                        const price = parseFloat(s.price || s.price) || 0;
+                        const label = s.name || s.label || 'Услуга';
+                        totalAddonsPrice += price;
+                        return `<div class="flex justify-between items-center text-[11px] py-1.5 border-b border-white/[0.04] last:border-0">
+                            <span class="text-slate-400">+ ${label}</span>
+                            <span class="font-mono text-white">${price.toLocaleString()} ₽</span>
+                        </div>`;
                     }).join('');
                 } else {
-                    addonsContainer.innerHTML = `<p class="text-[10px] text-slate-600 italic">Дополнительные услуги не подключены</p>`;
+                    addonsContainer.innerHTML = '';
                 }
             }
 
-            const totalPrice = basePrice + totalAddonsPrice;
-            document.getElementById('client-total-price').textContent = `${totalPrice.toLocaleString()} ₽`;
+            const rawTotal = basePrice + totalAddonsPrice;
+
+            // Промокод и скидка
+            const promoEl = document.getElementById('client-promo-block');
+            const promo = project.promoCode;
+            let discount = 0;
+            if (promo && promoEl) {
+                if (promo.discountType === 'percent') {
+                    discount = Math.round(rawTotal * (parseFloat(promo.discountValue || promo.discount) || 0) / 100);
+                } else {
+                    discount = parseFloat(promo.discountAmount || promo.discountValue || promo.discount) || 0;
+                }
+                if (discount > 0) {
+                    const promoCode = promo.code || promo.name || '';
+                    const discountLabel = promo.discountType === 'percent'
+                        ? `−${promo.discountValue || promo.discount}%`
+                        : `−${discount.toLocaleString()} ₽`;
+                    promoEl.innerHTML = `
+                        <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-2xl border border-emerald-500/25 mt-2" style="background:rgba(16,185,129,0.07)">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-6 h-6 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-tag text-emerald-400 text-[9px]"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-[9px] text-slate-500 font-space uppercase tracking-wider">Промокод</p>
+                                    <p class="text-[11px] font-black text-emerald-400 font-mono tracking-wider">${promoCode}</p>
+                                </div>
+                            </div>
+                            <span class="text-emerald-400 font-black font-mono text-sm shrink-0">${discountLabel}</span>
+                        </div>`;
+                    promoEl.classList.remove('hidden');
+                } else {
+                    promoEl.classList.add('hidden');
+                }
+            } else if (promoEl) {
+                promoEl.classList.add('hidden');
+            }
+
+            const finalPrice = project.finalPrice !== undefined
+                ? parseFloat(project.finalPrice)
+                : rawTotal - discount;
+
+            // Если скидка есть — показываем зачёркнутую старую цену
+            const totalEl = document.getElementById('client-total-price');
+            const originalEl = document.getElementById('client-original-price');
+            if (discount > 0) {
+                if (originalEl) {
+                    originalEl.innerHTML = `<span class="line-through text-slate-600 text-sm font-mono mr-2">${rawTotal.toLocaleString()} ₽</span>`;
+                    originalEl.classList.remove('hidden');
+                }
+                if (totalEl) totalEl.textContent = `${finalPrice.toLocaleString()} ₽`;
+            } else {
+                if (originalEl) originalEl.classList.add('hidden');
+                if (totalEl) totalEl.textContent = `${rawTotal.toLocaleString()} ₽`;
+            }
 
             // УБРАН ТЕМПОРИТМ: Оставлено только 4 характеристики
             const pStats = project.stats || { dynamics: 50, sound: 50, color: 50, vfx: 50 };
