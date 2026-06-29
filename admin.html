@@ -1371,6 +1371,33 @@
     }, 3500);
 };
 
+// ─── CALC CONFIG (_CP) ────────────────────────────────────────────
+const _CP_DEFAULT = {
+    base:    { name:'BASE',    base:1000, per30:350,  urg:75,  opts:[
+        {id:'sub',  l:'Ключевые слова в субтитрах', p:300},
+        {id:'snd',  l:'Базовый Sound Design',       p:400},
+        {id:'src',  l:'Исходники более 15 минут',   p:500}]},
+    pro:     { name:'PRO',     base:1500, per30:500,  urg:70,  opts:[
+        {id:'snd2', l:'Глубокий Sound Design',      p:600},
+        {id:'ftg',  l:'Расширенные футажи',          p:800},
+        {id:'mc',   l:'Мультикамерный монтаж',       p:1000},
+        {id:'inf',  l:'Инфографика',                 p:700}]},
+    premium: { name:'PREMIUM', base:2500, per30:1200, urg:100, opts:[
+        {id:'mot',  l:'Motion Design',               p:2000},
+        {id:'trk',  l:'Tracking объектов',           p:1000},
+        {id:'scr',  l:'Написание сценария',          p:2000},
+        {id:'trd',  l:'3D-анимация',                 p:2500},
+        {id:'fmt',  l:'Адаптация форматов',          p:1500}]}
+};
+
+let _CP = (() => {
+    try {
+        const saved = JSON.parse(localStorage.getItem('space_calc_config'));
+        if (saved && saved.base && saved.pro && saved.premium) return saved;
+    } catch(e) {}
+    return JSON.parse(JSON.stringify(_CP_DEFAULT));
+})();
+
 // Сохраняем _CP в localStorage и Firebase
 async function _persistCalcConfig() {
     try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
