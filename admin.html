@@ -1371,6 +1371,24 @@
     }, 3500);
 };
 
+// Сохраняем _CP в localStorage и Firebase
+async function _persistCalcConfig() {
+    try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
+    try {
+        if (typeof window._firebaseSaveCalcConfig === 'function') {
+            await window._firebaseSaveCalcConfig(_CP);
+        }
+        return true;
+    } catch(e) { console.error('_persistCalcConfig:', e); return false; }
+}
+
+window.calcAdminUpdatePkgPrice = async function(pkg, field, val) {
+    if (!_CP[pkg]) return;
+    _CP[pkg][field] = parseInt(val) || 0;
+    const ok = await _persistCalcConfig();
+    if (ok) showToast(`${pkg.toUpperCase()} · ${field === 'base' ? 'Базовая цена' : 'Цена за 30 сек'} обновлена`, 'success');
+};
+
 window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             const o = (_CP[pkg] && _CP[pkg].opts) ? _CP[pkg].opts.find(x => x.id === id) : null;
             if (!o) return;
@@ -1445,7 +1463,62 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             if (ok) showToast('Настройки калькулятора сохранены!', 'success');
         };
 
-        // calc render: встроен в switchAdminTab
+        // ── РЕНДЕР ВКЛАДКИ КАЛЬКУЛЯТОРА ────────────────────────────────
+        let _calcAdminCurrentPkg = 'base';
+
+        function _renderCalcAdminOptions() {
+            const list = document.getElementById('calc-admin-options-list');
+            if (!list) return;
+            const opts = (_CP[_calcAdminCurrentPkg] && _CP[_calcAdminCurrentPkg].opts) || [];
+            if (!opts.length) {
+                list.innerHTML = '<p class="text-xs text-slate-600 italic text-center py-4">Нет услуг — добавьте первую ниже</p>';
+                return;
+            }
+            list.innerHTML = opts.map(o => `
+                <div class="flex items-center gap-2 p-3 rounded-2xl border border-white/[0.04] bg-black/20">
+                    <input type="text" value="${o.l.replace(/"/g,'&quot;')}"
+                        onchange="calcAdminUpdateOptLabel('${o.id}','${_calcAdminCurrentPkg}',this.value)"
+                        class="flex-1 min-w-0 bg-black/40 border border-white/5 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500/40 transition">
+                    <input type="number" value="${o.p}" min="0"
+                        onchange="calcAdminUpdateOptPrice('${o.id}','${_calcAdminCurrentPkg}',this.value)"
+                        class="w-28 bg-black/40 border border-white/5 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-purple-500/40 transition">
+                    <span class="text-xs text-slate-500 shrink-0">₽</span>
+                    <button onclick="calcAdminDeleteOption('${o.id}','${_calcAdminCurrentPkg}')"
+                        class="pressable w-8 h-8 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center transition shrink-0">
+                        <i class="fas fa-trash text-[10px]"></i>
+                    </button>
+                </div>`).join('');
+        }
+
+        window.calcAdminSwitchOptPkg = function(pkg) {
+            _calcAdminCurrentPkg = pkg;
+            document.querySelectorAll('.calc-opt-pkg-tab').forEach(b => {
+                const isActive = b.getAttribute('data-optpkg') === pkg;
+                b.className = 'calc-opt-pkg-tab flex-1 py-2 rounded-xl text-xs font-black font-space transition-all duration-200 ' +
+                    (isActive ? 'bg-white/[0.08] text-white' : 'text-slate-400 hover:text-white');
+            });
+            _renderCalcAdminOptions();
+        };
+
+        window.renderCalcAdminTab = function() {
+            // Заполняем поля базовых цен из _CP
+            ['base','pro','premium'].forEach(pk => {
+                const baseEl  = document.getElementById(`calc-admin-${pk}-base`);
+                const per30El = document.getElementById(`calc-admin-${pk}-per30`);
+                if (baseEl  && _CP[pk]) baseEl.value  = _CP[pk].base  || '';
+                if (per30El && _CP[pk]) per30El.value = _CP[pk].per30 || '';
+            });
+            // Срочность
+            const urgEl = document.getElementById('calc-admin-urgent-pct');
+            if (urgEl) urgEl.value = _CP.base.urg || 75;
+            // TG ссылка
+            const tgEl = document.getElementById('calc-admin-tg-link');
+            if (tgEl) tgEl.value = _CP.calcTgLink || '';
+            // Активируем первую вкладку пакетов и рендерим услуги
+            calcAdminSwitchOptPkg(_calcAdminCurrentPkg);
+        };
+
+        // calc render ─────────────────────────────────────────────────
 
         window.openCalcModal = async function() {
             document.getElementById('calc-modal').classList.remove('hidden');
