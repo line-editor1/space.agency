@@ -185,21 +185,34 @@
             font-size: 14px;
             flex-shrink: 0;
             position: relative;
-            overflow: hidden;
+            overflow: visible; /* точка статуса должна выходить за границу */
             border: 1px solid rgba(255, 255, 255, 0.06);
             background-size: cover;
             background-position: center;
         }
+        /* Обрезаем фото внутри аватарки через псевдоэлемент */
+        .avatar::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 11px;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .avatar > *:not(.online-dot):not(.online-dot-conv) {
+            border-radius: 11px;
+            overflow: hidden;
+        }
         .online-dot {
             position: absolute;
-            bottom: -1px;
-            right: -1px;
-            width: 9px;
-            height: 9px;
+            bottom: -3px;
+            right: -3px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: #10b981;
             border: 2px solid #0E0D16;
-            z-index: 2;
+            z-index: 10;
         }
 
         .msg-row { display: flex; flex-direction: column; margin-bottom: 2px; }
@@ -672,7 +685,7 @@
                     <i class="far fa-face-smile"></i>
                 </button>
                 
-                <textarea id="msg-input" class="flex-1 bg-black/35 border border-white/[0.04] rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 outline-none focus:border-white/[0.08] transition resize-none max-h-32" rows="1" placeholder="Ваше сообщение..." oninput="autoResizeInput(this)" onkeydown="handleMsgKey(event)"></textarea>
+                <textarea id="msg-input" class="flex-1 bg-black/35 border border-white/[0.04] rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 outline-none focus:border-white/[0.08] transition resize-none max-h-32" rows="1" placeholder="Ваше сообщение..." oninput="handleMsgInput(this)" onkeydown="handleMsgKey(event)"></textarea>
                 
                 <button id="send-btn" class="send-btn" onclick="sendMessage()" disabled>
                     <i class="fas fa-paper-plane text-xs"></i>
@@ -815,7 +828,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
     getFirestore, initializeFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
-    collection, getDocs, query, where, orderBy, onSnapshot,
+    collection, getDocs, query, where, orderBy, onSnapshot, writeBatch,
     serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -913,11 +926,13 @@ function openModal(id) {
     const el = document.getElementById(id);
     if (el) el.classList.remove('hidden');
 }
+window.openModal = openModal;
 
 function closeModal(id) {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
 }
+window.closeModal = closeModal;
 
 function scrollToBottom(smooth) {
     const wrap = document.getElementById('messages-wrap');
@@ -926,12 +941,22 @@ function scrollToBottom(smooth) {
     _unreadIncomingCount = 0;
     updateScrollBadge();
 }
+window.scrollToBottom = scrollToBottom;
 
 function autoResizeInput(el) {
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 128) + 'px';
 }
+
+let _draftSaveTimer = null;
+window.handleMsgInput = function(el) {
+    autoResizeInput(el);
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) sendBtn.disabled = !el.value.trim();
+    clearTimeout(_draftSaveTimer);
+    _draftSaveTimer = setTimeout(() => saveDraft(el.value), 250);
+};
 
 window.openProfileModal = function() {
     document.getElementById('profile-name-input').value = myProfile.name || '';
@@ -950,6 +975,11 @@ window.saveProfile = async function() {
     const statusEmoji = document.getElementById('profile-emoji-select').value;
 
     if (!name) { showToast('Введите имя', 'error'); return; }
+
+    if (myProfile.avatar && myProfile.avatar.length > 1000000) {
+        showToast('Фото профиля слишком большое, выберите другое', 'error');
+        return;
+    }
 
     myProfile.name = name;
     myProfile.bio = bio;
@@ -1167,11 +1197,35 @@ function renderMyHeader() {
 window.uploadAvatar = function(input) {
     const file = input.files[0];
     if (!file) return;
+    if (!file.type.startsWith('image/')) { showToast('Выберите изображение', 'error'); return; }
     const reader = new FileReader();
     reader.onload = function(e) {
-        myProfile.avatar = e.target.result;
-        applyAvatarStyle(document.getElementById('profile-avatar-preview'), myProfile.name, myProfile.avatar);
+        const img = new Image();
+        img.onload = function() {
+            const MAX = 320;
+            let { width: w, height: h } = img;
+            if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+            else        { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            let quality = 0.85;
+            let dataUrl = canvas.toDataURL('image/jpeg', quality);
+            while (dataUrl.length > 700000 && quality > 0.3) {
+                quality -= 0.1;
+                dataUrl = canvas.toDataURL('image/jpeg', quality);
+            }
+            if (dataUrl.length > 1000000) {
+                showToast('Не удалось сжать фото, попробуйте другое', 'error');
+                return;
+            }
+            myProfile.avatar = dataUrl;
+            applyAvatarStyle(document.getElementById('profile-avatar-preview'), myProfile.name, myProfile.avatar);
+        };
+        img.onerror = () => showToast('Не удалось загрузить изображение', 'error');
+        img.src = e.target.result;
     };
+    reader.onerror = () => showToast('Ошибка чтения файла', 'error');
     reader.readAsDataURL(file);
 };
 
@@ -1518,6 +1572,13 @@ window.openConversation = async function(convId, type) {
 
     applyAvatarStyle(avatarEl, conv.name, conv.avatar);
 
+    // Кнопка удаления канала — только для owner и только для каналов
+    const headerActions = document.getElementById('chat-header-actions');
+    headerActions.innerHTML = '';
+    if (type === 'channel' && myRole === 'owner') {
+        headerActions.innerHTML = `<button onclick="deleteChannel('${convId}')" class="w-8 h-8 rounded-xl bg-white/[0.03] hover:bg-red-500/10 flex items-center justify-center text-slate-500 hover:text-red-400 transition" title="Удалить канал"><i class="fas fa-trash text-xs"></i></button>`;
+    }
+
     if (_msgUnsub) _msgUnsub();
 
     const colName = type === 'channel' ? BASE('channels') : BASE('chats');
@@ -1526,28 +1587,40 @@ window.openConversation = async function(convId, type) {
     const wrap = document.getElementById('messages-wrap');
     wrap.innerHTML = `<div class="my-auto text-center py-10"><i class="fas fa-spinner fa-spin text-slate-600 text-lg"></i></div>`;
 
-    try {
-        const field = myRole === 'owner' ? 'unreadOwner' : 'unreadEditor';
-        await setDoc(doc(db, ...colName, convId, 'meta', 'info'), { [field]: 0 }, { merge: true });
-        conv.unread = 0;
-        renderSidebar();
-    } catch(e){}
+    // Не блокируем рендер сообщений ожиданием этой записи — выполняем в фоне
+    (async () => {
+        try {
+            const field = myRole === 'owner' ? 'unreadOwner' : 'unreadEditor';
+            await setDoc(doc(db, ...colName, convId, 'meta', 'info'), { [field]: 0 }, { merge: true });
+            conv.unread = 0;
+            renderSidebar();
+        } catch(e){}
+    })();
 
     _msgUnsub = onSnapshot(q, snap => {
         const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         
         let hasNewIncoming = false;
         let lastIncomingMsg = null;
+        const toMarkRead = [];
 
         snap.docs.forEach(d => {
             const data = d.data();
             const msgId = d.id;
             if (data.senderId !== myId && data.status !== 'read') {
-                updateDoc(doc(db, ...colName, convId, 'messages', msgId), { status: 'read' }).catch(()=>{});
+                toMarkRead.push(msgId);
                 hasNewIncoming = true;
                 lastIncomingMsg = data;
             }
         });
+
+        if (toMarkRead.length) {
+            const batch = writeBatch(db);
+            toMarkRead.forEach(msgId => {
+                batch.update(doc(db, ...colName, convId, 'messages', msgId), { status: 'read' });
+            });
+            batch.commit().catch(() => {});
+        }
 
         if (hasNewIncoming && lastIncomingMsg) {
             const isWindowHidden = document.hidden;
@@ -2046,18 +2119,25 @@ function scrollToMsg(msgId) {
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
+window.scrollToMsg = scrollToMsg;
 
 let _chatSearchResults = [];
 let _chatSearchIdx = 0;
 
 window.openChatSearch = function() {
-    document.getElementById('chat-search-bar').classList.remove('hidden');
+    const bar = document.getElementById('chat-search-bar');
+    bar.classList.remove('hidden');
+    bar.style.display = 'flex';
     document.getElementById('chat-search-input').focus();
 };
 
 window.closeChatSearch = function() {
-    document.getElementById('chat-search-bar').classList.add('hidden');
-    document.getElementById('chat-search-input').value = '';
+    const bar = document.getElementById('chat-search-bar');
+    bar.classList.add('hidden');
+    bar.style.display = 'none';
+    const inp = document.getElementById('chat-search-input');
+    inp.value = '';
+    inp.blur();
     clearChatSearchHighlights();
 };
 
@@ -2143,12 +2223,59 @@ window.ctxReply = function() {
     document.getElementById('msg-input').focus();
 };
 
+window.deleteChannel = async function(channelId) {
+    if (!confirm('Удалить канал и все его сообщения? Это действие нельзя отменить.')) return;
+    try {
+        const colName = BASE('channels');
+        // Удаляем все сообщения
+        const msgs = await getDocs(collection(db, ...colName, channelId, 'messages'));
+        const batch = writeBatch(db);
+        msgs.forEach(d => batch.delete(d.ref));
+        // Удаляем meta/info
+        batch.delete(doc(db, ...colName, channelId, 'meta', 'info'));
+        await batch.commit();
+        // Удаляем сам канал
+        await deleteDoc(doc(db, ...colName, channelId));
+        showToast('Канал удалён', 'info');
+        // Возвращаемся в список
+        document.getElementById('app').classList.remove('chat-open');
+        _activeConvId = null;
+        _activeConvType = null;
+        document.getElementById('chat-header-actions').innerHTML = '';
+        await loadSidebar();
+    } catch(e) { showToast('Ошибка удаления канала: ' + (e.message || e.code), 'error'); }
+};
+window.deleteChannel = window.deleteChannel;
+
 window.ctxDelete = async function() {
     if (!confirm('Удалить сообщение?')) return;
     const colName = _activeConvType === 'channel' ? BASE('channels') : BASE('chats');
     const msgIdToDelete = _ctxMsgId;
     try {
         await updateDoc(doc(db, ...colName, _activeConvId, 'messages', msgIdToDelete), { deleted: true });
+
+        // Обновляем превью в списке чатов если это было последнее сообщение
+        const conv = _conversations.find(c => c.id === _activeConvId);
+        if (conv && conv.lastMsg) {
+            // Проверяем было ли удалённое сообщение последним — перечитываем meta
+            try {
+                const metaSnap = await getDoc(doc(db, ...colName, _activeConvId, 'meta', 'info'));
+                if (metaSnap.exists()) {
+                    // Найдём последнее неудалённое сообщение
+                    const msgsSnap = await getDocs(query(collection(db, ...colName, _activeConvId, 'messages'), orderBy('createdAt', 'asc')));
+                    let newLast = '';
+                    msgsSnap.forEach(d => {
+                        const data = d.data();
+                        if (!data.deleted) newLast = data.text || '';
+                    });
+                    await setDoc(doc(db, ...colName, _activeConvId, 'meta', 'info'),
+                        { lastMessage: newLast.slice(0, 60) }, { merge: true });
+                }
+            } catch(_) {}
+            loadSidebar();
+        }
+
+        // Мгновенно убираем из DOM
         if (myRole !== 'owner') {
             const el = document.querySelector(`[data-msgid="${msgIdToDelete}"]`);
             if (el) el.remove();
@@ -2222,9 +2349,12 @@ window.toggleEmojiPicker = function(event) {
     const popover = document.getElementById('emoji-picker-popover');
     const isVisible = popover.style.display === 'grid';
     popover.style.display = isVisible ? 'none' : 'grid';
-    
+
     if (!isVisible) {
-        const closePicker = () => {
+        // Закрываем только по клику ВНЕ picker и ВНЕ кнопки-триггера
+        const closePicker = (e) => {
+            const trigger = document.getElementById('emoji-trigger');
+            if (popover.contains(e.target) || (trigger && trigger.contains(e.target))) return;
             popover.style.display = 'none';
             document.removeEventListener('click', closePicker);
         };
@@ -2234,13 +2364,16 @@ window.toggleEmojiPicker = function(event) {
 
 window.insertEmoji = function(emoji) {
     const input = document.getElementById('msg-input');
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
     const text = input.value;
     input.value = text.substring(0, start) + emoji + text.substring(end);
     input.selectionStart = input.selectionEnd = start + emoji.length;
-    input.focus();
+    // Обновляем кнопку отправки и черновик, НЕ закрываем панель
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) sendBtn.disabled = !input.value.trim();
     autoResizeInput(input);
+    // НЕ вызываем input.focus() — это не закрывает picker
 };
 
 let _replyTo = null;
