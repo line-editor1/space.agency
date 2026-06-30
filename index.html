@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPACE Video Agency | Профессиональный видеомонтаж</title>
-    <link rel="icon" type="image/png" href="1000002719_round.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -4383,6 +4382,7 @@
                 disableVisualCms();
                 showToast("Режим редактирования выключен", "success");
             }
+            if (typeof window.updateBackToAdminBtn === 'function') window.updateBackToAdminBtn();
         };
 
         function disableVisualCms() {
@@ -4396,6 +4396,7 @@
             document.querySelectorAll('.edit-field').forEach(el => {
                 el.classList.remove('editable-active'); el.removeEventListener('click', openEditor);
             });
+            if (typeof window.updateBackToAdminBtn === 'function') window.updateBackToAdminBtn();
         }
 
         function openEditor(e) {
@@ -4541,6 +4542,68 @@
 
         window.setAdminState = function(state) {
             window.currentAdminState = state;
+        };
+
+        // ── ПРОВЕРКА РОЛИ ВЛАДЕЛЬЦА ───────────────────────────────────
+        // Использует ту же Firebase Auth сессию что и admin.html/space_control.html
+        // (browserSessionPersistence — действует в рамках одной вкладки).
+        // Если человек авторизован как owner — даём доступ к визуальному редактору
+        // и показываем кнопку "Вернуться в админку" (видна только при включённом CMS-режиме).
+        window.isSiteOwner = false;
+
+        window.checkSiteOwnerAccess = async function() {
+            if (!firebaseInitialized || !auth) return;
+            onAuthStateChanged(auth, async (user) => {
+                if (!user || user.isAnonymous) {
+                    window.isSiteOwner = false;
+                    return;
+                }
+                try {
+                    const userSnap = await getDoc(doc(db, 'users', user.uid));
+                    const role = userSnap.exists() ? userSnap.data().role : null;
+                    window.isSiteOwner = (role === 'owner');
+                    if (window.isSiteOwner) {
+                        window.setAdminState(true);
+                        // Если пришли сюда по кнопке "Визуальный редактор" из admin.html —
+                        // сразу включаем CMS-режим автоматически.
+                        try {
+                            if (sessionStorage.getItem('space_open_visual_editor') === '1') {
+                                sessionStorage.removeItem('space_open_visual_editor');
+                                setTimeout(() => {
+                                    if (typeof window.toggleVisualCmsMode === 'function' && !isVisualCmsMode) {
+                                        window.toggleVisualCmsMode();
+                                    }
+                                }, 400);
+                            }
+                        } catch(e) {}
+                    }
+                } catch (e) {
+                    console.warn('checkSiteOwnerAccess:', e.message);
+                    window.isSiteOwner = false;
+                }
+            });
+        };
+        window.checkSiteOwnerAccess();
+
+        // Кнопка "Вернуться в админку" — показывается только когда
+        // visual CMS режим включён И человек подтверждён как owner.
+        window.updateBackToAdminBtn = function() {
+            let btn = document.getElementById('back-to-admin-btn');
+            const shouldShow = window.isSiteOwner && typeof isVisualCmsMode !== 'undefined' && isVisualCmsMode;
+            if (shouldShow) {
+                if (!btn) {
+                    btn = document.createElement('a');
+                    btn.id = 'back-to-admin-btn';
+                    btn.href = 'admin.html';
+                    btn.className = 'fixed bottom-6 right-6 z-[99999] flex items-center gap-2 px-5 py-3.5 rounded-2xl font-black font-space text-xs uppercase tracking-wider transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]';
+                    btn.style.cssText = 'background:linear-gradient(135deg,rgba(0,198,251,0.45) 0%,rgba(0,82,212,0.25) 100%);border-top:1px solid rgba(255,255,255,0.25);border-left:1px solid rgba(255,255,255,0.12);color:white;box-shadow:0 15px 35px rgba(0,198,251,0.25);';
+                    btn.innerHTML = '<i class="fas fa-arrow-left-to-bracket"></i><span>Вернуться в админку</span>';
+                    document.body.appendChild(btn);
+                }
+                btn.classList.remove('hidden');
+            } else if (btn) {
+                btn.classList.add('hidden');
+            }
         };
 
         // ── ПРОМОКОДЫ — FIREBASE CRUD ─────────────────────────────────

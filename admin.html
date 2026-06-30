@@ -4,7 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>SPACE Admin Panel</title>
-    <link rel="icon" type="image/png" href="1000002719_round.png">
+    <link rel="icon" id="dynamic-favicon" type="image/png" href="1000002719.png">
+    <script>
+      (function(){
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function(){
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          ctx.beginPath(); ctx.arc(32,32,32,0,Math.PI*2); ctx.closePath(); ctx.clip();
+          ctx.drawImage(img,0,0,64,64);
+          var el = document.getElementById('dynamic-favicon');
+          if(el) el.href = c.toDataURL('image/png');
+        };
+        img.src = '1000002719.png';
+      })();
+    </script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -441,6 +456,23 @@
         @keyframes toastOut {
             from { opacity: 1; transform: translateY(0)     scale(1); }
             to   { opacity: 0; transform: translateY(-12px) scale(0.93); }
+        }
+        .toast {
+            padding: 14px 20px;
+            border-radius: 18px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            max-width: 360px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border-top: 1px solid rgba(255,255,255,0.14);
+            border-left: 1px solid rgba(255,255,255,0.09);
+            border-right: 1px solid rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
         }
         .toast-enter { animation: toastIn  0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-leave { animation: toastOut 0.25s cubic-bezier(0.4, 0, 1, 1)    forwards; }
@@ -1356,54 +1388,26 @@
     }, 3500);
 };
 
-// ─── CALC CONFIG (_CP) ────────────────────────────────────────────
-// Объявляем через window чтобы было видно из <script type="module">
-window._CP_DEFAULT = {
-    base:    { name:'BASE',    base:1000, per30:350,  urg:75,  opts:[
-        {id:'sub',  l:'Ключевые слова в субтитрах', p:300},
-        {id:'snd',  l:'Базовый Sound Design',       p:400},
-        {id:'src',  l:'Исходники более 15 минут',   p:500}]},
-    pro:     { name:'PRO',     base:1500, per30:500,  urg:70,  opts:[
-        {id:'snd2', l:'Глубокий Sound Design',      p:600},
-        {id:'ftg',  l:'Расширенные футажи',          p:800},
-        {id:'mc',   l:'Мультикамерный монтаж',       p:1000},
-        {id:'inf',  l:'Инфографика',                 p:700}]},
-    premium: { name:'PREMIUM', base:2500, per30:1200, urg:100, opts:[
-        {id:'mot',  l:'Motion Design',               p:2000},
-        {id:'trk',  l:'Tracking объектов',           p:1000},
-        {id:'scr',  l:'Написание сценария',          p:2000},
-        {id:'trd',  l:'3D-анимация',                 p:2500},
-        {id:'fmt',  l:'Адаптация форматов',          p:1500}]}
-};
-
-window._CP = (() => {
-    try {
-        const saved = JSON.parse(localStorage.getItem('space_calc_config'));
-        if (saved && saved.base && saved.pro && saved.premium) return saved;
-    } catch(e) {}
-    return JSON.parse(JSON.stringify(window._CP_DEFAULT));
-})();
-
 // Сохраняем _CP в localStorage и Firebase
 async function _persistCalcConfig() {
-    try { localStorage.setItem('space_calc_config', JSON.stringify(window._CP)); } catch(e) {}
+    try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
     try {
         if (typeof window._firebaseSaveCalcConfig === 'function') {
-            await window._firebaseSaveCalcConfig(window._CP);
+            await window._firebaseSaveCalcConfig(_CP);
         }
         return true;
     } catch(e) { console.error('_persistCalcConfig:', e); return false; }
 }
 
 window.calcAdminUpdatePkgPrice = async function(pkg, field, val) {
-    if (!window._CP[pkg]) return;
-    window._CP[pkg][field] = parseInt(val) || 0;
+    if (!_CP[pkg]) return;
+    _CP[pkg][field] = parseInt(val) || 0;
     const ok = await _persistCalcConfig();
     if (ok) showToast(`${pkg.toUpperCase()} · ${field === 'base' ? 'Базовая цена' : 'Цена за 30 сек'} обновлена`, 'success');
 };
 
 window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
-            const o = (window._CP[pkg] && window._CP[pkg].opts) ? window._CP[pkg].opts.find(x => x.id === id) : null;
+            const o = (_CP[pkg] && _CP[pkg].opts) ? _CP[pkg].opts.find(x => x.id === id) : null;
             if (!o) return;
             o.p = parseInt(val) || 0;
             const ok = await _persistCalcConfig();
@@ -1411,7 +1415,7 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
         };
 
         window.calcAdminUpdateOptLabel = async function(id, pkg, val) {
-            const o = (window._CP[pkg] && window._CP[pkg].opts) ? window._CP[pkg].opts.find(x => x.id === id) : null;
+            const o = (_CP[pkg] && _CP[pkg].opts) ? _CP[pkg].opts.find(x => x.id === id) : null;
             if (!o) return;
             const newLabel = (val || '').trim();
             if (!newLabel) { showToast('Название не может быть пустым!', 'error'); _renderCalcAdminOptions(); return; }
@@ -1421,8 +1425,8 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
         };
 
         window.calcAdminDeleteOption = async function(id, pkg) {
-            if (window._CP[pkg] && window._CP[pkg].opts) {
-                window._CP[pkg].opts = window._CP[pkg].opts.filter(x => x.id !== id);
+            if (_CP[pkg] && _CP[pkg].opts) {
+                _CP[pkg].opts = _CP[pkg].opts.filter(x => x.id !== id);
             }
             _renderCalcAdminOptions();
             const ok = await _persistCalcConfig();
@@ -1436,14 +1440,14 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             const price = parseInt(priceEl && priceEl.value) || 0;
             if (!label) { showToast('Введите название услуги!', 'error'); return; }
             const pkg = _calcAdminCurrentPkg;
-            if (!window._CP[pkg].opts) window._CP[pkg].opts = [];
+            if (!_CP[pkg].opts) _CP[pkg].opts = [];
             const newId = 'custom_' + Date.now();
-            window._CP[pkg].opts.push({id: newId, l: label, p: price});
+            _CP[pkg].opts.push({id: newId, l: label, p: price});
             if (labelEl) labelEl.value = '';
             if (priceEl) priceEl.value = '';
             _renderCalcAdminOptions();
             const ok = await _persistCalcConfig();
-            if (ok) showToast('Услуга добавлена в пакет ' + window._CP[pkg].name + '!', 'success');
+            if (ok) showToast('Услуга добавлена в пакет ' + _CP[pkg].name + '!', 'success');
         };
 
         window.saveCalcAdminSettings = async function() {
@@ -1451,26 +1455,26 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             ['base','pro','premium'].forEach(pk => {
                 const baseVal = document.getElementById(`calc-admin-${pk}-base`);
                 const per30Val = document.getElementById(`calc-admin-${pk}-per30`);
-                if (baseVal) window._CP[pk].base = parseInt(baseVal.value) || window._CP[pk].base;
-                if (per30Val) window._CP[pk].per30 = parseInt(per30Val.value) || window._CP[pk].per30;
+                if (baseVal) _CP[pk].base = parseInt(baseVal.value) || _CP[pk].base;
+                if (per30Val) _CP[pk].per30 = parseInt(per30Val.value) || _CP[pk].per30;
             });
             // Срочность
             const urgEl = document.getElementById('calc-admin-urgent-pct');
             if (urgEl) {
                 const urgPct = parseInt(urgEl.value) || 75;
-                window._CP.base.urg = urgPct; window._CP.pro.urg = urgPct; window._CP.premium.urg = urgPct;
+                _CP.base.urg = urgPct; _CP.pro.urg = urgPct; _CP.premium.urg = urgPct;
             }
             // TG-ссылка
             const tgEl = document.getElementById('calc-admin-tg-link');
-            window._CP.calcTgLink = tgEl ? tgEl.value.trim() : '';
+            _CP.calcTgLink = tgEl ? tgEl.value.trim() : '';
             // Сохраняем в localStorage и Firebase
             const ok = await _persistCalcConfig();
             // Обновляем подписи кнопок пакетов в публичном калькуляторе
             document.querySelectorAll('.calc-pkg-btn').forEach(btn => {
                 const pk = btn.getAttribute('data-pkg');
-                if (pk && window._CP[pk]) {
+                if (pk && _CP[pk]) {
                     const sub = btn.querySelector('div:last-child');
-                    if (sub) sub.textContent = (window._CP[pk].base).toLocaleString('ru') + '₽';
+                    if (sub) sub.textContent = (_CP[pk].base).toLocaleString('ru') + '₽';
                 }
             });
             if (ok) showToast('Настройки калькулятора сохранены!', 'success');
@@ -1482,7 +1486,7 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
         function _renderCalcAdminOptions() {
             const list = document.getElementById('calc-admin-options-list');
             if (!list) return;
-            const opts = (window._CP[_calcAdminCurrentPkg] && window._CP[_calcAdminCurrentPkg].opts) || [];
+            const opts = (_CP[_calcAdminCurrentPkg] && _CP[_calcAdminCurrentPkg].opts) || [];
             if (!opts.length) {
                 list.innerHTML = '<p class="text-xs text-slate-600 italic text-center py-4">Нет услуг — добавьте первую ниже</p>';
                 return;
@@ -1518,15 +1522,15 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             ['base','pro','premium'].forEach(pk => {
                 const baseEl  = document.getElementById(`calc-admin-${pk}-base`);
                 const per30El = document.getElementById(`calc-admin-${pk}-per30`);
-                if (baseEl  && window._CP[pk]) baseEl.value  = window._CP[pk].base  || '';
-                if (per30El && window._CP[pk]) per30El.value = window._CP[pk].per30 || '';
+                if (baseEl  && _CP[pk]) baseEl.value  = _CP[pk].base  || '';
+                if (per30El && _CP[pk]) per30El.value = _CP[pk].per30 || '';
             });
             // Срочность
             const urgEl = document.getElementById('calc-admin-urgent-pct');
-            if (urgEl) urgEl.value = window._CP.base.urg || 75;
+            if (urgEl) urgEl.value = _CP.base.urg || 75;
             // TG ссылка
             const tgEl = document.getElementById('calc-admin-tg-link');
-            if (tgEl) tgEl.value = window._CP.calcTgLink || '';
+            if (tgEl) tgEl.value = _CP.calcTgLink || '';
             // Активируем первую вкладку пакетов и рендерим услуги
             calcAdminSwitchOptPkg(_calcAdminCurrentPkg);
         };
@@ -1545,12 +1549,12 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
                     if (freshData) {
                         ['base','pro','premium'].forEach(pk => {
                             if (freshData[pk]) {
-                                Object.assign(window._CP[pk], freshData[pk]);
-                                if (Array.isArray(freshData[pk].opts)) window._CP[pk].opts = freshData[pk].opts;
+                                Object.assign(_CP[pk], freshData[pk]);
+                                if (Array.isArray(freshData[pk].opts)) _CP[pk].opts = freshData[pk].opts;
                             }
                         });
-                        if (freshData.calcTgLink !== undefined) window._CP.calcTgLink = freshData.calcTgLink || '';
-                        try { localStorage.setItem('space_calc_config', JSON.stringify(window._CP)); } catch(e) {}
+                        if (freshData.calcTgLink !== undefined) _CP.calcTgLink = freshData.calcTgLink || '';
+                        try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
                     }
                 }
             } catch(e) { console.warn('openCalcModal Firebase fetch:', e); }
@@ -1559,9 +1563,9 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             const pkgBtns = document.querySelectorAll('.calc-pkg-btn');
             pkgBtns.forEach(btn => {
                 const pk = btn.getAttribute('data-pkg');
-                if (pk && window._CP[pk]) {
+                if (pk && _CP[pk]) {
                     const sub = btn.querySelector('div:last-child');
-                    if (sub) sub.textContent = (window._CP[pk].base).toLocaleString('ru') + '₽/мин';
+                    if (sub) sub.textContent = (_CP[pk].base).toLocaleString('ru') + '₽/мин';
                 }
             });
             _calcRenderOpts(); _calcUpdate();
@@ -1592,7 +1596,7 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             _calcUpdate();
         };
         function _calcRenderOpts() {
-            const pkg = window._CP[_cs.pkg];
+            const pkg = _CP[_cs.pkg];
             const el = document.getElementById('calc-urgent-label');
             if (el) el.textContent = '+' + pkg.urg + '% к стоимости';
             const c = document.getElementById('calc-options');
@@ -1607,7 +1611,7 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
         }
         window._calcUpdate = _calcUpdate;
         function _calcUpdate() {
-            const pkg = window._CP[_cs.pkg];
+            const pkg = _CP[_cs.pkg];
             _cs.urg = document.getElementById('calc-urgent')?.checked || false;
             let total = pkg.base;
             if (_cs.dur > 60) total += Math.ceil((_cs.dur - 60) / 30) * pkg.per30;
@@ -1619,7 +1623,7 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
         }
         window.calcUpdate = _calcUpdate;
         window.calcSendTelegram = async function() {
-            const pkg = window._CP[_cs.pkg];
+            const pkg = _CP[_cs.pkg];
             const total = _calcUpdate();
             const lines = ['📋 Расчёт стоимости монтажа', '',
                 '📦 Пакет: ' + pkg.name,
@@ -1642,8 +1646,8 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
                     if (freshData && freshData.calcTgLink) {
                         freshTgLink = freshData.calcTgLink;
                         // Синхронизируем локальное состояние
-                        window._CP.calcTgLink = freshTgLink;
-                        try { localStorage.setItem('space_calc_config', JSON.stringify(window._CP)); } catch(e) {}
+                        _CP.calcTgLink = freshTgLink;
+                        try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
                     }
                 }
             } catch(e) { console.warn('TG link fetch:', e); }
@@ -1651,7 +1655,7 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             const tgBtn = document.getElementById('tg-btn');
             const fallback = (tgBtn && tgBtn.href && tgBtn.href.includes('t.me'))
                 ? tgBtn.href.split('?')[0] : 'https://t.me/spacevideoagency';
-            const base = (freshTgLink || window._CP.calcTgLink || fallback).split('?')[0];
+            const base = (freshTgLink || _CP.calcTgLink || fallback).split('?')[0];
             const tgUrl = base + '?text=' + msg;
             window.open(tgUrl, '_blank');
         };
@@ -2180,13 +2184,13 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
                         const data = calcSnap.data();
                         ['base','pro','premium'].forEach(pk => {
                             if (data[pk]) {
-                                Object.assign(window._CP[pk], data[pk]);
+                                Object.assign(_CP[pk], data[pk]);
                                 // Заменяем opts полностью (не мержим), чтобы удалённые услуги исчезали
-                                if (Array.isArray(data[pk].opts)) window._CP[pk].opts = data[pk].opts;
+                                if (Array.isArray(data[pk].opts)) _CP[pk].opts = data[pk].opts;
                             }
                         });
-                        window._CP.calcTgLink = data.calcTgLink || '';
-                        try { localStorage.setItem('space_calc_config', JSON.stringify(window._CP)); } catch(e) {}
+                        _CP.calcTgLink = data.calcTgLink || '';
+                        try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
                     }
                 } catch(e) { console.error("Calc config load error:", e); }
             }
@@ -2295,12 +2299,12 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
                     // Merge into _CP keeping default structure, заменяем opts полностью
                     ['base','pro','premium'].forEach(pk => {
                         if (data[pk]) {
-                            Object.assign(window._CP[pk], data[pk]);
-                            if (Array.isArray(data[pk].opts)) window._CP[pk].opts = data[pk].opts;
+                            Object.assign(_CP[pk], data[pk]);
+                            if (Array.isArray(data[pk].opts)) _CP[pk].opts = data[pk].opts;
                         }
                     });
-                    window._CP.calcTgLink = data.calcTgLink || '';
-                    try { localStorage.setItem('space_calc_config', JSON.stringify(window._CP)); } catch(e) {}
+                    _CP.calcTgLink = data.calcTgLink || '';
+                    try { localStorage.setItem('space_calc_config', JSON.stringify(_CP)); } catch(e) {}
                     // Update admin tab if open
                     if (window.currentAdminState && typeof window.renderCalcAdminTab === 'function') {
                         window.renderCalcAdminTab();
@@ -4200,25 +4204,14 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
             }).join('');
         }
 
+        // Визуальный редактор живёт на самом сайте (index.html), а не здесь.
+        // Эта кнопка просто включает флаг в sessionStorage и сразу переносит
+        // администратора на index.html — там auto-detect подхватит флаг
+        // и включит CMS-режим (т.к. сессия Firebase Auth общая в рамках вкладки).
         window.toggleVisualCmsMode = function() {
             if (!window.currentAdminState) return;
-            isVisualCmsMode = !isVisualCmsMode;
-            const btns = document.querySelectorAll('#cms-toggle-btn');
-            if (isVisualCmsMode) {
-                btns.forEach(btn => {
-                    btn.style.background = 'linear-gradient(135deg, rgba(16,185,129,0.4) 0%, rgba(5,150,105,0.2) 100%)';
-                    btn.innerHTML = `<i class="fas fa-pencil-alt mr-1.5"></i> Выключить`;
-                });
-                showToast("Режим визуального редактирования включен!", "success");
-                document.querySelectorAll('.portfolio-edit-indicator').forEach(el => el.classList.remove('hidden'));
-                document.querySelectorAll('.edit-field').forEach(el => {
-                    el.classList.add('editable-active'); el.addEventListener('click', openEditor);
-                });
-                closeAdminModal();
-            } else {
-                disableVisualCms();
-                showToast("Режим редактирования выключен", "success");
-            }
+            try { sessionStorage.setItem('space_open_visual_editor', '1'); } catch(e) {}
+            window.location.href = 'index.html';
         };
 
         function disableVisualCms() {
