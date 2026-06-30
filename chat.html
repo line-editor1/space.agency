@@ -97,6 +97,10 @@
             background: #08070F;
             height: 100%;
         }
+        /* Убираем курсор-каретку везде кроме полей ввода */
+        * { caret-color: transparent; }
+        input, textarea, [contenteditable="true"] { caret-color: #6366f1; }
+
         #chat-header {
             padding: 10px 14px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
@@ -397,7 +401,7 @@
             }
             #app.chat-open #sidebar { transform: translateX(-100%); }
             #app.chat-open #main { transform: translateX(0); }
-            #sidebar-toggle { display: flex; }
+            #sidebar-toggle { display: flex !important; }
         }
 
         #sidebar-toggle { display: none; }
@@ -680,16 +684,23 @@
             
             <div id="emoji-picker-popover"></div>
 
-            <div class="flex items-end gap-3 relative">
+            <!-- Панель ввода (показывается когда можно писать) -->
+            <div id="write-row" class="flex items-end gap-3 relative">
                 <button id="emoji-trigger" onclick="toggleEmojiPicker(event)" class="input-action-btn" title="Выбрать эмодзи">
                     <i class="far fa-face-smile"></i>
                 </button>
-                
                 <textarea id="msg-input" class="flex-1 bg-black/35 border border-white/[0.04] rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 outline-none focus:border-white/[0.08] transition resize-none max-h-32" rows="1" placeholder="Ваше сообщение..." oninput="handleMsgInput(this)" onkeydown="handleMsgKey(event)"></textarea>
-                
                 <button id="send-btn" class="send-btn" onclick="sendMessage()" disabled>
                     <i class="fas fa-paper-plane text-xs"></i>
                 </button>
+            </div>
+
+            <!-- Плашка "только для чтения" в канале (для монтажёров) -->
+            <div id="readonly-bar" class="hidden items-center justify-center py-1">
+                <div class="flex items-center justify-center w-full px-4 py-2.5 rounded-full bg-white/[0.04] border border-white/[0.05]">
+                    <i class="fas fa-megaphone text-[11px] text-slate-500 mr-2.5"></i>
+                    <span id="readonly-bar-name" class="text-sm font-space font-bold text-slate-400 truncate"></span>
+                </div>
             </div>
         </div>
     </div>
@@ -817,6 +828,77 @@
         </div>
         <div class="px-6 py-4">
             <div id="pinned-list-content" class="space-y-2 max-h-80 overflow-y-auto"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Информация о собеседнике (DM) -->
+<div id="modal-dm-info" class="modal-bg hidden" onclick="closeModal('modal-dm-info')">
+    <div class="glass w-full max-w-sm rounded-3xl overflow-hidden animate-scaleIn" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between px-6 pt-6 pb-2">
+            <h3 class="text-sm font-space font-black text-white">Информация</h3>
+            <button onclick="closeModal('modal-dm-info')" class="w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
+        </div>
+        <div class="px-6 pb-6">
+            <!-- Аватар + имя -->
+            <div class="flex flex-col items-center gap-3 py-5">
+                <div id="dm-info-avatar" class="avatar w-20 h-20 text-2xl rounded-full"></div>
+                <div class="text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <p id="dm-info-name" class="text-lg font-space font-black text-white"></p>
+                        <span id="dm-info-emoji" class="text-base"></span>
+                    </div>
+                    <p id="dm-info-status" class="text-xs text-slate-400 mt-0.5"></p>
+                </div>
+            </div>
+            <!-- Bio -->
+            <div id="dm-info-bio-wrap" class="bg-black/20 border border-white/[0.04] rounded-2xl p-4 mb-4 hidden">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">О себе</p>
+                <p id="dm-info-bio" class="text-sm text-slate-300 leading-relaxed"></p>
+            </div>
+            <!-- Онлайн-статус -->
+            <div class="bg-black/20 border border-white/[0.04] rounded-2xl p-4">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Статус</p>
+                <p id="dm-info-presence" class="text-sm text-slate-300 flex items-center gap-2"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Настройки канала -->
+<div id="modal-channel-settings" class="modal-bg hidden" onclick="closeModal('modal-channel-settings')">
+    <div class="glass w-full max-w-sm rounded-3xl overflow-hidden animate-scaleIn" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between px-6 pt-6 pb-2">
+            <h3 class="text-sm font-space font-black text-white">Настройки канала</h3>
+            <button onclick="closeModal('modal-channel-settings')" class="w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
+        </div>
+        <div class="px-6 pb-6">
+            <!-- Аватар канала -->
+            <div class="flex flex-col items-center gap-3 py-5">
+                <div id="ch-settings-avatar" class="avatar w-20 h-20 text-2xl rounded-2xl"></div>
+                <p id="ch-settings-name-display" class="text-lg font-space font-black text-white text-center"></p>
+                <p id="ch-settings-desc-display" class="text-xs text-slate-400 text-center"></p>
+            </div>
+            <!-- Поля редактирования -->
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Название канала</label>
+                    <input id="ch-settings-name-input" type="text" class="input-dark" placeholder="Название канала">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Описание</label>
+                    <input id="ch-settings-desc-input" type="text" class="input-dark" placeholder="Описание канала">
+                </div>
+            </div>
+            <!-- Кнопки -->
+            <div class="space-y-2">
+                <button onclick="saveChannelSettings()" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition">
+                    <i class="fas fa-check mr-1.5"></i>Сохранить изменения
+                </button>
+                <button onclick="closeModal('modal-channel-settings'); if(confirm('Удалить канал и все сообщения?')) deleteChannel(_activeConvId);" class="w-full py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/20 transition">
+                    <i class="fas fa-trash mr-1.5"></i>Удалить канал
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -1572,11 +1654,20 @@ window.openConversation = async function(convId, type) {
 
     applyAvatarStyle(avatarEl, conv.name, conv.avatar);
 
-    // Кнопка удаления канала — только для owner и только для каналов
+    // Кнопка удаления канала убрана из хедера — теперь в модалке настроек канала
     const headerActions = document.getElementById('chat-header-actions');
     headerActions.innerHTML = '';
-    if (type === 'channel' && myRole === 'owner') {
-        headerActions.innerHTML = `<button onclick="deleteChannel('${convId}')" class="w-8 h-8 rounded-xl bg-white/[0.03] hover:bg-red-500/10 flex items-center justify-center text-slate-500 hover:text-red-400 transition" title="Удалить канал"><i class="fas fa-trash text-xs"></i></button>`;
+
+    // Показываем поле ввода или плашку канала
+    const writeRow = document.getElementById('write-row');
+    const readonlyBar = document.getElementById('readonly-bar');
+    const isChannelReadonly = (type === 'channel' && myRole !== 'owner');
+    writeRow.style.display = isChannelReadonly ? 'none' : 'flex';
+    if (isChannelReadonly) {
+        readonlyBar.style.display = 'flex';
+        document.getElementById('readonly-bar-name').textContent = conv.name;
+    } else {
+        readonlyBar.style.display = 'none';
     }
 
     if (_msgUnsub) _msgUnsub();
@@ -1669,9 +1760,72 @@ window.openConversation = async function(convId, type) {
 window.onHeaderClick = function() {
     const conv = _conversations.find(c => c.id === _activeConvId);
     if (!conv) return;
-    if (conv.type === 'dm' && (myRole === 'owner')) {
-        viewProjectDetails();
+    if (conv.type === 'channel') {
+        openChannelSettings(conv);
+    } else {
+        openDmInfo(conv);
     }
+};
+
+window.openDmInfo = function(conv) {
+    if (!conv) conv = _conversations.find(c => c.id === _activeConvId);
+    if (!conv) return;
+
+    // Аватарка
+    applyAvatarStyle(document.getElementById('dm-info-avatar'), conv.name, conv.avatar);
+    document.getElementById('dm-info-name').textContent = conv.name;
+    document.getElementById('dm-info-emoji').textContent = conv.emoji || '';
+
+    // Bio
+    const bioWrap = document.getElementById('dm-info-bio-wrap');
+    const bioEl = document.getElementById('dm-info-bio');
+    if (conv.bio) {
+        bioEl.textContent = conv.bio;
+        bioWrap.classList.remove('hidden');
+    } else {
+        bioWrap.classList.add('hidden');
+    }
+
+    // Присутствие
+    const presEl = document.getElementById('dm-info-presence');
+    presEl.innerHTML = getPresenceText(_presenceData?.[conv.editorId]);
+
+    // Статус (роль)
+    document.getElementById('dm-info-status').textContent = 'Монтажёр';
+
+    openModal('modal-dm-info');
+};
+
+window.openChannelSettings = function(conv) {
+    if (!conv) conv = _conversations.find(c => c.id === _activeConvId);
+    if (!conv) return;
+
+    applyAvatarStyle(document.getElementById('ch-settings-avatar'), conv.name, conv.avatar);
+    document.getElementById('ch-settings-name-display').textContent = conv.name;
+    document.getElementById('ch-settings-desc-display').textContent = conv.desc || '';
+    document.getElementById('ch-settings-name-input').value = conv.name;
+    document.getElementById('ch-settings-desc-input').value = conv.desc || '';
+
+    openModal('modal-channel-settings');
+};
+
+window.saveChannelSettings = async function() {
+    const name = document.getElementById('ch-settings-name-input').value.trim();
+    const desc = document.getElementById('ch-settings-desc-input').value.trim();
+    if (!name) { showToast('Введите название', 'error'); return; }
+    try {
+        await updateDoc(doc(db, ...BASE('channels'), _activeConvId), { name, desc });
+        // Обновляем локально
+        const conv = _conversations.find(c => c.id === _activeConvId);
+        if (conv) { conv.name = name; conv.desc = desc; }
+        document.getElementById('chat-title').textContent = name;
+        document.getElementById('chat-sub').textContent = desc || '—';
+        document.getElementById('ch-settings-name-display').textContent = name;
+        document.getElementById('ch-settings-desc-display').textContent = desc;
+        closeModal('modal-channel-settings');
+        showToast('Канал обновлён', 'success');
+        loadSidebar();
+    } catch(e) { showToast('Ошибка сохранения: ' + (e.message || ''), 'error'); }
 };
 
 const messagesWrap = document.getElementById('messages-wrap');
@@ -2252,43 +2406,30 @@ window.ctxDelete = async function() {
     const colName = _activeConvType === 'channel' ? BASE('channels') : BASE('chats');
     const msgIdToDelete = _ctxMsgId;
     try {
-        await updateDoc(doc(db, ...colName, _activeConvId, 'messages', msgIdToDelete), { deleted: true });
+        // Полностью удаляем документ сообщения
+        await deleteDoc(doc(db, ...colName, _activeConvId, 'messages', msgIdToDelete));
 
-        // Обновляем превью в списке чатов если это было последнее сообщение
-        const conv = _conversations.find(c => c.id === _activeConvId);
-        if (conv && conv.lastMsg) {
-            // Проверяем было ли удалённое сообщение последним — перечитываем meta
-            try {
-                const metaSnap = await getDoc(doc(db, ...colName, _activeConvId, 'meta', 'info'));
-                if (metaSnap.exists()) {
-                    // Найдём последнее неудалённое сообщение
-                    const msgsSnap = await getDocs(query(collection(db, ...colName, _activeConvId, 'messages'), orderBy('createdAt', 'asc')));
-                    let newLast = '';
-                    msgsSnap.forEach(d => {
-                        const data = d.data();
-                        if (!data.deleted) newLast = data.text || '';
-                    });
-                    await setDoc(doc(db, ...colName, _activeConvId, 'meta', 'info'),
-                        { lastMessage: newLast.slice(0, 60) }, { merge: true });
-                }
-            } catch(_) {}
-            loadSidebar();
-        }
+        // Обновляем превью: находим последнее оставшееся сообщение
+        try {
+            const msgsSnap = await getDocs(query(
+                collection(db, ...colName, _activeConvId, 'messages'),
+                orderBy('createdAt', 'asc')
+            ));
+            let newLast = '';
+            let newLastAt = '';
+            msgsSnap.forEach(d => {
+                const data = d.data();
+                if (!data.deleted) { newLast = data.text || ''; newLastAt = data.createdAt || ''; }
+            });
+            await setDoc(doc(db, ...colName, _activeConvId, 'meta', 'info'),
+                { lastMessage: newLast.slice(0, 60), lastAt: newLastAt }, { merge: true });
+        } catch(_) {}
 
         // Мгновенно убираем из DOM
-        if (myRole !== 'owner') {
-            const el = document.querySelector(`[data-msgid="${msgIdToDelete}"]`);
-            if (el) el.remove();
-        } else {
-            const el = document.querySelector(`[data-msgid="${msgIdToDelete}"]`);
-            if (el) {
-                const bubble = el.querySelector('.bubble');
-                if (bubble) {
-                    bubble.classList.add('opacity-40');
-                    bubble.innerHTML = `<div class="flex items-center gap-2 text-slate-500 italic text-xs"><i class="fas fa-ban text-[10px]"></i>Сообщение удалено</div>`;
-                }
-            }
-        }
+        const el = document.querySelector(`[data-msgid="${msgIdToDelete}"]`);
+        if (el) el.remove();
+
+        loadSidebar();
         showToast('Сообщение удалено', 'info');
     } catch(e) { showToast('Ошибка удаления', 'error'); }
 };
