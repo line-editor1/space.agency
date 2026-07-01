@@ -875,7 +875,13 @@
         <div class="px-6 pb-6">
             <!-- Аватар канала -->
             <div class="flex flex-col items-center gap-3 py-5">
-                <div id="ch-settings-avatar" class="avatar w-20 h-20 text-2xl rounded-2xl"></div>
+                <div class="relative cursor-pointer group" onclick="document.getElementById('ch-avatar-input').click()">
+                    <div id="ch-settings-avatar" class="avatar w-20 h-20 text-2xl rounded-2xl"></div>
+                    <div class="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <i class="fas fa-camera text-white text-lg"></i>
+                    </div>
+                </div>
+                <input type="file" id="ch-avatar-input" class="hidden" accept="image/*" onchange="uploadChannelAvatar(this)">
                 <p id="ch-settings-name-display" class="text-lg font-space font-black text-white text-center"></p>
                 <p id="ch-settings-desc-display" class="text-xs text-slate-400 text-center"></p>
             </div>
@@ -888,6 +894,11 @@
                 <div>
                     <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Описание</label>
                     <input id="ch-settings-desc-input" type="text" class="input-dark" placeholder="Описание канала">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">Статус (Эмодзи)</label>
+                    <div class="flex gap-2 p-2 bg-black/20 border border-white/[0.04] rounded-xl max-h-24 overflow-y-auto flex-wrap justify-center" id="ch-status-emojis"></div>
+                    <input type="hidden" id="ch-emoji-select" value="">
                 </div>
             </div>
             <!-- Кнопки -->
@@ -1072,6 +1083,8 @@ window.saveProfile = async function() {
             name, bio, statusEmoji,
             avatar: myProfile.avatar || ''
         }, { merge: true });
+        // Обновляем имя везде — и для owner и для editor
+        myNameSaved = name;
         renderMyHeader();
         closeModal('modal-profile');
         showToast('Профиль сохранён', 'success');
@@ -1479,7 +1492,7 @@ async function loadSidebar() {
             type: 'dm',
             id: chatId,
             editorId: myId,
-            name: 'Богдан · SPACE',
+            name: myProfile.name || myNameSaved || 'Администратор',
             unread, lastMsg, lastAt
         });
     }
@@ -1799,29 +1812,88 @@ window.openDmInfo = function(conv) {
 window.openChannelSettings = function(conv) {
     if (!conv) conv = _conversations.find(c => c.id === _activeConvId);
     if (!conv) return;
+    _chAvatarPending = null;
 
     applyAvatarStyle(document.getElementById('ch-settings-avatar'), conv.name, conv.avatar);
-    document.getElementById('ch-settings-name-display').textContent = conv.name;
+    document.getElementById('ch-settings-name-display').textContent = conv.emoji ? conv.emoji + ' ' + conv.name : conv.name;
     document.getElementById('ch-settings-desc-display').textContent = conv.desc || '';
     document.getElementById('ch-settings-name-input').value = conv.name;
     document.getElementById('ch-settings-desc-input').value = conv.desc || '';
 
+    // Заполняем грид эмодзи (те же что в профиле)
+    const STATUS_EMOJIS = ['🔥','⚡','✅','🎯','🚀','💡','📢','🎬','🎞️','🏆','💎','🌟','⚙️','📌','🔔','❤️','😎','🤝'];
+    const currentEmoji = conv.emoji || '';
+    document.getElementById('ch-emoji-select').value = currentEmoji;
+    document.getElementById('ch-status-emojis').innerHTML =
+        STATUS_EMOJIS.map(e => `<button type="button" onclick="selectChannelEmoji('${e}', event)" class="status-option-btn${e === currentEmoji ? ' active' : ''}">${e}</button>`).join('') +
+        `<button type="button" onclick="selectChannelEmoji('', event)" class="status-option-btn text-xs font-bold text-rose-400">❌</button>`;
+
     openModal('modal-channel-settings');
+};
+
+window.selectChannelEmoji = function(emoji, event) {
+    if (event) event.preventDefault();
+    document.getElementById('ch-emoji-select').value = emoji;
+    document.querySelectorAll('#ch-status-emojis .status-option-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === emoji || (emoji === '' && btn.textContent === '❌'));
+    });
+};
+
+let _chAvatarPending = null; // временно хранит новую аватарку до сохранения
+
+window.uploadChannelAvatar = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { showToast('Выберите изображение', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const MAX = 320;
+            let { width: w, height: h } = img;
+            if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+            else        { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            let quality = 0.85;
+            let dataUrl = canvas.toDataURL('image/jpeg', quality);
+            while (dataUrl.length > 700000 && quality > 0.3) {
+                quality -= 0.1;
+                dataUrl = canvas.toDataURL('image/jpeg', quality);
+            }
+            if (dataUrl.length > 1000000) { showToast('Не удалось сжать фото, попробуйте другое', 'error'); return; }
+            _chAvatarPending = dataUrl;
+            applyAvatarStyle(document.getElementById('ch-settings-avatar'), document.getElementById('ch-settings-name-input').value || '?', dataUrl);
+        };
+        img.onerror = () => showToast('Не удалось загрузить изображение', 'error');
+        img.src = e.target.result;
+    };
+    reader.onerror = () => showToast('Ошибка чтения файла', 'error');
+    reader.readAsDataURL(file);
 };
 
 window.saveChannelSettings = async function() {
     const name = document.getElementById('ch-settings-name-input').value.trim();
     const desc = document.getElementById('ch-settings-desc-input').value.trim();
+    const emoji = document.getElementById('ch-emoji-select').value;
     if (!name) { showToast('Введите название', 'error'); return; }
+    if (_chAvatarPending && _chAvatarPending.length > 1000000) {
+        showToast('Фото слишком большое, выберите другое', 'error'); return;
+    }
     try {
-        await updateDoc(doc(db, ...BASE('channels'), _activeConvId), { name, desc });
-        // Обновляем локально
+        const update = { name, desc, emoji };
+        if (_chAvatarPending) update.avatar = _chAvatarPending;
+        await updateDoc(doc(db, ...BASE('channels'), _activeConvId), update);
         const conv = _conversations.find(c => c.id === _activeConvId);
-        if (conv) { conv.name = name; conv.desc = desc; }
+        if (conv) { conv.name = name; conv.desc = desc; conv.emoji = emoji; if (_chAvatarPending) conv.avatar = _chAvatarPending; }
         document.getElementById('chat-title').textContent = name;
+        document.getElementById('chat-title-emoji').textContent = emoji;
         document.getElementById('chat-sub').textContent = desc || '—';
-        document.getElementById('ch-settings-name-display').textContent = name;
+        document.getElementById('ch-settings-name-display').textContent = emoji ? emoji + ' ' + name : name;
         document.getElementById('ch-settings-desc-display').textContent = desc;
+        if (_chAvatarPending) applyAvatarStyle(document.getElementById('chat-avatar'), name, _chAvatarPending);
+        _chAvatarPending = null;
         closeModal('modal-channel-settings');
         showToast('Канал обновлён', 'success');
         loadSidebar();
