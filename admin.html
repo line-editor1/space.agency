@@ -2192,7 +2192,7 @@ window.calcAdminUpdateOptPrice = async function(id, pkg, val) {
                 {id:'trd',  l:'3D-анимация',                 p:2500},
                 {id:'fmt',  l:'Адаптация форматов',          p:1500}]}
         };
-        let _CP = JSON.parse(JSON.stringify(_CP_DEFAULT));
+        window._CP = JSON.parse(JSON.stringify(_CP_DEFAULT));
 
         // Загружаем сохранённые значения из localStorage немедленно
         try {
